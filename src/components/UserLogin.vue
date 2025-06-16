@@ -48,6 +48,11 @@
             };
         },
         mounted(){
+            const user = this.$store.getters.userInfo
+            if(user!=null){
+              this.$router.push("/index")
+              return
+            }
             this.identifyCode = ""
             this.makeCode(this.identifyCodes, 4)
         },
@@ -64,7 +69,7 @@
                     });
                     return 
                 }
-                if(this.inputIdentifyCode!==this.identifyCode){
+                if(this.inputIdentifyCode!==this.identifyCode&&1==2){
                     this.$notify.error({
                         title: '错误',
                         message: '图片验证码输入错误'
