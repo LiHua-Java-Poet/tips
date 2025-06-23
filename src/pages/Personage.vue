@@ -5,7 +5,7 @@
 </template>
 <script>
     export default{
-        name:'mainPage',
+        name:'personagePage',
         data(){
             return{
     

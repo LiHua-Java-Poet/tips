@@ -4,7 +4,8 @@ import VueRouter from 'vue-router'
 import store from '../store/index' // 👉 导入 Vuex store 实例
 
 import LoginPage from '../pages/LoginPage.vue'
-import Main from '../pages/Main.vue'
+// import Main from '../pages/Personage.vue'
+import Personage from '@/pages/Personage.vue'
 import Index from '../pages/Index.vue'
 import All from '@/pages/subpage/All.vue'
 import NotFoundPage from '@/pages/NotFoundPage.vue'
@@ -14,12 +15,12 @@ Vue.use(VueRouter)
 const router =new VueRouter({
   routes: [
     {
-        path:'/',
+        path:'/login',
         component:LoginPage
     },
     {
-        path:'/main',
-        component:Main
+        path:'/personage',
+        component:Personage
     },
     {
         path:'/index',
@@ -43,13 +44,14 @@ router.beforeEach((to, from, next) => {
   // 模拟一个“登录状态”，比如从 localStorage 获取 token
   const userInfo = store.getters.userInfo
 
-  // 只有访问 /main 时才检查登录状态
-  if (to.path === '/index') {
+    // 登录页允许直接访问
+  if (to.path === '/login') {
+    return next()
+  }
 
-    if (userInfo==null) {
-      console.warn('未登录，跳转到登录页')
-      return next('/')  // 拦截并跳转回登录页
-    }
+  if (userInfo == null) {
+    console.warn('未登录，跳转到登录页')
+    return next('/login')  // 拦截并跳转回登录页
   }
 
   // 其他情况放行

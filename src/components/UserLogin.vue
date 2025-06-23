@@ -32,6 +32,7 @@
 </template>
 
 <script>
+    import navigator from '@/utils/navigator';
     import IdentifyCode from './IdentifyCode.vue';
     import {loginUser} from '@/api/user'
 
@@ -88,7 +89,8 @@
                             type: 'success'
                         });
                         this.$store.dispatch('login', res.data.data);
-                        this.$router.push("/index")
+                        navigator(this,"/index/all")
+                        // this.$router.push("/index/all")
                     }else{
                         this.$notify.error({
                             title: '失败',
