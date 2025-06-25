@@ -13,11 +13,12 @@
 </template>
 
 <script>
+import navigator from '@/utils/navigator';
 export default {
   name: 'NotFoundPage',
   methods: {
     goHome() {
-      this.$router.push('/');
+      navigator(this,'/index/all')
     }
   }
 }
