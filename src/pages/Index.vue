@@ -1,6 +1,6 @@
 <template>
     <el-container style="height: 100vh;">
-        <el-header class="custom-header" :style="{ height: '75px' }">
+        <el-header class="custom-header" :style="{ height: '60px' }">
             <div class="header-content">
             <!-- 左侧 logo -->
             <div class="block">
@@ -62,7 +62,7 @@
                     </el-menu-item>
                 </el-menu>
             </el-aside>
-            <el-main>
+            <el-main style="padding: 10px ;background-color: rgb(245, 245, 245);">
                 <router-view></router-view>
             </el-main>
         </el-container>

@@ -9,6 +9,8 @@ import Personage from '@/pages/Personage.vue'
 import Index from '../pages/Index.vue'
 import All from '@/pages/subpage/All.vue'
 import NotFoundPage from '@/pages/NotFoundPage.vue'
+import Task from '@/pages/subpage/Task.vue'
+import Plan from '@/pages/subpage/Plan.vue'
 Vue.use(VueRouter)
 
 
@@ -27,9 +29,17 @@ const router =new VueRouter({
         component:Index,
         children:[
           {
-          path:'/index/all',
-          component:All
-        }
+            path:'/index/all',
+            component:All
+          },
+          {
+            path:'/index/task',
+            component:Task
+          },
+          {
+            path:'/index/plan',
+            component:Plan
+          }
         ]
     },
     {
