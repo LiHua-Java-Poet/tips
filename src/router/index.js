@@ -11,6 +11,8 @@ import All from '@/pages/subpage/All.vue'
 import NotFoundPage from '@/pages/NotFoundPage.vue'
 import Task from '@/pages/subpage/Task.vue'
 import Plan from '@/pages/subpage/Plan.vue'
+import Document from '@/pages/subpage/Document.vue'
+import Collect from '@/pages/subpage/Collect.vue'
 Vue.use(VueRouter)
 
 
@@ -39,6 +41,14 @@ const router =new VueRouter({
           {
             path:'/index/plan',
             component:Plan
+          },
+          {
+            path:'/index/document',
+            component:Document
+          },
+          {
+            path:'/index/collect',
+            component:Collect
           }
         ]
     },
