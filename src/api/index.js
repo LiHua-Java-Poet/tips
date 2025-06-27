@@ -23,6 +23,24 @@ instance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// 响应拦截器：统一处理 code 和错误
+// instance.interceptors.response.use(
+//   response => {
+//     const res = response;
+//     if (res.data.code && res.data.code !== 200) {
+//       console.warn('接口返回错误:', res.data.message);
+//       // ElMessage.error(res.message || '错误');
+//       return Promise.reject(res.data);
+//     }
+//     return res.data;
+//   },
+//   error => {
+//     console.error('响应错误:', error);
+//     // ElMessage.error(error.message || '请求失败');
+//     return Promise.reject(error);
+//   }
+// );
   
 // 封装get请求  
 export function get(url, params = {}) {  

@@ -86,7 +86,7 @@ export default{
 <style>
 .box-card {
     background-color: rgb(255, 255, 255);
-    height: 30vh;
+    /* height: 30vh; */
     width: 45%;
 }
 .plan-status-card {

@@ -1,6 +1,6 @@
 <template>
-  <el-container>
-    <el-header style="height: 50px;">
+  <el-container style="height: 100%;">
+    <el-header >
       <el-row>
         <el-col :span="4">
           <div
@@ -151,7 +151,8 @@ export default {
 .popover-wrapper {
   display: flex;
   align-items: center;
-  height: 40px;
+  /* height: 40px; */
+  height: 3%;
   margin-bottom: 10px;
   padding: 0 5px;
 }
@@ -246,7 +247,5 @@ export default {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
-
-
 
 </style>
