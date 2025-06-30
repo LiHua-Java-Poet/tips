@@ -1,6 +1,6 @@
 <template>
     <el-container style="height: 100%;">
-      <el-aside width="275px" class="aside-custom">
+      <el-aside width="250px" class="aside-custom">
                 <el-card class="collect-card">
                     新增空间
                 </el-card>
@@ -27,6 +27,28 @@
       </el-aside>
       <el-container>
         <el-main style="background-color: rgb(255, 255, 255);border-radius: 10px;">
+            <!-- 聊天区域 -->
+            <div class="chat-container">
+                <!-- 消息显示区域 -->
+                <div class="chat-message-area">
+                    <div class="message" v-for="(msg, index) in messages" :key="index">
+                    <div class="message-bubble">{{ msg.text }}</div>
+                    </div>
+                </div>
+
+                <!-- 信息输入区域 -->
+                <div class="chat-input-area">
+                    <el-input
+                    type="textarea"
+                    v-model="newMessage"
+                    class="input-box"
+                    :autosize="{ minRows: 2, maxRows: 6 }"
+                    resize="vertical"
+                    placeholder="请输入消息..."
+                    />
+                    <el-button type="primary" @click="sendMessage" class="send-button">发送</el-button>
+                </div>
+            </div>
         </el-main>
       </el-container>
     </el-container>
@@ -38,25 +60,50 @@ export default {
   name: "collectPage",
   data() {
     return {
-      showStatus: 1,
-      dateRange: [], // 存储起止日期，[startDate, endDate]
-      searchText:'',
-      options: [{
-          value: '1',
-          label: '时间排序'
-        }, {
-          value: '2',
-          label: '双皮奶'
-        }, {
-          value: '3',
-          label: '蚵仔煎'
-        }],
+        showStatus: 1,
+        dateRange: [], // 存储起止日期，[startDate, endDate]
+        searchText:'',
+        messages: [
+            { text: '欢迎来到聊天区！' },
+            { text: '这是历史消息1' },
+            { text: '这是历史消息2' },
+            { text: '欢迎来到聊天区！' },
+            { text: '这是历史消息1' },
+            { text: '这是历史消息2' },
+            { text: '欢迎来到聊天区！' },
+            { text: '这是历史消息1' },
+            { text: '这是历史消息2' },
+            { text: '欢迎来到聊天区！' },
+            { text: '这是历史消息1' },
+            { text: '这是历史消息2' },
+            { text: '欢迎来到聊天区！' },
+            { text: '这是历史消息1' },
+            { text: '这是历史消息2' },
+            { text: '欢迎来到聊天区！' },
+            { text: '这是历史消息1' },
+            { text: '这是历史消息2' },
+            { text: '欢迎来到聊天区！' },
+            { text: '这是历史消息1' },
+            { text: '这是历史消息2' },
+        ],
+        newMessage: ''
     };
   },
   methods: {
     setStatus(status) {
       this.showStatus = status;
     },
+    sendMessage() {
+        const content = this.newMessage.trim();
+        if (content) {
+        this.messages.push({ text: content });
+        this.newMessage = '';
+        this.$nextTick(() => {
+            const container = this.$el.querySelector('.chat-message-area');
+            container.scrollTop = container.scrollHeight;
+        });
+        }
+    }
   },
 };
 </script>
@@ -187,5 +234,63 @@ export default {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 600px; /* 整个聊天区域高度固定 */
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #fafafa;
+}
+
+/* 消息区域：允许滚动 */
+.chat-message-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background-color: #ffffff;
+  border: 1px solid #eee;
+}
+
+/* 单条消息样式：靠左 */
+.message {
+  margin-bottom: 10px;
+  display: flex;
+}
+
+.message-bubble {
+  background-color: #f1f3f5;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  max-width: 80%;
+  word-break: break-word;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  white-space: pre-wrap;
+
+}
+
+/* 输入区域 */
+.chat-input-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* 多行可拖拽 */
+.input-box {
+  flex: 1;
+  resize: vertical;
+}
+
+/* 发送按钮 */
+.send-button {
+  flex-shrink: 0;
+}
+
 
 </style>
