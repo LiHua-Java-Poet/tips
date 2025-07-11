@@ -65,16 +65,17 @@
                     </el-form>
                 </el-popover>
             </div>
-            <el-card class="task-card">
-                任务1号
+            <el-card class="task-card" v-for="(item, index) in taskList" :key="index">
+                <div>
+                  {{ item.taskName }}
+                </div>
+                <div>
+                  {{ formatDate(item.taskTime) }}
+                </div>
             </el-card>
-            <el-card class="task-card">
-                任务2号
-            </el-card>
-            <el-card class="task-card">
-                任务3号
-            </el-card>
-
+            <div class="load-label">
+              加载更多
+            </div>
       </el-aside>
       <el-container>
         <el-main style="background-color: rgb(255, 255, 255);border-radius: 10px;">
@@ -86,21 +87,44 @@
 </template>
 
 <script>
+import { getTaskList } from '@/api/task';
+import {formatDate} from '@/utils/navigator'
 
 export default {
   name: "taskPage",
   data() {
     return {
       showStatus: 1,
+      page:1,
+      limit:5,
       dateRange: [], // 存储起止日期，[startDate, endDate]
-      searchText:''
+      searchText:'',
+      taskList:[],
     };
   },
   methods: {
+    formatDate,
     setStatus(status) {
       this.showStatus = status;
     },
+    getTaskList(params){
+      getTaskList(params).then(res=>{
+        const data=res.data
+        this.taskList=data.data.list
+      }).catch(error=>{
+        console.info(error)
+      })
+    }
   },
+  created(){
+    this.getTaskList({page:1,limit:10,status:1})
+  },
+  watch:{
+      showStatus(newValue){
+        this.taskList=[]
+        this.getTaskList({page:1,limit:10,status:newValue})
+      }
+  }
 };
 </script>
 
@@ -162,22 +186,41 @@ export default {
 
 /* 卡片样式优化 */
 .task-card {
-  width: 95%;
-  height: 100px;
+  width: 85%;
+  height: 50px;
   margin: 10px 0;
   cursor: pointer;
   transition: all 0.3s ease;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start; /* 内容靠左 */
   justify-content: center;
   font-weight: 500;
+  padding: 16px; /* 加一点内边距 */
 }
 .task-card:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
+
+/* 时间样式单独处理 */
+.task-card div:last-child {
+  font-size: 13px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.load-label{
+  width: 85%;
+  font-size: 15px;
+  color: #999;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+
 
 /* 弹出表单优化（你可放在 style scoped 里） */
 .el-popover .el-form {

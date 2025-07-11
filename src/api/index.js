@@ -1,6 +1,7 @@
 // api.js  
 import axios from 'axios';  
 import store from '@/store';
+import router from '@/router';
   
 // 创建axios实例  
 const instance = axios.create({  
@@ -24,23 +25,26 @@ instance.interceptors.request.use(
   }
 );
 
-// 响应拦截器：统一处理 code 和错误
-// instance.interceptors.response.use(
-//   response => {
-//     const res = response;
-//     if (res.data.code && res.data.code !== 200) {
-//       console.warn('接口返回错误:', res.data.message);
-//       // ElMessage.error(res.message || '错误');
-//       return Promise.reject(res.data);
-//     }
-//     return res.data;
-//   },
-//   error => {
-//     console.error('响应错误:', error);
-//     // ElMessage.error(error.message || '请求失败');
-//     return Promise.reject(error);
-//   }
-// );
+
+// 响应拦截器：统一处理响应
+instance.interceptors.response.use(
+  response => {
+    const res = response.data;
+    // 你可以自定义成功判断逻辑，比如 code === 200
+    if (res.code === 200 || res.success === true) {
+      return  response; // 优先返回 data 字段
+    } else if(res.code === -406){
+      router.push('/login')
+      store.dispatch('logout')
+    }else{
+      console.error(res.message || '请求错误');
+      return Promise.reject(new Error(res.message || '请求错误'));
+    }
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
   
 // 封装get请求  
 export function get(url, params = {}) {  
