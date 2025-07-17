@@ -65,13 +65,14 @@
                     </el-form>
                 </el-popover>
             </div>
-            <el-card class="task-card" v-for="(item, index) in taskList" :key="index">
-                <div>
-                  {{ item.taskName }}
-                </div>
-                <div>
-                  {{ formatDate(item.taskTime) }}
-                </div>
+            <el-card class="task-card" 
+              :class="{ selected: selectedTaskId === item.id }"
+              v-for="(item, index) in taskList" 
+              :key="index">
+              <div @click="selectedTask(1)">
+                <div>{{ item.taskName }}</div>
+                <div>{{ formatDate(item.taskTime) }}</div>
+              </div>
             </el-card>
             <div class="load-label">
               加载更多
@@ -79,7 +80,6 @@
       </el-aside>
       <el-container>
         <el-main style="background-color: rgb(255, 255, 255);border-radius: 10px;">
-            
         </el-main>
       </el-container>
     </el-container>
@@ -100,6 +100,7 @@ export default {
       dateRange: [], // 存储起止日期，[startDate, endDate]
       searchText:'',
       taskList:[],
+      selectedTaskId: null, //  选中任务卡的索引
     };
   },
   methods: {
@@ -114,6 +115,11 @@ export default {
       }).catch(error=>{
         console.info(error)
       })
+    },
+    selectedTask(id){
+      console.info('sss')
+      this.selectedTaskId=id
+      console.info(this.selectedTaskId)
     }
   },
   created(){
@@ -243,5 +249,15 @@ export default {
   min-height: 300px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
+
+.task-card.selected {
+  background-color: #409eff; /* 深色 */
+  color: white;
+}
+
+.task-card.selected div:last-child {
+  color: #e0e0e0; /* 时间字体也变浅 */
+}
+
 
 </style>
