@@ -68,11 +68,11 @@
             <el-card class="task-card" 
               :class="{ selected: selectedTaskId === item.id }"
               v-for="(item, index) in taskList" 
-              :key="index">
-              <div @click="selectedTask(1)">
+              :key="index"
+              shadow="hover"
+              @click.native="selectedTask(item.id)">
                 <div>{{ item.taskName }}</div>
                 <div>{{ formatDate(item.taskTime) }}</div>
-              </div>
             </el-card>
             <div class="load-label">
               加载更多
@@ -109,7 +109,7 @@ export default {
       this.showStatus = status;
     },
     getTaskList(params){
-      getTaskList(params).then(res=>{
+      return getTaskList(params).then(res=>{
         const data=res.data
         this.taskList=data.data.list
       }).catch(error=>{
@@ -117,18 +117,24 @@ export default {
       })
     },
     selectedTask(id){
-      console.info('sss')
       this.selectedTaskId=id
-      console.info(this.selectedTaskId)
+      //当选中了任务id之后需要查询对应的数据
+      
     }
   },
-  created(){
-    this.getTaskList({page:1,limit:10,status:1})
+  async created(){
+    await this.getTaskList({page:1,limit:10,status:1})
+    //当加初次加载完成后，默认选中第一个任务
+    if(this.taskList.length==0)return
+    this.selectedTask(this.taskList[0].id)
   },
   watch:{
-      showStatus(newValue){
+      async showStatus(newValue){
         this.taskList=[]
-        this.getTaskList({page:1,limit:10,status:newValue})
+        await this.getTaskList({page:1,limit:10,status:newValue})
+        this.selectedTaskId=null
+        if(this.taskList.length==0)return
+        this.selectedTask(this.taskList[0].id)
       }
   }
 };
@@ -251,12 +257,8 @@ export default {
 }
 
 .task-card.selected {
-  background-color: #409eff; /* 深色 */
-  color: white;
-}
-
-.task-card.selected div:last-child {
-  color: #e0e0e0; /* 时间字体也变浅 */
+  background-color: rgb(234, 234, 234); /* 深色 */
+  /* color: white; */
 }
 
 

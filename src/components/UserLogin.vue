@@ -32,7 +32,7 @@
 </template>
 
 <script>
-    import navigator from '@/utils/navigator';
+    import {navigator} from '@/utils/navigator';
     import IdentifyCode from './IdentifyCode.vue';
     import {loginUser} from '@/api/user'
 
@@ -77,13 +77,11 @@
                     });
                     return 
                 }
-                // this.$store.commit('updateLoad', true)
                 await loginUser({
                     "userName":this.userName,
                     "password":this.password
                 })
                 .then(res=>{
-                  console.info(res)
                     if(res.data.code==200){
                         this.$message({
                             message: '登录成功！',
@@ -91,7 +89,6 @@
                         });
                         this.$store.dispatch('login', res.data.data);
                         navigator(this,"/index/all")
-                        // this.$router.push("/index/all")
                     }else{
                         this.$notify.error({
                             title: '失败',

@@ -1,5 +1,5 @@
 // src/utils/navigator.js
-export  function navigator(context, path) {
+export function navigator(context, path) {
   if (context.$route.path !== path) {
     context.$router.push(path)
   }
