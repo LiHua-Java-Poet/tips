@@ -145,4 +145,22 @@
   font-weight: 500;
   color: #333;
 }
+
+/* 关键：顶部 header 高度固定为 60px */
+.el-header.custom-header {
+  height: 60px;
+}
+
+/* 让 aside 和 main 的高度减去 header 的高度 */
+.el-container > .el-container {
+  height: calc(100vh - 60px); /* 100vh 减去 header 高度 */
+}
+
+/* 让 aside 和 main 同高 */
+.el-aside, .el-main {
+  height: 100%;
+  overflow: auto; /* el-main 区域出现滚动条 */
+}
+
+
 </style>

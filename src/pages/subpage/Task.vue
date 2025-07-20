@@ -79,7 +79,38 @@
             </div>
       </el-aside>
       <el-container>
-        <el-main style="background-color: rgb(255, 255, 255);border-radius: 10px;">
+        <el-main style="background-color: rgb(255, 255, 255); border-radius: 10px; padding: 20px;">
+          <div v-if="selectedTaskInfo">
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+              <el-image
+                :src="selectedTaskInfo.planInfoTo?.icon"
+                style="width: 60px; height: 60px; border-radius: 8px; margin-right: 20px;"
+                fit="cover"
+                v-if="selectedTaskInfo.planInfoTo?.icon"
+              ></el-image>
+              <div>
+                <div style="font-size: 20px; font-weight: bold;">
+                  {{ selectedTaskInfo.planInfoTo?.planName || '未关联计划' }}
+                </div>
+                <div style="color: #999; font-size: 14px;">
+                  {{ selectedTaskInfo.planInfoTo?.description || '无描述信息' }}
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 10px;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
+            <div style="margin-bottom: 10px;">
+              <strong>任务时间：</strong>{{ formatDate(selectedTaskInfo.taskTime) }}
+            </div>
+            <div style="margin-bottom: 10px;"><strong>计划说明：</strong>{{ selectedTaskInfo.planInfoTo?.planInfo || '无' }}</div>
+            <div style="margin-top: 20px;">
+              <el-button type="success" @click="completeTask">完成任务</el-button>
+              <el-button type="danger" @click="cancelTask">取消任务</el-button>
+            </div>
+          </div>
+          <div v-else>
+            <el-empty description="无任务信息" />
+          </div>
         </el-main>
       </el-container>
     </el-container>
@@ -87,7 +118,7 @@
 </template>
 
 <script>
-import { getTaskList } from '@/api/task';
+import { getTaskList,getTaskInfo } from '@/api/task';
 import {formatDate} from '@/utils/navigator'
 
 export default {
@@ -101,6 +132,8 @@ export default {
       searchText:'',
       taskList:[],
       selectedTaskId: null, //  选中任务卡的索引
+      selectedTaskInfo: null,
+
     };
   },
   methods: {
@@ -119,7 +152,10 @@ export default {
     selectedTask(id){
       this.selectedTaskId=id
       //当选中了任务id之后需要查询对应的数据
-      
+      getTaskInfo({id:id}).then(res=>{
+        const data = res.data;
+        this.selectedTaskInfo = data.data; // 设置详情数据
+      })
     }
   },
   async created(){
@@ -258,7 +294,6 @@ export default {
 
 .task-card.selected {
   background-color: rgb(234, 234, 234); /* 深色 */
-  /* color: white; */
 }
 
 
