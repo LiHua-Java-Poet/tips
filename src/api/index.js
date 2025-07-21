@@ -2,13 +2,15 @@
 import axios from 'axios';  
 import store from '@/store';
 import router from '@/router';
+import { Message } from 'element-ui';
+
   
 // 创建axios实例  
 const instance = axios.create({  
   baseURL: 'http://localhost:8901', // 设置基础URL  
   timeout: 5000, // 请求超时时间  
   // 你可以在这里设置更多的请求配置选项，如headers等  
-});  
+});
 
 // 添加请求拦截器：在发送请求之前统一处理 token
 instance.interceptors.request.use(
@@ -37,11 +39,18 @@ instance.interceptors.response.use(
       router.push('/login')
       store.dispatch('logout')
     }else{
-      console.error(res.message || '请求错误');
+      Message({
+        message: res.message,
+        type: 'warning'
+      });
       return Promise.reject(new Error(res.message || '请求错误'));
     }
   },
   error => {
+    Message({
+      message: '系统错误，请联系管理员',
+      type: 'warning'
+    });
     return Promise.reject(error);
   }
 );
