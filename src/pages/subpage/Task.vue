@@ -81,37 +81,67 @@
       <el-container>
         <el-main style="background-color: rgb(255, 255, 255); border-radius: 10px; padding: 20px;">
           <div v-if="selectedTaskInfo">
-            <div style="display: flex; align-items: center; margin-bottom: 20px;">
-              <el-image
-                :src="selectedTaskInfo.planInfoTo?.icon"
-                style="width: 60px; height: 60px; border-radius: 8px; margin-right: 20px;"
-                fit="cover"
-                v-if="selectedTaskInfo.planInfoTo?.icon"
-              ></el-image>
-              <div>
-                <div style="font-size: 20px; font-weight: bold;">
-                  {{ selectedTaskInfo.planInfoTo?.planName || '未关联计划' }}
-                </div>
-                <div style="color: #999; font-size: 14px;">
-                  {{ selectedTaskInfo.planInfoTo?.description || '无描述信息' }}
+
+            <!-- 计划信息块 -->
+            <div v-if="selectedTaskInfo.planInfoTo" style="margin-bottom: 30px;">
+              <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <el-image
+                  :src="selectedTaskInfo.planInfoTo.icon"
+                  style="width: 60px; height: 60px; border-radius: 8px; margin-right: 20px; cursor: pointer;"
+                  fit="cover"
+                  :preview-src-list="[selectedTaskInfo.planInfoTo.icon]"
+                  preview-teleported
+                  :initial-index="0"
+                />
+                <div>
+                  <div style="font-size: 20px; font-weight: bold;">
+                    {{ selectedTaskInfo.planInfoTo.planName || '未关联计划' }}
+                  </div>
+                  <div style="color: #999; font-size: 14px;">
+                    {{ selectedTaskInfo.planInfoTo.description || '无描述信息' }}
+                  </div>
                 </div>
               </div>
+              <div style="margin-bottom: 6px;"><strong>计划说明：</strong>{{ selectedTaskInfo.planInfoTo.planInfo || '无' }}</div>
             </div>
 
-            <div style="margin-bottom: 10px;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
-            <div style="margin-bottom: 10px;">
-              <strong>任务时间：</strong>{{ formatDate(selectedTaskInfo.taskTime) }}
-            </div>
-            <div style="margin-bottom: 10px;"><strong>计划说明：</strong>{{ selectedTaskInfo.planInfoTo?.planInfo || '无' }}</div>
-            <div style="margin-top: 20px;">
-              <el-button type="success" @click="completeTask">完成任务</el-button>
-              <el-button type="danger" @click="cancelTask">取消任务</el-button>
+            <!-- 任务信息块 -->
+            <div>
+              <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">任务信息</div>
+              <div style="margin-bottom: 10px;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
+              <div style="margin-bottom: 10px;"><strong>任务时间：</strong>{{ formatDate(selectedTaskInfo.taskTime) }}</div>
+
+              <!-- itemToLists 渲染为列表 -->
+              <div v-if="selectedTaskInfo.itemToList?.length > 0" style="margin-bottom: 10px;">
+                <strong>备注项：</strong>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                  <li v-for="(item, index) in selectedTaskInfo.itemToList" :key="index" style="margin-bottom: 6px;">
+                    <span style="font-weight: 500; color: #408af4;">{{ item.no }}.</span>
+                    <span style="margin-left: 6px;">{{ item.itemContext }}</span>
+                  </li>
+                </ul>
+              </div>
+
+
+              <!-- 操作按钮 -->
+              <div style="margin-top: 20px;display: flex;">
+                <!-- <el-button type="success" @click="completeTask">完成任务</el-button> -->
+                <!-- <el-button type="danger" @click="cancelTask">取消任务</el-button> -->
+                <span style="background-color: #029b00;padding: 5px;display: flex;align-items: center;justify-content: center;width: 35px;height: 35px;border-radius: 50%;margin-right: 10px;">
+                  <svg t="1753181409383" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3337" width="25" height="25"><path d="M371.153811 680.469289 188.351597 497.667076 127.459823 558.557827 371.153811 802.380751 893.479471 280.055091 832.589744 219.098848Z" p-id="3338" fill="#ffffff"></path></svg>
+                </span>
+                <span style="background-color: #d81e06;padding: 5px;display: flex;align-items: center;justify-content: center;width: 35px;height: 35px;border-radius: 50%;margin-left: 10px;">
+                  <svg t="1753181370311" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2138" width="25" height="25"><path d="M745.6 928H294.4c-51.2 0-96-44.8-96-102.4V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c0 19.2 12.8 35.2 28.8 35.2h451.2c16 0 28.8-16 28.8-35.2V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c6.4 54.4-35.2 99.2-89.6 99.2zM905.6 291.2h-768c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h768c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2zM649.6 163.2h-256c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h256c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2z" fill="#ffffff" p-id="2139"></path><path d="M409.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2zM633.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2z" fill="#ffffff" p-id="2140"></path></svg>
+                </span>
+              </div>
             </div>
           </div>
+
           <div v-else>
             <el-empty description="无任务信息" />
           </div>
         </el-main>
+
       </el-container>
     </el-container>
   </el-container>
@@ -303,6 +333,12 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+ul {
+  list-style-type: none;
+}
+li::before {
+  color: #408af4;
 }
 
 </style>
