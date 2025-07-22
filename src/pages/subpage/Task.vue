@@ -296,5 +296,13 @@ export default {
   background-color: rgb(234, 234, 234); /* 深色 */
 }
 
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
 </style>
