@@ -124,14 +124,18 @@
 
 
               <!-- 操作按钮 -->
-              <div style="margin-top: 20px;display: flex;">
-                <!-- <el-button type="success" @click="completeTask">完成任务</el-button> -->
-                <!-- <el-button type="danger" @click="cancelTask">取消任务</el-button> -->
-                <span style="background-color: #029b00;padding: 5px;display: flex;align-items: center;justify-content: center;width: 35px;height: 35px;border-radius: 50%;margin-right: 10px;">
-                  <svg t="1753181409383" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3337" width="25" height="25"><path d="M371.153811 680.469289 188.351597 497.667076 127.459823 558.557827 371.153811 802.380751 893.479471 280.055091 832.589744 219.098848Z" p-id="3338" fill="#ffffff"></path></svg>
+              <div class="icon-row">
+                <span class="icon-wrapper" style="margin-right: 10px;">
+                  <svg t="1753254753676" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="880" width="25" height="25">
+                    <path d="M460.8 694.044444L312.888889 546.133333c-2.844444-2.844444-2.844444-11.377778 0-14.222222l28.444444-28.444444c2.844444-2.844444 8.533333-2.844444 11.377778 0l108.088889 108.088889 247.466667-219.022223c5.688889-5.688889 11.377778-2.844444 17.066666 0l22.755556 25.6c5.688889 5.688889 5.688889 14.222222 0 19.911111l-287.288889 256z" fill="#5C5C5C"></path>
+                    <path d="M512 56.888889c250.311111 0 455.111111 204.8 455.111111 455.111111s-204.8 455.111111-455.111111 455.111111S56.888889 762.311111 56.888889 512 261.688889 56.888889 512 56.888889m0-56.888889C230.4 0 0 230.4 0 512s230.4 512 512 512 512-230.4 512-512S793.6 0 512 0z" fill="#5C5C5C"></path>
+                  </svg>
                 </span>
-                <span style="background-color: #d81e06;padding: 5px;display: flex;align-items: center;justify-content: center;width: 35px;height: 35px;border-radius: 50%;margin-left: 10px;">
-                  <svg t="1753181370311" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2138" width="25" height="25"><path d="M745.6 928H294.4c-51.2 0-96-44.8-96-102.4V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c0 19.2 12.8 35.2 28.8 35.2h451.2c16 0 28.8-16 28.8-35.2V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c6.4 54.4-35.2 99.2-89.6 99.2zM905.6 291.2h-768c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h768c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2zM649.6 163.2h-256c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h256c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2z" fill="#ffffff" p-id="2139"></path><path d="M409.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2zM633.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2z" fill="#ffffff" p-id="2140"></path></svg>
+                <span class="icon-wrapper" style="margin-left: 10px;">
+                  <svg t="1753254801877" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1043" width="25" height="25">
+                    <path d="M745.6 928H294.4c-51.2 0-96-44.8-96-102.4V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c0 19.2 12.8 35.2 28.8 35.2h451.2c16 0 28.8-16 28.8-35.2V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c6.4 54.4-35.2 99.2-89.6 99.2zM905.6 291.2h-768c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h768c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2zM649.6 163.2h-256c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h256c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2z" fill="#333333"></path>
+                    <path d="M409.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2zM633.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2z" fill="#333333"></path>
+                  </svg>
                 </span>
               </div>
             </div>
@@ -341,4 +345,25 @@ li::before {
   color: #408af4;
 }
 
+.icon-wrapper {
+  background-color: rgb(240, 240, 240);
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+  cursor: pointer;
+}
+
+.icon-wrapper:hover {
+  background-color: rgb(207, 207, 207); /* hover 时变灰一点 */
+}
+
+.icon-row {
+  margin-top: 20px;
+  display: flex;
+}
 </style>
