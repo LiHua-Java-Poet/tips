@@ -125,18 +125,27 @@
 
               <!-- 操作按钮 -->
               <div class="icon-row">
-                <span class="icon-wrapper" style="margin-right: 10px;">
-                  <svg t="1753254753676" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="880" width="25" height="25">
-                    <path d="M460.8 694.044444L312.888889 546.133333c-2.844444-2.844444-2.844444-11.377778 0-14.222222l28.444444-28.444444c2.844444-2.844444 8.533333-2.844444 11.377778 0l108.088889 108.088889 247.466667-219.022223c5.688889-5.688889 11.377778-2.844444 17.066666 0l22.755556 25.6c5.688889 5.688889 5.688889 14.222222 0 19.911111l-287.288889 256z" fill="#5C5C5C"></path>
-                    <path d="M512 56.888889c250.311111 0 455.111111 204.8 455.111111 455.111111s-204.8 455.111111-455.111111 455.111111S56.888889 762.311111 56.888889 512 261.688889 56.888889 512 56.888889m0-56.888889C230.4 0 0 230.4 0 512s230.4 512 512 512 512-230.4 512-512S793.6 0 512 0z" fill="#5C5C5C"></path>
-                  </svg>
-                </span>
-                <span class="icon-wrapper" style="margin-left: 10px;">
-                  <svg t="1753254801877" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1043" width="25" height="25">
-                    <path d="M745.6 928H294.4c-51.2 0-96-44.8-96-102.4V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c0 19.2 12.8 35.2 28.8 35.2h451.2c16 0 28.8-16 28.8-35.2V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c6.4 54.4-35.2 99.2-89.6 99.2zM905.6 291.2h-768c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h768c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2zM649.6 163.2h-256c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h256c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2z" fill="#333333"></path>
-                    <path d="M409.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2zM633.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2z" fill="#333333"></path>
-                  </svg>
-                </span>
+                <el-tooltip effect="dark" content="完成任务" placement="top">
+                  <span class="icon-wrapper" style="margin-right: 10px;" @click="selectAction(selectedTaskInfo.id,1)">
+                    <svg t="1753254753676" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="880" width="25" height="25">
+                      <path d="M460.8 694.044444L312.888889 546.133333c-2.844444-2.844444-2.844444-11.377778 0-14.222222l28.444444-28.444444c2.844444-2.844444 8.533333-2.844444 11.377778 0l108.088889 108.088889 247.466667-219.022223c5.688889-5.688889 11.377778-2.844444 17.066666 0l22.755556 25.6c5.688889 5.688889 5.688889 14.222222 0 19.911111l-287.288889 256z" fill="#5C5C5C"></path>
+                      <path d="M512 56.888889c250.311111 0 455.111111 204.8 455.111111 455.111111s-204.8 455.111111-455.111111 455.111111S56.888889 762.311111 56.888889 512 261.688889 56.888889 512 56.888889m0-56.888889C230.4 0 0 230.4 0 512s230.4 512 512 512 512-230.4 512-512S793.6 0 512 0z" fill="#5C5C5C"></path>
+                    </svg>
+                  </span>
+                </el-tooltip>
+                <el-tooltip effect="dark" content="取消任务" placement="top">
+                  <span class="icon-wrapper" style="margin-right: 10px;" @click="selectAction(selectedTaskInfo.id,2)">
+                    <svg t="1753328803437" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6930" width="25" height="25"><path d="M509.44 935.424c-233.984 0-424.448-190.464-424.448-424.448s190.464-424.448 424.448-424.448 424.448 190.464 424.448 424.448-190.464 424.448-424.448 424.448z m0-797.696c-205.824 0-373.248 167.424-373.248 373.248s167.424 373.248 373.248 373.248 373.248-167.424 373.248-373.248-167.424-373.248-373.248-373.248z" fill="#000000" p-id="6931"></path><path d="M338.944 681.472c-10.24-10.24-10.24-26.112 0-36.352l304.128-304.128c10.24-10.24 26.112-10.24 36.352 0s10.24 26.112 0 36.352l-304.128 304.128c-9.728 9.728-26.112 9.728-36.352 0z" fill="#000000" p-id="6932"></path><path d="M679.424 681.472c-10.24 10.24-26.112 10.24-36.352 0L338.944 376.832c-10.24-10.24-10.24-26.112 0-36.352s26.112-10.24 36.352 0l304.128 304.128c10.24 10.24 10.24 26.624 0 36.864z" fill="#000000" p-id="6933"></path></svg>
+                  </span>
+                </el-tooltip>
+                <el-tooltip effect="dark" content="删除任务" placement="top">
+                  <span class="icon-wrapper" @click="selectAction(selectedTaskInfo.id,3)">
+                    <svg t="1753254801877" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1043" width="25" height="25">
+                      <path d="M745.6 928H294.4c-51.2 0-96-44.8-96-102.4V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c0 19.2 12.8 35.2 28.8 35.2h451.2c16 0 28.8-16 28.8-35.2V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c6.4 54.4-35.2 99.2-89.6 99.2zM905.6 291.2h-768c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h768c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2zM649.6 163.2h-256c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h256c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2z" fill="#333333"></path>
+                      <path d="M409.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2zM633.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2z" fill="#333333"></path>
+                    </svg>
+                  </span>
+                </el-tooltip>
               </div>
             </div>
           </div>
@@ -152,7 +161,7 @@
 </template>
 
 <script>
-import { getTaskList,getTaskInfo } from '@/api/task';
+import { getTaskList,getTaskInfo,cancelTask,completeTask,deleteTask } from '@/api/task';
 import {formatDate} from '@/utils/navigator'
 
 export default {
@@ -190,7 +199,42 @@ export default {
         const data = res.data;
         this.selectedTaskInfo = data.data; // 设置详情数据
       })
+    },
+    async selectAction(id, actionType) {
+      const messages = {
+        1: { tip: '是否确定完成该任务?', finish: '任务已完成.', api: completeTask },
+        2: { tip: '是否确定取消该任务?', finish: '任务已取消.', api: cancelTask },
+        3: { tip: '是否确定删除该任务?', finish: '任务已删除.', api: deleteTask }
+      };
+
+      const array = [id];
+      const { tip, finish, api } = messages[actionType] || messages[3]; // 默认是删除
+
+      try {
+        await this.$confirm(tip, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+
+        const response = await api(array); // 调用对应接口
+        // 如果是删除接口需要额外获取 .data，也可以单独处理：
+        // const result = actionType === 3 ? response.data : response;
+        console.info(response)
+        if(response.data.code==200){
+          this.$message({
+            type: 'success',
+            message: finish
+          });          
+        }
+      } catch (err) {
+        // 用户取消或请求失败都可以忽略或提示
+        if (err !== 'cancel') {
+          console.error('操作失败:', err);
+        }
+      }
     }
+
   },
   async created(){
     await this.getTaskList({page:1,limit:10,status:1})
