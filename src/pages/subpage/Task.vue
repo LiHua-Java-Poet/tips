@@ -80,8 +80,20 @@
       </el-aside>
       <el-container>
         <el-main style="background-color: rgb(255, 255, 255); border-radius: 10px; padding: 20px;">
-          <div v-if="selectedTaskInfo">
-
+          <!-- 骨架屏 loading 效果 -->
+          <div v-if="loadingTaskDetail" class="skeleton-container">
+            <div class="skeleton-header">
+              <div class="skeleton-avatar shimmer"></div>
+              <div class="skeleton-text-group">
+                <div class="skeleton-title shimmer"></div>
+                <div class="skeleton-subtitle shimmer"></div>
+              </div>
+            </div>
+            <div class="skeleton-line shimmer" style="width: 60%;"></div>
+            <div class="skeleton-line shimmer" style="width: 80%;"></div>
+            <div class="skeleton-line shimmer" style="width: 50%;"></div>
+          </div>
+          <div v-else-if="selectedTaskInfo">
             <!-- 计划信息块 -->
             <div v-if="selectedTaskInfo.planInfoTo" style="margin-bottom: 30px;">
               <div style="display: flex; align-items: center; margin-bottom: 10px;">
@@ -121,10 +133,8 @@
                   </li>
                 </ul>
               </div>
-
-
               <!-- 操作按钮 -->
-              <div class="icon-row">
+              <div class="icon-row" v-if="selectedTaskInfo.status==1">
                 <el-tooltip effect="dark" content="完成任务" placement="top">
                   <span class="icon-wrapper" style="margin-right: 10px;" @click="selectAction(selectedTaskInfo.id,1)">
                     <svg t="1753254753676" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="880" width="25" height="25">
@@ -153,7 +163,6 @@
             <el-empty description="无任务信息" />
           </div>
         </el-main>
-
       </el-container>
     </el-container>
   </el-container>
@@ -175,12 +184,14 @@ export default {
       taskList:[],
       selectedTaskId: null, //  选中任务卡的索引
       selectedTaskInfo: null,
-
+      loadingTaskDetail: false,
     };
   },
   methods: {
     formatDate,
     setStatus(status) {
+      if(status==this.showStatus)return
+      this.selectedTaskInfo=null
       this.showStatus = status;
     },
     getTaskList(params){
@@ -192,11 +203,13 @@ export default {
       })
     },
     selectedTask(id){
+      this.loadingTaskDetail=true
       this.selectedTaskId=id
       //当选中了任务id之后需要查询对应的数据
       getTaskInfo({id:id}).then(res=>{
         const data = res.data;
         this.selectedTaskInfo = data.data; // 设置详情数据
+        this.loadingTaskDetail=false
       })
     },
     async selectAction(id, actionType) {
@@ -219,12 +232,16 @@ export default {
         const response = await api(array); // 调用对应接口
         // 如果是删除接口需要额外获取 .data，也可以单独处理：
         // const result = actionType === 3 ? response.data : response;
-        console.info(response)
         if(response.data.code==200){
           this.$message({
             type: 'success',
             message: finish
-          });          
+          });
+          //修改切换任务
+          this.getTaskList({page:1,limit:10,status:this.showStatus})
+          this.selectedTaskId=null
+          if(this.taskList.length==0)return
+          this.selectedTask(this.taskList[0].id)
         }
       } catch (err) {
         // 用户取消或请求失败都可以忽略或提示
@@ -256,10 +273,10 @@ export default {
 <style scoped>
 /* 顶部状态按钮优化 */
 .status-button {
-  padding: 8px 16px;
+  padding: 8px 8px;
   background-color: #f5f5f5;
   text-align: center;
-  border-radius: 20px;
+  border-radius: 7px;
   cursor: pointer;
   font-weight: 500;
   color: #666;
@@ -409,4 +426,75 @@ li::before {
   margin-top: 20px;
   display: flex;
 }
+
+
+.skeleton-container {
+  padding: 20px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.skeleton-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: #eee;
+  margin-right: 20px;
+}
+
+.skeleton-text-group {
+  flex: 1;
+}
+
+.skeleton-title {
+  height: 16px;
+  width: 150px;
+  background: #eee;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+.skeleton-subtitle {
+  height: 14px;
+  width: 100px;
+  background: #eee;
+  border-radius: 4px;
+}
+
+.skeleton-line {
+  height: 14px;
+  background: #eee;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+/* shimmer 动画 */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150px;
+  height: 100%;
+  width: 150px;
+  background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(300%);
+  }
+}
+
 </style>

@@ -61,26 +61,30 @@
                     </el-form>
                 </el-popover>
             </div>
-            <div class="task-scroll-wrapper">
-                <el-card class="task-card">
-                    计划1号
-                </el-card>
-                <el-card class="task-card">
-                    计划2号
-                </el-card>
-                <el-card class="task-card">
-                    计划3号
-                </el-card>
-                <el-card class="task-card">
-                    计划3号
-                </el-card>
-                                <el-card class="task-card">
-                    计划3号
-                </el-card>
-                                <el-card class="task-card">
-                    计划3号
-                </el-card>
-
+            <div class="plan-scroll-wrapper">
+              <el-card class="plan-card" 
+                v-for="(item, index) in planList"
+                :key="index"
+              >
+                <div class="card-body">
+                  <el-image
+                    class="card-icon"
+                    :src="item.icon"
+                    :alt="item.planName"
+                    fit="cover"
+                    lazy
+                    :preview-src-list="[item.icon]"
+                  />
+                  <div class="card-content">
+                    <div class="card-title">{{ item.planName }}</div>
+                    <div class="card-description">{{ item.description }}</div>
+                    <div class="card-progress">
+                      进度：{{ item.taskProgress }} / {{ item.taskTotal }}
+                    </div>
+                    <div class="card-info">{{ item.planInfo }}</div>
+                  </div>
+                </div>
+              </el-card>
             </div>
       </el-aside>
       <el-container>
@@ -93,6 +97,7 @@
 </template>
 
 <script>
+import { getPlanList } from '@/api/plan';
 
 export default {
   name: "planPage",
@@ -100,24 +105,48 @@ export default {
     return {
       showStatus: 1,
       dateRange: [], // 存储起止日期，[startDate, endDate]
-      searchText:''
+      searchText:'',
+      planList:[],
+      selectedPlanId:undefined,
     };
   },
   methods: {
     setStatus(status) {
       this.showStatus = status;
     },
+    getPlanList(params){
+      return getPlanList(params).then(res=>{
+        const data=res.data
+        this.planList=data.data.list
+      }).catch(error=>{
+        console.info(error)
+      })
+    },
+  
   },
+  async created(){
+    await this.getPlanList({page:1,limit:10,status:1})
+    //当加初次加载完成后，默认选中第一个任务
+    if(this.planList.length==0)return
+  },
+  watch:{
+      async showStatus(newValue){
+        this.planList=[]
+        await this.getPlanList({page:1,limit:10,status:newValue})
+        this.selectedplanId=null
+        if(this.planList.length==0)return
+      }
+  }
 };
 </script>
 
 <style scoped>
 /* 顶部状态按钮优化 */
 .status-button {
-  padding: 8px 16px;
+  padding: 8px 8px;
   background-color: #f5f5f5;
   text-align: center;
-  border-radius: 20px;
+  border-radius: 7px;
   cursor: pointer;
   font-weight: 500;
   color: #666;
@@ -169,7 +198,7 @@ export default {
 }
 
 /* 卡片样式优化 */
-.task-card {
+.plan-card {
   width: 95%;
   height: 100px;
   margin: 10px 0;
@@ -179,13 +208,62 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
-  justify-content: center;
   font-weight: 500;
 }
-.task-card:hover {
+.plan-card:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
+
+.card-body {
+  display: flex;
+  align-items: flex-start; /* 顶部对齐 */
+  height: 72px; /* 卡片内容区域统一高度 */
+  overflow: hidden;
+}
+
+.card-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  margin-right: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.card-content {
+  flex: 1;
+  overflow: hidden; /* 关键：限制内容宽度 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-title,
+.card-description,
+.card-progress,
+.card-info {
+  font-size: 13px;
+  line-height: 18px;
+  color: #333;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-title {
+  font-weight: bold;
+  color: #333;
+}
+
+.card-progress {
+  color: #409eff;
+}
+.card-info {
+  color: #999;
+}
+
+
 
 /* 弹出表单优化（你可放在 style scoped 里） */
 .el-popover .el-form {
@@ -222,7 +300,7 @@ export default {
   height: 100%; /* 填满容器高度 */
 }
 
-.task-scroll-wrapper {
+.plan-scroll-wrapper {
   flex: 1;
   overflow-y: auto;
   max-height: 500px;
@@ -232,18 +310,18 @@ export default {
 }
 
 /* Chrome */
-.task-scroll-wrapper::-webkit-scrollbar {
+.plan-scroll-wrapper::-webkit-scrollbar {
   width: 6px;            /* 始终保留宽度，防止跳动 */
   background: transparent;
 }
 
 /* 默认不显示滑块 */
-.task-scroll-wrapper::-webkit-scrollbar-thumb {
+.plan-scroll-wrapper::-webkit-scrollbar-thumb {
   background-color: transparent;
 }
 
 /* hover 时显示滑块，不改变整体宽度 */
-.task-scroll-wrapper:hover::-webkit-scrollbar-thumb {
+.plan-scroll-wrapper:hover::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
