@@ -1,7 +1,7 @@
 <template>
     <div class="login-container">
         <div class="login-background-image">
-            <img src="../assets/管理会议.png" style="width: 700px;height: 770px;">
+            <img src="../assets/管理会议.png" style="width: 700px;">
         </div>
         <UserLogin v-if="isLoginState" :callback="changeState"></UserLogin>
         <UserReg v-if="!isLoginState" :callback="changeState"></UserReg>
@@ -40,18 +40,18 @@
     }
     
     /* 主容器设置 */
-    .login-container {
-        background-image: url('../assets/login_bg-6b1edf8c.jpg');
-        background-size: cover;       /* 确保背景图覆盖整个容器 */
-        background-position: center;  /* 背景图居中 */
-        min-height: 100vh;           /* 最小高度为视口高度 */
-        width: 100vw;                /* 宽度为视口宽度 */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;          /* 为子元素定位提供参考 */
-        overflow: hidden;            /* 隐藏可能的内容溢出 */
-    }
+.login-container {
+    height: 100vh; /* 占满整个视口 */
+    overflow: hidden; /* 防止滚动条出现 */
+    background-image: url('../assets/login_bg-6b1edf8c.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
     
     .login-background-image {
         margin-left: 200px;

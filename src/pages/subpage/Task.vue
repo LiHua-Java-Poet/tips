@@ -1,5 +1,5 @@
 <template>
-  <el-container>
+  <el-container style="height: 100%;">
     <el-header style="height: 50px;">
       <el-row>
         <el-col :span="4">
@@ -31,13 +31,16 @@
         </el-col>
       </el-row>
     </el-header>
-    <el-container>
-      <el-aside width="350px" style="background-color: rgb(255, 255, 255);
-        padding: 20px;
-        border-radius: 10px;
-        margin-right: 20px;
+    <el-container style="height: calc(100vh - 120px);">
+      <el-aside width="330px" style="background-color: rgb(255, 255, 255);
+          padding: 20px;
+          border-radius: 10px;
+          margin-right: 20px;
+          border-right: 1px solid #eee;
+          display: flex;
+          flex-direction: column;
         ">
-            <div class="popover-wrapper">
+            <div class="popover-wrapper" style="flex-shrink: 0;">
                 <el-input
                 style="width: 90%;"
                     placeholder="请输入搜索内容"
@@ -65,20 +68,26 @@
                     </el-form>
                 </el-popover>
             </div>
-            <el-card class="task-card" 
-              :class="{ selected: selectedTaskId === item.id }"
-              v-for="(item, index) in taskList" 
-              :key="index"
-              shadow="hover"
-              @click.native="selectedTask(item.id)">
+            <!-- 滚动区域（任务卡片 + 加载更多） -->
+            <div class="card-scroll-area">
+              <el-card
+                class="task-card"
+                :class="{ selected: selectedTaskId === item.id }"
+                v-for="(item, index) in taskList"
+                :key="index"
+                shadow="hover"
+                @click.native="selectedTask(item.id)"
+              >
                 <div>{{ item.taskName }}</div>
                 <div>{{ formatDate(item.taskTime) }}</div>
-            </el-card>
-            <div class="load-label">
-              加载更多
+              </el-card>
+              <div class="load-label">
+                <i v-if="listLoadStatus" class="el-icon-loading"></i>
+                <span v-else @click="loadMove()">加载更多</span>
+              </div>
             </div>
       </el-aside>
-      <el-container>
+      <el-container style="overflow-y: auto;">
         <el-main style="background-color: rgb(255, 255, 255); border-radius: 10px; padding: 20px;">
           <!-- 骨架屏 loading 效果 -->
           <div v-if="loadingTaskDetail" class="skeleton-container">
@@ -178,13 +187,15 @@ export default {
     return {
       showStatus: 1,
       page:1,
-      limit:5,
+      limit:10,
+      pageCount:0,
       dateRange: [], // 存储起止日期，[startDate, endDate]
       searchText:'',
       taskList:[],
       selectedTaskId: null, //  选中任务卡的索引
       selectedTaskInfo: null,
       loadingTaskDetail: false,
+      listLoadStatus:false
     };
   },
   methods: {
@@ -198,6 +209,7 @@ export default {
       return getTaskList(params).then(res=>{
         const data=res.data
         this.taskList=data.data.list
+        this.pageCount=data.data.pageCount
       }).catch(error=>{
         console.info(error)
       })
@@ -249,8 +261,12 @@ export default {
           console.error('操作失败:', err);
         }
       }
+    },
+    async loadMove(){
+      this.listLoadStatus=true
+      await this.getTaskList({page:this.page+1,limit:this.limit,status:this.showStatus})
+      this.listLoadStatus=false
     }
-
   },
   async created(){
     await this.getTaskList({page:1,limit:10,status:1})
@@ -497,4 +513,30 @@ li::before {
   }
 }
 
+/* 滚动条整体 */
+::-webkit-scrollbar {
+  width: 6px;  /* 垂直滚动条宽度 */
+  height: 6px; /* 水平滚动条高度 */
+}
+
+/* 滚动条轨道（背景） */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+  background-color: rgba(144, 147, 153, 0.5); /* 滑块颜色 */
+  border-radius: 3px;                        /* 圆角 */
+}
+
+/* 鼠标悬停时滑块颜色变化 */
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(144, 147, 153, 0.7);
+}
+.card-scroll-area {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 4px;
+}
 </style>

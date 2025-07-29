@@ -76,7 +76,7 @@
                 </div>
             </el-aside>
             <el-main style="padding: 10px ;background-color: rgb(245, 245, 245);">
-                <router-view></router-view>
+                <router-view></router-view>                    
             </el-main>
         </el-container>
     </el-container>

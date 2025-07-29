@@ -65,6 +65,8 @@
               <el-card class="plan-card" 
                 v-for="(item, index) in planList"
                 :key="index"
+                :class="{ selected: selectedPlanId === item.id }"
+                @click.native="selectedPlan(item.id)"
               >
                 <div class="card-body">
                   <el-image
@@ -107,7 +109,9 @@ export default {
       dateRange: [], // 存储起止日期，[startDate, endDate]
       searchText:'',
       planList:[],
+      loadingPlankDetail:false,
       selectedPlanId:undefined,
+      selectedPlanInfo: undefined,
     };
   },
   methods: {
@@ -122,7 +126,16 @@ export default {
         console.info(error)
       })
     },
-  
+    selectedPlan(id){
+      this.loadingPlankDetail=true
+      this.selectedPlanId=id
+      //当选中了任务id之后需要查询对应的数据
+      // getTaskInfo({id:id}).then(res=>{
+      //   const data = res.data;
+      //   this.selectedTaskInfo = data.data; // 设置详情数据
+      //   this.loadingTaskDetail=false
+      // })
+    },
   },
   async created(){
     await this.getPlanList({page:1,limit:10,status:1})
@@ -261,6 +274,10 @@ export default {
 }
 .card-info {
   color: #999;
+}
+
+.selected {
+  background-color: rgb(234, 234, 234); /* 深色 */
 }
 
 
