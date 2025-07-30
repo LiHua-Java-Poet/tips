@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import navigator from '@/utils/navigator';
+import {navigator} from '@/utils/navigator';
 export default {
   name: 'NotFoundPage',
   methods: {

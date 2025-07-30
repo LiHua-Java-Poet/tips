@@ -90,8 +90,50 @@
             </div>
       </el-aside>
       <el-container>
-        <el-main style="background-color: rgb(255, 255, 255);border-radius: 10px;">
-            
+        <el-main style="background-color: #fff; border-radius: 10px; padding: 20px;">
+          <!-- 加载状态 -->
+          <div v-if="loadingPlanDetail" class="skeleton-container">
+            <div class="skeleton-header">
+              <div class="skeleton-avatar shimmer"></div>
+              <div class="skeleton-text-group">
+                <div class="skeleton-title shimmer"></div>
+                <div class="skeleton-subtitle shimmer"></div>
+              </div>
+            </div>
+            <div class="skeleton-line shimmer" style="width: 60%;"></div>
+            <div class="skeleton-line shimmer" style="width: 80%;"></div>
+            <div class="skeleton-line shimmer" style="width: 50%;"></div>
+          </div>
+
+          <!-- 显示计划信息 -->
+          <div v-else-if="selectedPlanInfo" class="plan-detail">
+            <div class="plan-header">
+              <el-image :src="selectedPlanInfo.icon" class="plan-icon" fit="cover" />
+              <div class="plan-title">
+                <h2>{{ selectedPlanInfo.planName }}</h2>
+                <p class="plan-desc">{{ selectedPlanInfo.description }}</p>
+              </div>
+            </div>
+
+            <ProgressBar
+              :total="selectedPlanInfo.taskTotal"
+              :completed="selectedPlanInfo.taskProgress"
+              :toward="selectedPlanInfo.towardProgress"
+            />
+
+            <div class="plan-meta">
+              <p><strong>计划周期：</strong> {{ getCycleText(selectedPlanInfo.cycleType) }}</p>
+              <p><strong>计划类型：</strong> {{ getPlanTypeText(selectedPlanInfo.planType) }}</p>
+              <p><strong>计划说明：</strong> {{ selectedPlanInfo.planInfo || '无' }}</p>
+              <p><strong>开始时间：</strong> {{ formatDate(selectedPlanInfo.startTime) }}</p>
+              <p><strong>预期完成时间：</strong> {{ formatDate(selectedPlanInfo.expectedTime) }}</p>
+            </div>
+          </div>
+
+          <!-- 无选中项 -->
+          <div v-else>
+            <el-empty description="无计划信息" />
+          </div>
         </el-main>
       </el-container>
     </el-container>
@@ -99,7 +141,9 @@
 </template>
 
 <script>
-import { getPlanList } from '@/api/plan';
+import { getPlanList,getPlanInfo } from '@/api/plan';
+import {formatDate} from '@/utils/navigator'
+import ProgressBar from '@/components/ProgressBar.vue';
 
 export default {
   name: "planPage",
@@ -109,12 +153,19 @@ export default {
       dateRange: [], // 存储起止日期，[startDate, endDate]
       searchText:'',
       planList:[],
-      loadingPlankDetail:false,
-      selectedPlanId:undefined,
-      selectedPlanInfo: undefined,
+      loadingPlanDetail:false,
+      selectedPlanId:null,
+      selectedPlanInfo: null,
+      totalProgress: 100,
+      completProgress: 1,
+      towardProgress: 2,
     };
   },
+  components:{
+    ProgressBar
+  },
   methods: {
+    formatDate,
     setStatus(status) {
       this.showStatus = status;
     },
@@ -127,20 +178,43 @@ export default {
       })
     },
     selectedPlan(id){
-      this.loadingPlankDetail=true
+      this.loadingPlanDetail = true;
       this.selectedPlanId=id
       //当选中了任务id之后需要查询对应的数据
-      // getTaskInfo({id:id}).then(res=>{
-      //   const data = res.data;
-      //   this.selectedTaskInfo = data.data; // 设置详情数据
-      //   this.loadingTaskDetail=false
-      // })
+      getPlanInfo({id:id}).then(res=>{
+        const data = res.data;
+        this.selectedPlanInfo = data.data; // 设置详情数据
+        this.loadingPlanDetail=false
+      })
+    },
+    getProgressPercentage(plan) {
+      if (!plan || !plan.taskTotal) return 0;
+      return Math.round((plan.taskProgress / plan.taskTotal) * 100);
+    },
+    getCycleText(cycleType) {
+      switch (cycleType) {
+        case 1: return "每天";
+        case 2: return "隔天";
+        default: return "未知";
+      }
+    },
+    getPlanTypeText(planType) {
+      const map = {
+        1: '学习',
+        2: '锻炼',
+        3: '写作',
+        4: '阅读',
+        5: '影视',
+      };
+      return map[planType] || '未知';
     },
   },
   async created(){
     await this.getPlanList({page:1,limit:10,status:1})
     //当加初次加载完成后，默认选中第一个任务
     if(this.planList.length==0)return
+    //当长度不为0时显示第一个计划
+    this.selectedPlan(this.planList[0].id)
   },
   watch:{
       async showStatus(newValue){
@@ -148,6 +222,8 @@ export default {
         await this.getPlanList({page:1,limit:10,status:newValue})
         this.selectedplanId=null
         if(this.planList.length==0)return
+        //当长度不为0时显示第一个计划
+        this.selectedPlan(this.planList[0].id)
       }
   }
 };
@@ -343,4 +419,85 @@ export default {
   border-radius: 3px;
 }
 
+
+.plan-detail {
+  padding: 20px;
+}
+
+.plan-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.plan-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  margin-right: 16px;
+}
+
+.plan-title h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.plan-desc {
+  margin-top: 4px;
+  color: #888;
+  font-size: 14px;
+}
+
+.plan-meta p {
+  margin: 6px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.skeleton-container {
+  padding: 20px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.skeleton-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: #eee;
+  margin-right: 20px;
+}
+
+.skeleton-text-group {
+  flex: 1;
+}
+
+.skeleton-title {
+  height: 16px;
+  width: 150px;
+  background: #eee;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+.skeleton-subtitle {
+  height: 14px;
+  width: 100px;
+  background: #eee;
+  border-radius: 4px;
+}
+
+.skeleton-line {
+  height: 14px;
+  background: #eee;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
 </style>

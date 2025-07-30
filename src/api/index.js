@@ -7,8 +7,8 @@ import { Message } from 'element-ui';
   
 // 创建axios实例  
 const instance = axios.create({  
-  baseURL: 'http://localhost:8901', 
-  // baseURL: 'http://112.74.191.203:8901',
+  // baseURL: 'http://localhost:8901', 
+  baseURL: 'http://112.74.191.203:8901',
   timeout: 5000, // 请求超时时间  
   // 你可以在这里设置更多的请求配置选项，如headers等  
 });
