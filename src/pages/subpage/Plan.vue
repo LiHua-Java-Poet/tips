@@ -114,13 +114,11 @@
                 <p class="plan-desc">{{ selectedPlanInfo.description }}</p>
               </div>
             </div>
-
             <ProgressBar
               :total="selectedPlanInfo.taskTotal"
               :completed="selectedPlanInfo.taskProgress"
               :toward="selectedPlanInfo.towardProgress"
             />
-
             <div class="plan-meta">
               <p><strong>计划周期：</strong> {{ getCycleText(selectedPlanInfo.cycleType) }}</p>
               <p><strong>计划类型：</strong> {{ getPlanTypeText(selectedPlanInfo.planType) }}</p>
@@ -288,7 +286,6 @@ export default {
 
 /* 卡片样式优化 */
 .plan-card {
-  width: 95%;
   height: 100px;
   margin: 10px 0;
   cursor: pointer;
@@ -306,8 +303,9 @@ export default {
 
 .card-body {
   display: flex;
-  align-items: flex-start; /* 顶部对齐 */
-  height: 72px; /* 卡片内容区域统一高度 */
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
@@ -317,15 +315,16 @@ export default {
   border-radius: 8px;
   margin-right: 12px;
   object-fit: cover;
-  flex-shrink: 0;
+  flex-shrink: 0; /* ✅ 禁止图片缩放 */
 }
 
 .card-content {
-  flex: 1;
-  overflow: hidden; /* 关键：限制内容宽度 */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-width: 0; /* ✅ 防止flex溢出必须项 */
 }
 
 .card-title,
@@ -340,10 +339,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.card-title {
-  font-weight: bold;
-  color: #333;
-}
+
 
 .card-progress {
   color: #409eff;

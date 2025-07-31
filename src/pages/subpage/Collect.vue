@@ -1,54 +1,54 @@
 <template>
     <el-container style="height: 100%;">
       <el-aside width="250px" class="aside-custom">
-                <el-card class="collect-card">
-                    新增空间
-                </el-card>
+            <div class="collect-add">
+                <img style="width: 30px; height: 30px;" src="../../assets/ioc/collect/add.png">
+                <span>新增会话</span>
+            </div>
             <div class="collect-scroll-wrapper">
-                <el-card class="collect-card">
-                    计划1号
-                </el-card>
-                <el-card class="collect-card">
-                    计划2号
-                </el-card>
-                <el-card class="collect-card">
-                    计划3号
-                </el-card>
-                <el-card class="collect-card">
-                    计划3号
-                </el-card>
-                                <el-card class="collect-card">
-                    计划3号
-                </el-card>
-                                <el-card class="collect-card">
-                    计划3号
+                <el-card class="collect-card" v-for="(item,index) in collectList" :key="index">
+                    {{ item }}
                 </el-card>
             </div>
       </el-aside>
       <el-container>
-        <el-main style="background-color: rgb(255, 255, 255);border-radius: 10px;">
+        <el-main class="chat-container">
             <!-- 聊天区域 -->
-            <div class="chat-container">
                 <!-- 消息显示区域 -->
                 <div class="chat-message-area">
-                    <div class="message" v-for="(msg, index) in messages" :key="index">
+                  <div class="message" v-for="(msg, index) in messages" :key="index">
                     <div class="message-bubble">{{ msg.text }}</div>
-                    </div>
+                  </div>
                 </div>
-
+                <!-- 控件区域 -->
+                <div>
+                  <el-radio-group v-model="radio">
+                    <el-radio :label="3">仅记录</el-radio>
+                    <el-radio :label="6">知识库</el-radio>
+                    <el-radio :label="9">Ai回复</el-radio>
+                  </el-radio-group>
+                </div>
                 <!-- 信息输入区域 -->
                 <div class="chat-input-area">
-                    <el-input
+                  <el-input
                     type="textarea"
                     v-model="newMessage"
                     class="input-box"
-                    :autosize="{ minRows: 2, maxRows: 6 }"
-                    resize="vertical"
+                    maxlength="5000"
+                    show-word-limit
+                    :rows="5"
+                    resize="none"
                     placeholder="请输入消息..."
-                    />
-                    <el-button type="primary" @click="sendMessage" class="send-button">发送</el-button>
+                    @keydown.native="handleKeydown"
+                  />
+                  <el-button
+                    type="primary"
+                    class="send-button"
+                    @click="sendMessage"
+                  >
+                    发送
+                  </el-button>
                 </div>
-            </div>
         </el-main>
       </el-container>
     </el-container>
@@ -67,26 +67,10 @@ export default {
             { text: '欢迎来到聊天区！' },
             { text: '这是历史消息1' },
             { text: '这是历史消息2' },
-            { text: '欢迎来到聊天区！' },
-            { text: '这是历史消息1' },
-            { text: '这是历史消息2' },
-            { text: '欢迎来到聊天区！' },
-            { text: '这是历史消息1' },
-            { text: '这是历史消息2' },
-            { text: '欢迎来到聊天区！' },
-            { text: '这是历史消息1' },
-            { text: '这是历史消息2' },
-            { text: '欢迎来到聊天区！' },
-            { text: '这是历史消息1' },
-            { text: '这是历史消息2' },
-            { text: '欢迎来到聊天区！' },
-            { text: '这是历史消息1' },
-            { text: '这是历史消息2' },
-            { text: '欢迎来到聊天区！' },
-            { text: '这是历史消息1' },
-            { text: '这是历史消息2' },
         ],
-        newMessage: ''
+        newMessage: '',
+        radio:3,
+        collectList:['会话1号','会话1号','会话1号']
     };
   },
   methods: {
@@ -103,194 +87,188 @@ export default {
             container.scrollTop = container.scrollHeight;
         });
         }
+    },
+    handleKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault(); // 阻止默认换行行为
+        this.sendMessage();
+      }
     }
   },
+  mounted() {
+    this.$nextTick(() => {
+      const container = this.$el.querySelector('.chat-message-area');
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    });
+  },
+  computed: {
+
+  }
 };
 </script>
 
+
 <style scoped>
-/* 顶部状态按钮优化 */
-.status-button {
-  padding: 8px 16px;
-  background-color: #f5f5f5;
-  text-align: center;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: 500;
-  color: #666;
-  transition: all 0.3s ease;
-  margin: 0 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border: 1px solid #ddd;
+/* 左侧面板 */
+.aside-custom {
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  margin-right: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0; /* 关键 */
 }
 
-.status-button:hover {
-  background-color: #e0e0e0;
-}
-
-.status-button.process {
-  background-color: #409eff;
-  color: white;
-  border: none;
-}
-.status-button.finish {
-  background-color: #67c23a;
-  color: white;
-  border: none;
-}
-.status-button.cancel {
-  background-color: #f56c6c;
-  color: white;
-  border: none;
-}
-
-/* 图标手型 + hover 提示 */
-.icon {
-  cursor: pointer;
-  fill: #666;
-  transition: all 0.2s;
-}
-.icon:hover {
-  fill: #409eff;
-  transform: scale(1.1);
-}
-
-/* 卡片样式优化 */
-.collect-card {
-  width: 95%;
-  height: 60px;
-  margin: 10px 0;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+/* 新增会话按钮 */
+.collect-add {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 12px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
 }
-.collect-card:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+.collect-add:hover {
+  background-color: #f0faff;
+  border-color: #409eff;
 }
-
-/* 弹出表单优化（你可放在 style scoped 里） */
-.el-popover .el-form {
-  padding: 10px;
-}
-
-/* 主体与侧栏的布局间距 */
-.el-aside {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  margin-right: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+.collect-add img {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
 }
 
-.el-main {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  min-height: 300px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-
-/* 设置 el-aside 外观 */
-.aside-custom {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  margin-right: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* 填满容器高度 */
-}
-
+/* 滚动区域填满剩余空间 */
 .collect-scroll-wrapper {
   flex: 1;
+  min-height: 0; /* 关键：允许滚动区域缩放 */
   overflow-y: auto;
-  max-height: 500px;
-  padding-right: 6px; /* 预留空间防止遮挡 */
-  scrollbar-width: none;           /* Firefox */
-  -ms-overflow-style: none;        /* IE */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* Chrome */
+/* 滚动条美化 */
 .collect-scroll-wrapper::-webkit-scrollbar {
-  width: 6px;            /* 始终保留宽度，防止跳动 */
-  background: transparent;
+  width: 6px;
 }
-
-/* 默认不显示滑块 */
 .collect-scroll-wrapper::-webkit-scrollbar-thumb {
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
-
-/* hover 时显示滑块，不改变整体宽度 */
 .collect-scroll-wrapper:hover::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
 }
 
+/* 卡片样式 */
+.collect-card {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 40px;      /* 避免卡片被压缩 */
+  text-align: left;
+  flex: none;
+  height: 40px;
+}
+.collect-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 主区域容器 */
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 600px; /* 整个聊天区域高度固定 */
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 10px;
-  background-color: #fafafa;
+  height: 100%;
+  padding: 20px;
+  background-color: #f5f7fa;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
-/* 消息区域：允许滚动 */
+/* 消息显示区域 */
 .chat-message-area {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  background-color: #ffffff;
-  border: 1px solid #eee;
+  padding: 16px;
+  margin-bottom: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ebeef5;
 }
 
-/* 单条消息样式：靠左 */
+/* 每条消息 */
 .message {
   margin-bottom: 10px;
   display: flex;
 }
-
 .message-bubble {
   background-color: #f1f3f5;
-  padding: 8px 12px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
   font-size: 14px;
   max-width: 80%;
   word-break: break-word;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   white-space: pre-wrap;
-
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* 输入区域 */
+/* 控件（Radio）区域 */
+.el-radio-group {
+  margin-bottom: 15px;
+  padding-left: 4px;
+}
+
+/* 信息输入区域 */
 .chat-input-area {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
+  position: relative;
+  padding: 12px;
+  border-top: 1px solid #eee;
+  background-color: #fafafa;
 }
 
-/* 多行可拖拽 */
 .input-box {
-  flex: 1;
-  resize: vertical;
+  width: 100%;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-/* 发送按钮 */
+.el-textarea__inner {
+  border-radius: 8px;
+  padding: 12px;
+  resize: none !important;
+  min-height: 50px;
+  max-height: 50px;
+  font-size: 14px;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
 .send-button {
-  flex-shrink: 0;
+  position: absolute;
+  bottom: 18px;
+  right: 20px;
+  padding: 6px 18px;
+  font-size: 14px;
+  border-radius: 6px;
 }
-
 
 </style>
+

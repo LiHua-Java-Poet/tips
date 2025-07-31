@@ -83,7 +83,8 @@
               </el-card>
               <div class="load-label">
                 <i v-if="listLoadStatus" class="el-icon-loading"></i>
-                <span v-else @click="loadMove()">加载更多</span>
+                <span v-if="!listLoadStatus&&loadLabelStatus" @click="loadMove()">加载更多</span>
+                <span v-if="!loadLabelStatus">已经到底了</span>
               </div>
             </div>
       </el-aside>
@@ -208,8 +209,9 @@ export default {
     getTaskList(params){
       return getTaskList(params).then(res=>{
         const data=res.data
-        this.taskList=data.data.list
+        this.taskList.push(...data.data.list)
         this.pageCount=data.data.pageCount
+        this.page=data.data.page
       }).catch(error=>{
         console.info(error)
       })
@@ -264,7 +266,10 @@ export default {
     },
     async loadMove(){
       this.listLoadStatus=true
-      await this.getTaskList({page:this.page+1,limit:this.limit,status:this.showStatus})
+      if(this.page<this.pageCount){
+        //只有当前页数小于总页数才需要更新页
+        await this.getTaskList({page:this.page+1,limit:this.limit,status:this.showStatus})
+      }
       this.listLoadStatus=false
     }
   },
@@ -281,7 +286,12 @@ export default {
         this.selectedTaskId=null
         if(this.taskList.length==0)return
         this.selectedTask(this.taskList[0].id)
-      }
+      },
+  },
+  computed:{
+    loadLabelStatus(){
+      return this.page<this.pageCount
+    }
   }
 };
 </script>

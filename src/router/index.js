@@ -12,6 +12,7 @@ import NotFoundPage from '@/pages/NotFoundPage.vue'
 import Task from '@/pages/subpage/Task.vue'
 import Plan from '@/pages/subpage/Plan.vue'
 import Document from '@/pages/subpage/Document.vue'
+import Other from '@/pages/subpage/Other.vue'
 import Collect from '@/pages/subpage/Collect.vue'
 Vue.use(VueRouter)
 
@@ -24,7 +25,8 @@ const router =new VueRouter({
     },
     {
         path:'/personage',
-        component:Personage
+        component:Personage,
+        meta: { requiresAuth: true }
     },
     {
         path:'/index',
@@ -32,23 +34,33 @@ const router =new VueRouter({
         children:[
           {
             path:'/index/all',
-            component:All
+            component:All,
+            meta: { requiresAuth: true }
           },
           {
             path:'/index/task',
-            component:Task
+            component:Task,
+            meta: { requiresAuth: true }
           },
           {
             path:'/index/plan',
-            component:Plan
+            component:Plan,
+            meta: { requiresAuth: true }
           },
           {
             path:'/index/document',
-            component:Document
+            component:Document,
+            meta: { requiresAuth: true }
           },
           {
             path:'/index/collect',
-            component:Collect
+            component:Collect,
+            meta: { requiresAuth: true }
+          },
+          {
+            path:'/index/other',
+            component:Other,
+            meta: { requiresAuth: true }
           }
         ]
     },
@@ -61,22 +73,20 @@ const router =new VueRouter({
 
 // 👉 添加全局路由守卫
 router.beforeEach((to, from, next) => {
-  // 模拟一个“登录状态”，比如从 localStorage 获取 token
-  const userInfo = store.getters.userInfo
+  const userInfo = store.getters.userInfo;
 
-    // 登录页允许直接访问
-  if (to.path === '/login') {
-    return next()
+  // 如果目标路由需要登录
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (userInfo == null) {
+      console.warn('未登录，跳转到登录页');
+      return next('/login');
+    }
   }
 
-  if (userInfo == null) {
-    console.warn('未登录，跳转到登录页')
-    return next('/login')  // 拦截并跳转回登录页
-  }
+  // 否则直接放行
+  next();
+});
 
-  // 其他情况放行
-  next()
-})
 
 export default router;
 
