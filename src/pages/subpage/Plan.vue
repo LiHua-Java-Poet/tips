@@ -380,9 +380,9 @@ export default {
 /* 设置 el-aside 外观 */
 .aside-custom {
   background-color: #ffffff;
-  padding: 20px;
   border-radius: 10px;
   margin-right: 20px;
+  padding-top: 30px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;

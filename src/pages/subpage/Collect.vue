@@ -136,7 +136,7 @@ export default {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 .collect-add:hover {
   background-color: #f0faff;
@@ -156,6 +156,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding-top: 5px;
 }
 
 /* 滚动条美化 */
