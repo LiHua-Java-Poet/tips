@@ -97,7 +97,6 @@ export default {
     },
     activeMenuIndex() {
       const path = this.$route.path;
-
       return path;
     }
   },

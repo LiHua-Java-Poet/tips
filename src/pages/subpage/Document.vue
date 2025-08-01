@@ -21,8 +21,8 @@
                 <div class="select-item"
                 v-for="(item, index) in catalogueList"
                 :key="index">
-                <img v-if="item.type==1" src="../../assets/ioc/document/folder.png">
-                <img v-else src="../../assets/ioc/document/file.png">
+                <img v-if="item.type==1" src="@/assets/ioc/document/folder.png">
+                <img v-else src="@/assets/ioc/document/file.png">
                 <div>{{ item.name }}</div>
                 <el-popover
                     placement="bottom"
@@ -51,29 +51,49 @@
         </div>
       </div>
       <!-- 富文本编辑器区域 -->
-      <div>
-        <div>
-            富文本编辑器
+        <div class="editor-container">
+            <Toolbar
+            style="border-bottom: 1px solid #ccc"
+            :editor="editor"
+            :defaultConfig="toolbarConfig"
+            :mode="mode"
+            />
+            <Editor
+            style="height: 100%; overflow-y: hidden"
+            v-model="html"
+            :defaultConfig="editorConfig"
+            :mode="mode"
+            @onCreated="onCreated"
+            />
         </div>
-      </div>
     </el-main>
   </el-container>
 </template>
 
 <script>
+import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
+import '@wangeditor/editor/dist/css/style.css'
+import { toolbarConfig, editorConfig, editorMode } from '@/utils/editorConfig.js';
+
 
 export default {
   name: 'documentPage',
+  components:{Editor,Toolbar},
   data() {
     return {
       editor: null,
+      html: '',
+      toolbarConfig,
+      editorConfig,
+      mode: editorMode,
+
       searchText:'',
       defaultProps: {
         children: 'children',
         label: 'label'
       },
       currentDocId: null,
-      currentDocName: '文件',
+      currentDocName: 'java的学习路线概览',
       catalogueList:[
         {
             "name":"文件夹1号",
@@ -84,18 +104,15 @@ export default {
             "type":1
         },
         {
-            "name":"关于xxx的哪些事关于xxx的哪些事关于xxx的哪些事",
+            "name":"java的学习路线概览",
             "type":2
         }
       ],
     }
   },
-  mounted() {
-    this.initEditor()
-  },
   methods: {
-    initEditor() {
-      
+    onCreated(editorInstance) {
+      this.editor = editorInstance
     },
     handleNodeClick(node) {
       this.currentDocId = node.id
@@ -116,11 +133,45 @@ export default {
     uploadDoc() {
       this.$message.info('上传功能待开发')
     }
-  }
+  },
+    beforeDestroy() {
+        if (this.editor) {
+            this.editor.destroy()
+            this.editor = null
+        }
+    }
 }
 </script>
 
 <style scoped>
+.el-main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+}
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* toolbar 高度固定 */
+.editor-container .w-e-toolbar {
+  flex-shrink: 0;
+  border-bottom: 1px solid #ccc;
+}
+
+/* 编辑器内容区域占满剩余空间 */
+.editor-container .w-e-text-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
 .main-contain{
     background-color: rgb(255, 255, 255);
     border-radius: 8px;
@@ -159,13 +210,14 @@ export default {
 }
 
 .select-item div {
-  flex: 1;
-  margin: 0 8px;
-  white-space: nowrap;        /* 不换行 */
-  overflow: hidden;           /* 超出隐藏 */
-  text-overflow: ellipsis;    /* 省略号显示 */
-  color: rgb(115, 115, 115);
-  pointer-events: none;
+    flex: 1;
+    margin: 0 8px;
+    white-space: nowrap;        /* 不换行 */
+    overflow: hidden;           /* 超出隐藏 */
+    text-overflow: ellipsis;    /* 省略号显示 */
+    color: rgb(115, 115, 115);
+    pointer-events: none;
+    font-size: small;
 }
 
 .select-item img:last-child {
