@@ -129,13 +129,18 @@
 
             <!-- 任务信息块 -->
             <div>
-              <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">任务信息</div>
+              <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;display: flex;justify-content: space-between;align-items: center;">
+                <span>任务信息</span>
+                <el-tooltip content="编辑任务信息" placement="top">
+                  <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;" src="@/assets/ioc/task/edit.png">
+                </el-tooltip>
+              </div>
               <div style="margin-bottom: 10px;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
               <div style="margin-bottom: 10px;"><strong>任务时间：</strong>{{ formatDate(selectedTaskInfo.taskTime) }}</div>
 
               <!-- itemToLists 渲染为列表 -->
               <div v-if="selectedTaskInfo.itemToList?.length > 0" style="margin-bottom: 10px;">
-                <strong>备注项：</strong>
+                <strong>备注内容：</strong>
                 <ul style="padding-left: 20px; margin-top: 10px;">
                   <li v-for="(item, index) in selectedTaskInfo.itemToList" :key="index" style="margin-bottom: 6px;">
                     <span style="font-weight: 500; color: #408af4;">{{ item.no }}.</span>
