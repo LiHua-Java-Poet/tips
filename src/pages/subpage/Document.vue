@@ -1,27 +1,60 @@
 <template>
   <el-container style="height: 100%;" class="main-contain">
     <!-- 左侧导航 -->
-    <el-aside width="200px" class="aside-custom">
-        s
-    </el-aside>
-
+        <el-aside width="250px" class="aside-custom">
+            <!-- 搜索栏：固定不动 -->
+            <div class="search-wrapper">
+                <el-input
+                placeholder="请输入内容"
+                prefix-icon="el-icon-search"
+                v-model="searchText">
+                </el-input>
+            </div>
+            <div class="item-wrapper">
+                <span class="left-icon">
+                    <svg t="1754029918386" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7855" width="20" height="20"><path d="M624.788992 204.047974 585.205965 164.464026 219.560038 530.185011 585.205965 895.864013 624.788992 856.280986 298.663014 530.16105Z" p-id="7856"></path></svg>
+                </span>
+                <div class="item-text">文件夹一号</div>
+            </div>
+            <!-- 可滚动区域 -->
+            <div class="scroll-area">
+                <div class="select-item"
+                v-for="(item, index) in catalogueList"
+                :key="index">
+                <img v-if="item.type==1" src="../../assets/ioc/document/folder.png">
+                <img v-else src="../../assets/ioc/document/file.png">
+                <div>{{ item.name }}</div>
+                <el-popover
+                    placement="bottom"
+                    width="100"
+                    trigger="click">
+                    <div class="popover-menu">
+                        <div class="popover-menu-item">重命名</div>
+                        <div class="popover-menu-item">删除</div>
+                        <div class="popover-menu-item">移动到</div>
+                        <div class="popover-menu-item">分享</div>
+                    </div>
+                    <img class="more-icon" slot="reference" src="../../assets/ioc/document/more.png">
+                </el-popover>
+                </div>
+            </div>
+        </el-aside>
     <!-- 右侧内容区 -->
     <el-main style="padding: 20px;">
       <!-- 顶部操作栏 -->
       <div style="margin-bottom: 20px; display: flex; justify-content: space-between;">
+        <div class="content-header-title">
+          <span v-if="currentDocName">{{ currentDocName }}</span>
+        </div>
         <div>
           <el-button type="primary" @click="saveDoc">保存</el-button>
-          <el-button type="danger" @click="deleteDoc">删除</el-button>
-          <el-button @click="uploadDoc">上传</el-button>
-        </div>
-        <div>
-          <span v-if="currentDocName">当前文档：{{ currentDocName }}</span>
         </div>
       </div>
-
       <!-- 富文本编辑器区域 -->
-      <div style="border: 1px solid #ccc; border-radius: 5px; overflow: hidden;">
-        <div id="editor" style="min-height: 400px;"></div>
+      <div>
+        <div>
+            富文本编辑器
+        </div>
       </div>
     </el-main>
   </el-container>
@@ -34,30 +67,27 @@ export default {
   data() {
     return {
       editor: null,
-      docTree: [
-        {
-          id: 1,
-          label: '项目文档',
-          children: [
-            { id: 2, label: '需求文档' },
-            { id: 3, label: '设计文档' },
-          ]
-        },
-        {
-          id: 4,
-          label: '用户手册',
-          children: [
-            { id: 5, label: '操作指南' },
-            { id: 6, label: 'FAQ' },
-          ]
-        }
-      ],
+      searchText:'',
       defaultProps: {
         children: 'children',
         label: 'label'
       },
       currentDocId: null,
-      currentDocName: ''
+      currentDocName: '文件',
+      catalogueList:[
+        {
+            "name":"文件夹1号",
+            "type":1
+        },
+        {
+            "name":"我的宝贵资源",
+            "type":1
+        },
+        {
+            "name":"关于xxx的哪些事关于xxx的哪些事关于xxx的哪些事",
+            "type":2
+        }
+      ],
     }
   },
   mounted() {
@@ -95,9 +125,168 @@ export default {
     background-color: rgb(255, 255, 255);
     border-radius: 8px;
 }
-.aside-custom{
-    padding: 15px;
-    border-right: 2px solid rgb(240, 240, 240);
-    width: 150px;
+.aside-custom {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  border-right: 2px solid rgb(240, 240, 240);
+  overflow: hidden;
 }
+.select-warpper {
+  margin-top: 20px;
+}
+
+.select-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 5px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  position: relative;
+  height: 30px;
+}
+
+.select-item:hover {
+  background-color: #f5f7fa;
+}
+
+.select-item img:first-child {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  cursor: pointer; /* 鼠标变为手势 */
+}
+
+.select-item div {
+  flex: 1;
+  margin: 0 8px;
+  white-space: nowrap;        /* 不换行 */
+  overflow: hidden;           /* 超出隐藏 */
+  text-overflow: ellipsis;    /* 省略号显示 */
+  color: rgb(115, 115, 115);
+  pointer-events: none;
+}
+
+.select-item img:last-child {
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+}
+.select-item::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background-color: rgb(230, 230, 230); /* 线的颜色 */
+}
+
+.more-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: auto; 
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.more-icon:hover {
+  background-color: rgba(0, 0, 0, 0.05); 
+}
+
+
+/* 默认隐藏 */
+.select-item .more-icon {
+  display: none;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* 悬浮时显示 */
+.select-item:hover .more-icon {
+  display: inline-block;
+}
+
+
+.el-popover .popover-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.el-popover .popover-menu-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+  border-radius: 5px;
+}
+
+.el-popover .popover-menu-item:hover {
+  background-color: #f5f7fa;
+}
+
+::v-deep(.el-popover) {
+  min-width: unset !important;
+  width: 20px !important;
+  padding: 6px;
+}
+
+/* 搜索栏固定 */
+.search-wrapper {
+  flex: 0 0 auto;
+  margin-bottom: 10px;
+}
+
+/* 滚动区域 */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* 自定义滚动条样式（细窄） */
+.scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.scroll-area::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.item-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 40px; /* 或你想要的高度 */
+}
+
+.left-icon {
+  flex-shrink: 0;
+  width: 20px;
+  cursor: pointer;
+}
+
+.item-text {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgb(115, 115, 115);
+  font-weight: bold;
+}
+
+.content-header-title{
+    font-size: larger;
+    color: rgb(115, 115, 115);
+    font-weight: bold;
+}
+
 </style>

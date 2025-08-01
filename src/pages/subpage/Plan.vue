@@ -35,7 +35,7 @@
       <el-aside width="350px" class="aside-custom">
             <div class="popover-wrapper">
                 <el-input
-                style="width: 90%;"
+                  style="width: 90%;"
                     placeholder="请输入搜索内容"
                     prefix-icon="el-icon-search"
                     v-model="searchText">
