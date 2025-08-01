@@ -4,7 +4,6 @@ import VueRouter from 'vue-router'
 import store from '../store/index' // 👉 导入 Vuex store 实例
 
 import LoginPage from '../pages/LoginPage.vue'
-// import Main from '../pages/Personage.vue'
 import Personage from '@/pages/Personage.vue'
 import Index from '../pages/Index.vue'
 import All from '@/pages/subpage/All.vue'

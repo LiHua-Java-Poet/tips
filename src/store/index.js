@@ -4,10 +4,13 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 const USER_KEY = 'user'
+const COLLAPSE_KEY = 'collapse'
+
 
 export default new Vuex.Store({
   state: {
-    user: JSON.parse(localStorage.getItem(USER_KEY)) || null
+    user: JSON.parse(localStorage.getItem(USER_KEY)) || null,
+    isCollapse:localStorage.getItem(COLLAPSE_KEY) === 'true'
   },
   mutations: {
     setUser(state, user) {
@@ -17,7 +20,11 @@ export default new Vuex.Store({
     clearUser(state) {
       state.user = null
       localStorage.removeItem(USER_KEY)
-    }
+    },
+    setCollapse(state, collapse) {
+      state.isCollapse = collapse
+      localStorage.setItem(COLLAPSE_KEY, collapse)
+    },
   },
   actions: {
     login({ commit }, user) {
@@ -25,10 +32,14 @@ export default new Vuex.Store({
     },
     logout({ commit }) {
       commit('clearUser')
-    }
+    },
+    setCollapse({ commit }, collapse) {
+      commit('setCollapse', collapse)
+    },
   },
   getters: {
     isLoggedIn: state => !!state.user,
-    userInfo: state => state.user
+    userInfo: state => state.user,
+    collapse: state => state.isCollapse,
   }
 })

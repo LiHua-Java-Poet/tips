@@ -26,8 +26,10 @@
                 <div>{{ item.name }}</div>
                 <el-popover
                     placement="bottom"
+                    trigger="click"
+                    popper-class="custom-popover"
                     width="100"
-                    trigger="click">
+                    >
                     <div class="popover-menu">
                         <div class="popover-menu-item">重命名</div>
                         <div class="popover-menu-item">删除</div>
@@ -40,9 +42,9 @@
             </div>
         </el-aside>
     <!-- 右侧内容区 -->
-    <el-main style="padding: 20px;">
+    <el-main style="padding: 10px;">
       <!-- 顶部操作栏 -->
-      <div style="margin-bottom: 20px; display: flex; justify-content: space-between;">
+      <div style="margin-bottom: 10px; display: flex; justify-content: space-between;">
         <div class="content-header-title">
           <span v-if="currentDocName">{{ currentDocName }}</span>
         </div>
@@ -132,7 +134,7 @@ export default {
     },
     uploadDoc() {
       this.$message.info('上传功能待开发')
-    }
+    },
   },
     beforeDestroy() {
         if (this.editor) {
@@ -281,10 +283,9 @@ export default {
   background-color: #f5f7fa;
 }
 
-::v-deep(.el-popover) {
-  min-width: unset !important;
-  width: 20px !important;
-  padding: 6px;
+.custom-popover {
+  min-width: 100px !important;  /* 或者 min-width: 0 !important; 彻底取消 */
+  max-width: none !important;   /* 解除最大宽度限制，避免宽度冲突 */
 }
 
 /* 搜索栏固定 */

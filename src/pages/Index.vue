@@ -88,7 +88,7 @@ export default {
   name: 'indexPage',
   data() {
     return {
-      isCollapse: false
+      // isCollapse: false
     };
   },
   computed: {
@@ -98,11 +98,14 @@ export default {
     activeMenuIndex() {
       const path = this.$route.path;
       return path;
+    },
+    isCollapse(){
+      return this.$store.getters.collapse;
     }
   },
   methods: {
     toggleCollapse() {
-      this.isCollapse = !this.isCollapse;
+      this.$store.dispatch('setCollapse', !this.isCollapse);
     },
     navigator(path) {
       if (this.$route.path !== path) {
