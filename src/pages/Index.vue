@@ -88,7 +88,6 @@ export default {
   name: 'indexPage',
   data() {
     return {
-      // isCollapse: false
     };
   },
   computed: {

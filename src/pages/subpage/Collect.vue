@@ -1,13 +1,13 @@
 <template>
     <el-container style="height: 100%;">
       <el-aside width="250px" class="aside-custom">
-            <div class="collect-add">
+            <div class="collect-add"  @click="openAddDialog">
                 <img style="width: 30px; height: 30px;" src="../../assets/ioc/collect/add.png">
                 <span>新增会话</span>
             </div>
             <div class="collect-scroll-wrapper">
-                <el-card class="collect-card" v-for="(item,index) in collectList" :key="index">
-                    {{ item }}
+                <el-card class="collect-card" v-for="(item,index) in sessionList" :key="index">
+                    {{ item.title }}
                 </el-card>
             </div>
       </el-aside>
@@ -51,11 +51,30 @@
                 </div>
         </el-main>
       </el-container>
+      <el-dialog
+        title="新增会话"
+        :visible.sync="dialogVisible"
+        width="400px"
+        @close="newSessionTitle = ''"
+      >
+        <el-input
+          v-model="newSessionTitle"
+          placeholder="请输入会话标题"
+          maxlength="100"
+          show-word-limit
+        />
+        <template #footer>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="addSession">新增</el-button>
+        </template>
+      </el-dialog>
+
     </el-container>
 </template>
 
 <script>
-
+import { getSessionList,saveSession } from '@/api/collect';
+import { getUniqueCode } from '@/api/public';
 export default {
   name: "collectPage",
   data() {
@@ -70,7 +89,10 @@ export default {
         ],
         newMessage: '',
         radio:3,
-        collectList:['会话1号','会话1号','会话1号']
+        sessionList: [],
+        dialogVisible: false,
+        newSessionTitle: '',
+        sessionCode:'',
     };
   },
   methods: {
@@ -93,6 +115,40 @@ export default {
         e.preventDefault(); // 阻止默认换行行为
         this.sendMessage();
       }
+    },
+    async fetchSessions() {
+      const res = await getSessionList();
+      this.sessionList = res.data.data || [];
+    },
+    async addSession() {
+      if (!this.newSessionTitle.trim()) {
+        this.$message.warning('请输入会话标题');
+        return;
+      }
+      const res = await saveSession({ title: this.newSessionTitle,uniqueCode: this.sessionCode });
+      if (res.data.code === 200) {
+        this.$message.success('新增成功');
+        this.dialogVisible = false;
+        this.newSessionTitle = '';
+        this.fetchSessions(); // 刷新会话列表
+      } else {
+        this.$message.error(res.message || '新增失败');
+      }
+    },
+    async openAddDialog() {
+      try {
+        const res = await getUniqueCode();
+        const code = res?.data?.data;
+        if (!code) {
+          this.$message.error('获取会话编号失败');
+          return;
+        }
+        this.sessionCode = code;
+        this.dialogVisible = true;
+      } catch (e) {
+        this.$message.error('请求唯一码失败');
+        console.error(e);
+      }
     }
   },
   mounted() {
@@ -102,6 +158,7 @@ export default {
         container.scrollTop = container.scrollHeight;
       }
     });
+    this.fetchSessions(); 
   },
   computed: {
 
