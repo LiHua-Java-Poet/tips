@@ -352,8 +352,6 @@ export default {
   background-color: rgb(234, 234, 234); /* 深色 */
 }
 
-
-
 /* 弹出表单优化（你可放在 style scoped 里） */
 .el-popover .el-form {
   padding: 10px;

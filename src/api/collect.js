@@ -7,3 +7,11 @@ export function getSessionList(params) {
 export function saveSession(data) {
     return post('/app/session/save', data)
 }
+
+export function getMessageList(params) {
+    return get('/app/message/list',params)
+}
+
+export function saveMessage(data) {
+    return post('/app/message/save', data)
+}

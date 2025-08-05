@@ -6,9 +6,15 @@
                 <span>新增会话</span>
             </div>
             <div class="collect-scroll-wrapper">
-                <el-card class="collect-card" v-for="(item,index) in sessionList" :key="index">
+                <el-card class="collect-card" 
+                v-for="(item,index) in sessionList" 
+                :key="index"
+                :class="{ selected: selectedSeeionId === item.id }"
+                @click.native="selectSeeion(item.id)"
+                >
                     {{ item.title }}
                 </el-card>
+                <el-empty description="没有会话" image-size="100" v-if="sessionList.length==0"></el-empty>
             </div>
       </el-aside>
       <el-container>
@@ -17,15 +23,15 @@
                 <!-- 消息显示区域 -->
                 <div class="chat-message-area">
                   <div class="message" v-for="(msg, index) in messages" :key="index">
-                    <div class="message-bubble">{{ msg.text }}</div>
+                    <div class="message-bubble">{{ msg.content }}</div>
                   </div>
                 </div>
                 <!-- 控件区域 -->
                 <div>
                   <el-radio-group v-model="radio">
-                    <el-radio :label="3">仅记录</el-radio>
-                    <el-radio :label="6">知识库</el-radio>
-                    <el-radio :label="9">Ai回复</el-radio>
+                    <el-radio :label="1">仅记录</el-radio>
+                    <el-radio :label="2">知识库</el-radio>
+                    <el-radio :label="3">Ai回复</el-radio>
                   </el-radio-group>
                 </div>
                 <!-- 信息输入区域 -->
@@ -73,7 +79,7 @@
 </template>
 
 <script>
-import { getSessionList,saveSession } from '@/api/collect';
+import { getSessionList,saveSession ,getMessageList,saveMessage} from '@/api/collect';
 import { getUniqueCode } from '@/api/public';
 export default {
   name: "collectPage",
@@ -82,26 +88,29 @@ export default {
         showStatus: 1,
         dateRange: [], // 存储起止日期，[startDate, endDate]
         searchText:'',
-        messages: [
-            { text: '欢迎来到聊天区！' },
-            { text: '这是历史消息1' },
-            { text: '这是历史消息2' },
-        ],
+        messages: [],
         newMessage: '',
-        radio:3,
+        radio:1,
         sessionList: [],
         dialogVisible: false,
         newSessionTitle: '',
         sessionCode:'',
+        selectedSeeionId:null,
     };
   },
   methods: {
     setStatus(status) {
       this.showStatus = status;
     },
-    sendMessage() {
+    async sendMessage() {
         const content = this.newMessage.trim();
         if (content) {
+        await saveMessage({
+          sessionId:this.selectedSeeionId,
+          collectType:1,
+          content:content,
+          messageType:this.radio
+        })
         this.messages.push({ text: content });
         this.newMessage = '';
         this.$nextTick(() => {
@@ -119,6 +128,10 @@ export default {
     async fetchSessions() {
       const res = await getSessionList();
       this.sessionList = res.data.data || [];
+      //刷新一次会话列表的话，先选中第一个
+      if(this.sessionList.length>0){
+        this.selectSeeion(this.sessionList[0].id)
+      }
     },
     async addSession() {
       if (!this.newSessionTitle.trim()) {
@@ -149,6 +162,12 @@ export default {
         this.$message.error('请求唯一码失败');
         console.error(e);
       }
+    },
+    async selectSeeion(id){
+      this.selectedSeeionId=id
+      await getMessageList({sessionId:id}).then(res=>{
+        this.messages=res.data.data
+      })
     }
   },
   mounted() {
@@ -328,5 +347,8 @@ export default {
   border-radius: 6px;
 }
 
+.selected {
+  background-color: rgb(234, 234, 234); /* 深色 */
+}
 </style>
 
