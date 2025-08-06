@@ -9,8 +9,11 @@
                 prefix-icon="el-icon-search"
                 v-model="searchText">
                 </el-input>
+                <div class="aside-icon-div" @click="openAddFile">
+                  <img class="aside-icon" src="@/assets/ioc/document/save.png">
+                </div>
             </div>
-            <div class="item-wrapper">
+            <div class="item-wrapper" v-if="!currentFileId==0">
                 <span class="left-icon">
                     <svg t="1754029918386" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7855" width="20" height="20"><path d="M624.788992 204.047974 585.205965 164.464026 219.560038 530.185011 585.205965 895.864013 624.788992 856.280986 298.663014 530.16105Z" p-id="7856"></path></svg>
                 </span>
@@ -21,7 +24,7 @@
                 <div class="select-item"
                 v-for="(item, index) in catalogueList"
                 :key="index">
-                <img v-if="item.type==1" src="@/assets/ioc/document/folder.png">
+                <img v-if="item.fileType==2" src="@/assets/ioc/document/folder.png">
                 <img v-else src="@/assets/ioc/document/file.png">
                 <div>{{ item.name }}</div>
                 <el-popover
@@ -69,6 +72,27 @@
             />
         </div>
     </el-main>
+      <el-dialog
+        title="新增文件/文件夹"
+        :visible.sync="dialogVisible"
+        width="400px"
+        @close="cancelAddFile"
+      >
+        <el-input
+          v-model="newfileTitle"
+          placeholder="请输入标题"
+          maxlength="100"
+          show-word-limit
+        />
+        <el-radio-group v-model="fileType">
+            <el-radio :label="1">文件</el-radio>
+            <el-radio :label="2">文件夹</el-radio>
+          </el-radio-group>
+        <template #footer>
+          <el-button @click="cancelAddFile">取消</el-button>
+          <el-button type="primary" @click="addFile">新增</el-button>
+        </template>
+      </el-dialog>
   </el-container>
 </template>
 
@@ -76,7 +100,8 @@
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import '@wangeditor/editor/dist/css/style.css'
 import { toolbarConfig, editorConfig, editorMode } from '@/utils/editorConfig.js';
-
+import {getFileList,saveFile} from '@/api/file'
+import { getUniqueCode } from '@/api/public';
 
 export default {
   name: 'documentPage',
@@ -96,20 +121,12 @@ export default {
       },
       currentDocId: null,
       currentDocName: 'java的学习路线概览',
-      catalogueList:[
-        {
-            "name":"文件夹1号",
-            "type":1
-        },
-        {
-            "name":"我的宝贵资源",
-            "type":1
-        },
-        {
-            "name":"java的学习路线概览",
-            "type":2
-        }
-      ],
+      catalogueList:[],
+      newfileTitle:'',
+      dialogVisible:false,
+      fileType:1,
+      currentFileId:0,
+      uniqueCode:'',
     }
   },
   methods: {
@@ -135,13 +152,58 @@ export default {
     uploadDoc() {
       this.$message.info('上传功能待开发')
     },
-  },
-    beforeDestroy() {
-        if (this.editor) {
-            this.editor.destroy()
-            this.editor = null
+    addFile(){
+      //新增文件
+      saveFile({
+        pid:this.currentDocId,
+        name:this.newfileTitle,
+        fileType:this.fileType,
+        uniqueCode:this.uniqueCode
+      }).then(res=>{
+        res=res.data
+        if(res.code===200){
+          this.$message.success('新增成功')
         }
+      })
+      this.cancelAddFile()
+    },
+    async openAddFile(){
+      try {
+        const res = await getUniqueCode();
+        const code = res?.data?.data;
+        if (!code) {
+          this.$message.error('获取会话编号失败');
+          return;
+        }
+        this.uniqueCode = code;
+        this.dialogVisible = true;
+      } catch (e) {
+        this.$message.error('请求唯一码失败');
+        console.error(e);
+      }
+      this.dialogVisible=true
+    },
+    cancelAddFile(){
+      this.dialogVisible=false
+      this.fileType=1
+      this.newfileTitle=''
     }
+  },
+  beforeDestroy() {
+      if (this.editor) {
+          this.editor.destroy()
+          this.editor = null
+      }
+  },
+  created(){
+    getFileList({
+      pid:this.currentFileId
+    }).then(res=>{
+      res=res.data
+      console.info(res)
+      this.catalogueList=res.data
+    })
+  },
 }
 </script>
 
@@ -185,6 +247,25 @@ export default {
   border-right: 2px solid rgb(240, 240, 240);
   overflow: hidden;
 }
+
+.aside-icon-div{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+}
+.aside-icon{
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 3px;
+}
+
+.aside-icon:hover {
+  background-color: #f4f6fa;
+}
+
 .select-warpper {
   margin-top: 20px;
 }
@@ -292,6 +373,7 @@ export default {
 .search-wrapper {
   flex: 0 0 auto;
   margin-bottom: 10px;
+  display: flex;
 }
 
 /* 滚动区域 */
@@ -341,5 +423,6 @@ export default {
     color: rgb(115, 115, 115);
     font-weight: bold;
 }
+
 
 </style>
