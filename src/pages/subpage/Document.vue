@@ -1,52 +1,62 @@
 <template>
   <el-container style="height: 100%;" class="main-contain">
     <!-- 左侧导航 -->
-        <el-aside width="250px" class="aside-custom">
-            <!-- 搜索栏：固定不动 -->
-            <div class="search-wrapper">
-                <el-input
-                placeholder="请输入内容"
-                prefix-icon="el-icon-search"
-                v-model="searchText">
-                </el-input>
-                <div class="aside-icon-div" @click="openAddFile">
-                  <img class="aside-icon" src="@/assets/ioc/document/save.png">
-                </div>
+    <el-aside width="250px" class="aside-custom">
+      <!-- 搜索栏 -->
+      <div class="search-wrapper">
+        <el-input
+          placeholder="请输入内容"
+          prefix-icon="el-icon-search"
+          v-model="searchText"
+        />
+        <div class="aside-icon-div" @click="openAddFile">
+          <img class="aside-icon" src="@/assets/ioc/document/save.png" />
+        </div>
+      </div>
+
+      <!-- 返回上级 -->
+      <div class="item-wrapper" v-if="currentFilePid !== 0">
+        <span class="left-icon" @click="backLevel">
+          <svg class="icon" viewBox="0 0 1024 1024" width="20" height="20">
+            <path d="M624.79 204.05L585.21 164.46 219.56 530.19 585.21 895.86 624.79 856.28 298.66 530.16Z" />
+          </svg>
+        </span>
+        <div class="item-text">{{ currentFileName }}</div>
+      </div>
+
+      <!-- 文件列表 -->
+      <div class="scroll-area">
+        <div
+          class="select-item"
+          v-for="(item, index) in catalogueList"
+          :key="index"
+          :class="{ selected: selectCatalogueId === item.id }"
+          @click="handleClickFile(item)"
+          @dblclick="handleDoubleClickFile(item)"
+        >
+          <img
+            :src="item.fileType == 2 ? require('@/assets/ioc/document/folder.png') : require('@/assets/ioc/document/file.png')"
+          />
+          <div>{{ item.name }}</div>
+          <el-popover placement="bottom" trigger="click" popper-class="custom-popover" width="100">
+            <div class="popover-menu">
+              <div class="popover-menu-item">重命名</div>
+              <div class="popover-menu-item">删除</div>
+              <div class="popover-menu-item">移动到</div>
+              <div class="popover-menu-item">分享</div>
             </div>
-            <div class="item-wrapper" v-if="!currentFileId==0">
-                <span class="left-icon">
-                    <svg t="1754029918386" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7855" width="20" height="20"><path d="M624.788992 204.047974 585.205965 164.464026 219.560038 530.185011 585.205965 895.864013 624.788992 856.280986 298.663014 530.16105Z" p-id="7856"></path></svg>
-                </span>
-                <div class="item-text">文件夹一号</div>
-            </div>
-            <!-- 可滚动区域 -->
-            <div class="scroll-area">
-                <div class="select-item"
-                v-for="(item, index) in catalogueList"
-                :key="index">
-                <img v-if="item.fileType==2" src="@/assets/ioc/document/folder.png">
-                <img v-else src="@/assets/ioc/document/file.png">
-                <div>{{ item.name }}</div>
-                <el-popover
-                    placement="bottom"
-                    trigger="click"
-                    popper-class="custom-popover"
-                    width="100"
-                    >
-                    <div class="popover-menu">
-                        <div class="popover-menu-item">重命名</div>
-                        <div class="popover-menu-item">删除</div>
-                        <div class="popover-menu-item">移动到</div>
-                        <div class="popover-menu-item">分享</div>
-                    </div>
-                    <img class="more-icon" slot="reference" src="../../assets/ioc/document/more.png">
-                </el-popover>
-                </div>
-            </div>
-        </el-aside>
-    <!-- 右侧内容区 -->
+            <img class="more-icon" slot="reference" src="@/assets/ioc/document/more.png" />
+          </el-popover>
+        </div>
+        <el-skeleton v-if="catalogueLoadStatus"/>
+        <div v-if="!catalogueLoadStatus&&catalogueList.length==0">
+          <el-empty description="没有文档请创建"></el-empty>
+        </div>
+      </div>
+    </el-aside>
+
+    <!-- 主内容区 -->
     <el-main style="padding: 10px;">
-      <!-- 顶部操作栏 -->
       <div style="margin-bottom: 10px; display: flex; justify-content: space-between;">
         <div class="content-header-title">
           <span v-if="currentDocName">{{ currentDocName }}</span>
@@ -55,157 +65,203 @@
           <el-button type="primary" @click="saveDoc">保存</el-button>
         </div>
       </div>
+
       <!-- 富文本编辑器区域 -->
-        <div class="editor-container">
-            <Toolbar
-            style="border-bottom: 1px solid #ccc"
-            :editor="editor"
-            :defaultConfig="toolbarConfig"
-            :mode="mode"
-            />
-            <Editor
-            style="height: 100%; overflow-y: hidden"
+      <div class="editor-container">
+        <el-empty v-if="currentFile && currentFile.fileType === 2" style="margin-top: 150px;" description=" ">
+        <template #image>
+          <img src="@/assets/ioc/document/folder-1.png" style="width: 100px" />
+        </template>
+      </el-empty>
+        <template v-else>
+          <Toolbar :editor="editor" :defaultConfig="toolbarConfig" :mode="mode" style="border-bottom: 1px solid #ccc"/>
+          <Editor 
             v-model="html"
             :defaultConfig="editorConfig"
             :mode="mode"
             @onCreated="onCreated"
-            />
-        </div>
-    </el-main>
-      <el-dialog
-        title="新增文件/文件夹"
-        :visible.sync="dialogVisible"
-        width="400px"
-        @close="cancelAddFile"
-      >
-        <el-input
-          v-model="newfileTitle"
-          placeholder="请输入标题"
-          maxlength="100"
-          show-word-limit
-        />
-        <el-radio-group v-model="fileType">
-            <el-radio :label="1">文件</el-radio>
-            <el-radio :label="2">文件夹</el-radio>
-          </el-radio-group>
-        <template #footer>
-          <el-button @click="cancelAddFile">取消</el-button>
-          <el-button type="primary" @click="addFile">新增</el-button>
+            style="height: 100%; overflow-y: hidden"
+          />
         </template>
-      </el-dialog>
+      </div>
+    </el-main>
+
+    <!-- 新增文件对话框 -->
+    <el-dialog title="新增文件/文件夹" :visible.sync="dialogVisible" width="400px" @close="cancelAddFile">
+      <el-input v-model="newfileTitle" placeholder="请输入标题" maxlength="100" show-word-limit />
+      <el-radio-group v-model="fileType" style="margin-top: 20px;">
+        <el-radio :label="1">文件</el-radio>
+        <el-radio :label="2">文件夹</el-radio>
+      </el-radio-group>
+      <template #footer>
+        <el-button @click="cancelAddFile">取消</el-button>
+        <el-button type="primary" @click="addFile">新增</el-button>
+      </template>
+    </el-dialog>
   </el-container>
 </template>
 
 <script>
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
-import '@wangeditor/editor/dist/css/style.css'
-import { toolbarConfig, editorConfig, editorMode } from '@/utils/editorConfig.js';
-import {getFileList,saveFile} from '@/api/file'
-import { getUniqueCode } from '@/api/public';
+import "@wangeditor/editor/dist/css/style.css";
+import { toolbarConfig, editorConfig, editorMode } from "@/utils/editorConfig.js";
+import { getFileList, saveFile,getFileInfo,saveDocument } from "@/api/file";
+import { getUniqueCode } from "@/api/public";
 
 export default {
-  name: 'documentPage',
-  components:{Editor,Toolbar},
+  name: "documentPage",
+  components: { Editor, Toolbar },
   data() {
     return {
       editor: null,
-      html: '',
+      html: "",
       toolbarConfig,
       editorConfig,
       mode: editorMode,
-
-      searchText:'',
-      defaultProps: {
-        children: 'children',
-        label: 'label'
-      },
+      searchText: "",
       currentDocId: null,
-      currentDocName: 'java的学习路线概览',
-      catalogueList:[],
-      newfileTitle:'',
-      dialogVisible:false,
-      fileType:1,
-      currentFileId:0,
-      uniqueCode:'',
-    }
+      currentDocName: "",
+      currentFile:null,
+      catalogueList: [],
+      newfileTitle: "",
+      dialogVisible: false,
+      fileType: 1,
+      currentFilePid: 0,
+      currentFileName: "",
+      uniqueCode: "",
+      selectCatalogueId: null,
+      folderStack: [],
+      catalogueLoadStatus:false,
+    };
   },
   methods: {
     onCreated(editorInstance) {
-      this.editor = editorInstance
+      this.editor = editorInstance;
     },
-    handleNodeClick(node) {
-      this.currentDocId = node.id
-      this.currentDocName = node.label
-      // 假设加载文档内容
-      this.editor.txt.html(`<p>这是"${node.label}"的内容</p>`)
-    },
-    saveDoc() {
-      const html = this.editor.txt.html()
-      console.log('保存文档内容：', html)
-      // 可调用接口进行保存
-    },
-    deleteDoc() {
-      this.editor.txt.clear()
-      this.currentDocName = ''
-      this.currentDocId = null
-    },
-    uploadDoc() {
-      this.$message.info('上传功能待开发')
-    },
-    addFile(){
-      //新增文件
-      saveFile({
-        pid:this.currentDocId,
-        name:this.newfileTitle,
-        fileType:this.fileType,
-        uniqueCode:this.uniqueCode
-      }).then(res=>{
-        res=res.data
-        if(res.code===200){
-          this.$message.success('新增成功')
+    async addFile() {
+      try {
+        const res = await saveFile({
+          pid: this.currentFilePid,
+          name: this.newfileTitle,
+          fileType: this.fileType,
+          uniqueCode: this.uniqueCode
+        });
+
+        if (res.data.code === 200) {
+          this.$message.success("新增成功");
+          this.loadCatalogue();
+        } else {
+          this.$message.error("新增失败");
         }
-      })
-      this.cancelAddFile()
+      } catch (err) {
+        this.$message.error("新增失败");
+      }
+      this.cancelAddFile();
     },
-    async openAddFile(){
+    async openAddFile() {
       try {
         const res = await getUniqueCode();
         const code = res?.data?.data;
-        if (!code) {
-          this.$message.error('获取会话编号失败');
-          return;
-        }
+        if (!code) throw new Error();
         this.uniqueCode = code;
         this.dialogVisible = true;
       } catch (e) {
-        this.$message.error('请求唯一码失败');
-        console.error(e);
+        this.$message.error("获取会话编号失败");
       }
-      this.dialogVisible=true
     },
-    cancelAddFile(){
-      this.dialogVisible=false
-      this.fileType=1
-      this.newfileTitle=''
-    }
+    cancelAddFile() {
+      this.dialogVisible = false;
+      this.fileType = 1;
+      this.newfileTitle = "";
+    },
+    async handleClickFile(item) {
+      this.selectCatalogueId = item.id;
+      this.currentDocName = item.name;
+      if (item.fileType === 1) {
+        // 文件：加载内容
+        this.currentDocId = item.id;
+        const res = await getFileInfo({ id: item.id });
+        this.currentFile = res.data.data;
+        this.html = this.currentFile.content || "";
+      } else {
+        // 文件夹：清空富文本内容
+        this.currentFile = item;
+        this.html = "";
+      }
+    },
+    async handleDoubleClickFile(item) {
+      this.selectCatalogueId = item.id;
+      if (item.fileType === 2) {
+        this.folderStack.push({ id: this.currentFilePid, name: this.currentFileName });
+        this.currentFileName = item.name;
+        this.currentFilePid = item.id;
+        //重新加载一次文件列表
+        await this.loadCatalogue();
+        this.selectFirstFile()
+      } else {
+        // 文件：仅选中并显示内容（已在点击处理）
+      }
+    },
+    async backLevel() {
+      const prev = this.folderStack.pop();
+      if (prev) {
+        this.currentFilePid = prev.id;
+        this.currentFileName = prev.name;
+        await this.loadCatalogue();
+        this.selectFirstFile()
+      }
+    },
+    async loadCatalogue() {
+      this.catalogueLoadStatus=true
+      this.catalogueList=[]
+      const res = await getFileList({ pid: this.currentFilePid });
+      this.catalogueLoadStatus=false
+      this.catalogueList = res.data.data;
+    },
+    selectFirstFile(){
+      if(this.catalogueList.length>0){
+        const firstFileTypeOne = this.catalogueList.find(item => item.fileType === 1);
+        this.handleClickFile(firstFileTypeOne)
+      }
+    },
+    async saveDoc() {
+      if (!this.currentFile || this.currentFile.fileType !== 1) {
+        this.$message.warning("当前不是一个可保存的文件");
+        return;
+      }
+
+      const htmlContent = this.html; // 正确用 v-model 的数据
+      console.log("保存文档内容：", htmlContent);
+
+      // 调用保存 API
+      try {
+        const res = await saveDocument({
+          id: this.currentFile.id,
+          content: htmlContent
+        });
+        if (res.data.code === 200) {
+          this.$message.success("保存成功");
+        } else {
+          this.$message.error("保存失败");
+        }
+      } catch (e) {
+        this.$message.error("保存异常");
+      }
+    },
   },
   beforeDestroy() {
-      if (this.editor) {
-          this.editor.destroy()
-          this.editor = null
-      }
+    if (this.editor) {
+      this.editor.destroy();
+      this.editor = null;
+    }
   },
-  created(){
-    getFileList({
-      pid:this.currentFileId
-    }).then(res=>{
-      res=res.data
-      console.info(res)
-      this.catalogueList=res.data
-    })
-  },
-}
+  async created() {
+    await this.loadCatalogue();
+    this.selectFirstFile()
+  }
+};
 </script>
+
 
 <style scoped>
 .el-main {
@@ -220,8 +276,7 @@ export default {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border-top: 1px solid #ccc;;
 }
 
 /* toolbar 高度固定 */
@@ -316,6 +371,9 @@ export default {
   height: 1px;
   width: 100%;
   background-color: rgb(230, 230, 230); /* 线的颜色 */
+}
+.selected{
+  background-color: #f5f7fa;
 }
 
 .more-icon {

@@ -4,11 +4,13 @@ import store from '@/store';
 import router from '@/router';
 import { Message } from 'element-ui';
 
-  
+
+const baseURL= 'http://localhost:8901'
+// const baseURL= 'http://112.74.191.203:8901'
+
 // 创建axios实例  
 const instance = axios.create({  
-  baseURL: 'http://localhost:8901', 
-  // baseURL: 'http://112.74.191.203:8901',
+  baseURL:baseURL,
   timeout: 5000, // 请求超时时间  
   // 你可以在这里设置更多的请求配置选项，如headers等  
 });
@@ -41,10 +43,10 @@ instance.interceptors.response.use(
       store.dispatch('logout')
     }else{
       Message({
-        message: res.message,
+        message: res.msg,
         type: 'warning'
       });
-      return Promise.reject(new Error(res.message || '请求错误'));
+      return response
     }
   },
   error => {
@@ -52,7 +54,7 @@ instance.interceptors.response.use(
       message: '系统错误，请联系管理员',
       type: 'warning'
     });
-    return Promise.reject(error);
+    console.info(error)
   }
 );
   
@@ -64,4 +66,6 @@ export function get(url, params = {}) {
 // 封装post请求  
 export function post(url, data = {}) {  
   return instance.post(url, data);  
-}  
+}
+
+export {baseURL}
