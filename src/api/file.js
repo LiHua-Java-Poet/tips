@@ -15,3 +15,7 @@ export function getFileInfo(params) {
 export function saveDocument(data) {
     return post('/app/file/saveDocument', data)
 }
+
+export function deleteDocument(data) {
+    return post('/app/file/delete', data)
+}

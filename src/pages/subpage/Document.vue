@@ -37,13 +37,25 @@
           <img
             :src="item.fileType == 2 ? require('@/assets/ioc/document/folder.png') : require('@/assets/ioc/document/file.png')"
           />
-          <div>{{ item.name }}</div>
+          <!-- 修改：条件渲染文件名或输入框 -->
+          <div v-if="editingItemId !== item.id" >
+            {{ item.name }}
+          </div>
+          <el-input
+            v-else
+            v-model="editingName"
+            ref="renameInput"
+            size="mini"
+            @blur="saveRename(item)"
+            @keyup.enter="saveRename(item)"
+            @keyup.esc="cancelRename"
+          />
           <el-popover placement="bottom" trigger="click" popper-class="custom-popover" width="100">
             <div class="popover-menu">
-              <div class="popover-menu-item">重命名</div>
-              <div class="popover-menu-item">删除</div>
+              <div class="popover-menu-item"  @click="startRename(item)">重命名</div>
+              <div class="popover-menu-item" @click="deleteDocument(item)">删除</div>
               <div class="popover-menu-item">移动到</div>
-              <div class="popover-menu-item">分享</div>
+              <div class="popover-menu-item" v-if="item.fileType==1">分享</div>
             </div>
             <img class="more-icon" slot="reference" src="@/assets/ioc/document/more.png" />
           </el-popover>
@@ -68,11 +80,20 @@
 
       <!-- 富文本编辑器区域 -->
       <div class="editor-container">
+        <!-- 文件夹状态 -->
         <el-empty v-if="currentFile && currentFile.fileType === 2" style="margin-top: 150px;" description=" ">
-        <template #image>
-          <img src="@/assets/ioc/document/folder-1.png" style="width: 100px" />
-        </template>
-      </el-empty>
+          <template #image>
+            <img src="@/assets/ioc/document/folder-1.png" style="width: 100px" />
+          </template>
+        </el-empty>
+        <!-- 文件加载状态 -->
+        <div v-else-if="loadingContent" class="loading-overlay">
+          <div class="loading-content">
+            <i class="el-icon-loading" style="font-size: 40px;"></i>
+            <p>加载中...</p>
+          </div>
+        </div>
+        <!-- 编辑器正常状态 -->
         <template v-else>
           <Toolbar :editor="editor" :defaultConfig="toolbarConfig" :mode="mode" style="border-bottom: 1px solid #ccc"/>
           <Editor 
@@ -105,7 +126,7 @@
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import "@wangeditor/editor/dist/css/style.css";
 import { toolbarConfig, editorConfig, editorMode } from "@/utils/editorConfig.js";
-import { getFileList, saveFile,getFileInfo,saveDocument } from "@/api/file";
+import { getFileList, saveFile,getFileInfo,saveDocument,deleteDocument } from "@/api/file";
 import { getUniqueCode } from "@/api/public";
 
 export default {
@@ -132,6 +153,9 @@ export default {
       selectCatalogueId: null,
       folderStack: [],
       catalogueLoadStatus:false,
+      loadingContent:false,
+      editingItemId: null,   // 新增：当前正在编辑的文件/文件夹ID
+      editingName: "",       // 新增：编辑中的名称
     };
   },
   methods: {
@@ -177,12 +201,29 @@ export default {
     async handleClickFile(item) {
       this.selectCatalogueId = item.id;
       this.currentDocName = item.name;
+      
       if (item.fileType === 1) {
         // 文件：加载内容
         this.currentDocId = item.id;
-        const res = await getFileInfo({ id: item.id });
-        this.currentFile = res.data.data;
-        this.html = this.currentFile.content || "";
+        this.currentFile = item;
+        
+        // 显示加载状态
+        this.loadingContent = true;
+        
+        try {
+          const res = await getFileInfo({ id: item.id });
+          if (res.data.code === 200) {
+            this.currentFile = res.data.data;
+            this.html = this.currentFile.content || "";
+          } else {
+            this.$message.error("获取文件内容失败");
+          }
+        } catch (e) {
+          this.$message.error("加载文件内容时出错");
+        } finally {
+          // 隐藏加载状态
+          this.loadingContent = false;
+        }
       } else {
         // 文件夹：清空富文本内容
         this.currentFile = item;
@@ -247,6 +288,86 @@ export default {
       } catch (e) {
         this.$message.error("保存异常");
       }
+    },
+    deleteDocument(item){
+        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        .then(() => {
+          deleteDocument([item.id]).then(res=>{
+            res=res.data
+            if(res.code==200){
+              this.$message.success("删除成功")
+              this.loadCatalogue()
+            }
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+    },
+        // 新增：开始重命名
+    startRename(item) {
+      this.editingItemId = item.id;
+      this.editingName = item.name;
+      
+      // 下一个tick聚焦到输入框
+      this.$nextTick(() => {
+        if (this.$refs.renameInput && this.$refs.renameInput[0]) {
+          this.$refs.renameInput[0].focus();
+        }
+      });
+    },
+    
+    // 新增：取消重命名
+    cancelRename() {
+      this.editingItemId = null;
+      this.editingName = "";
+    },
+    
+    // 新增：保存重命名
+    async saveRename(item) {
+      if (!this.editingItemId) return;
+      
+      const newName = this.editingName.trim();
+      if (!newName) {
+        this.$message.warning("名称不能为空");
+        return;
+      }
+      
+      if (newName === item.name) {
+        this.cancelRename();
+        return;
+      }
+      
+      try {
+        const res = await saveFile({
+          id: item.id,
+          name: newName,
+          fileType: item.fileType,
+          uniqueCode: this.uniqueCode
+        });
+
+        if (res.data.code === 200) {
+          this.$message.success("重命名成功");
+          // 更新本地数据
+          item.name = newName;
+          // 如果当前选中的是重命名的项，更新显示的名称
+          if (this.selectCatalogueId === item.id) {
+            this.currentDocName = newName;
+          }
+        } else {
+          this.$message.error("重命名失败");
+        }
+      } catch (err) {
+        this.$message.error("重命名失败");
+      }
+      
+      this.cancelRename();
     },
   },
   beforeDestroy() {
@@ -468,19 +589,55 @@ export default {
   cursor: pointer;
 }
 
-.item-text {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgb(115, 115, 115);
-  font-weight: bold;
-}
-
 .content-header-title{
     font-size: larger;
     color: rgb(115, 115, 115);
     font-weight: bold;
 }
 
+/* 新增：加载状态样式 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
+.loading-content {
+  text-align: center;
+  color: #409EFF;
+}
+
+.loading-content p {
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.editor-container {
+  position: relative; /* 为加载状态提供定位上下文 */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  border-top: 1px solid #ccc;;
+}
+
+/* 新增：重命名输入框样式 */
+.select-item .el-input {
+  flex: 1;
+  margin: 0 8px;
+}
+
+.select-item .el-input ::v-deep .el-input__inner {
+  height: 24px;
+  padding: 0 5px;
+  font-size: small;
+  color: rgb(115, 115, 115);
+}
 </style>
