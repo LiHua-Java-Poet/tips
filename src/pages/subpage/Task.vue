@@ -132,7 +132,7 @@
               <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;display: flex;justify-content: space-between;align-items: center;">
                 <span>任务信息</span>
                 <el-tooltip content="编辑任务信息" placement="top">
-                  <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;" src="@/assets/ioc/task/edit.png">
+                  <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;" src="@/assets/ioc/task/edit.png" @click="editTaskOpen(selectedTaskInfo)">
                 </el-tooltip>
               </div>
               <div style="margin-bottom: 10px;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
@@ -180,6 +180,14 @@
         </el-main>
       </el-container>
     </el-container>
+
+    <el-dialog title="编辑任务" :visible.sync="dialogTaskVisible">
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
   </el-container>
 </template>
 
@@ -201,7 +209,9 @@ export default {
       selectedTaskId: null, //  选中任务卡的索引
       selectedTaskInfo: null,
       loadingTaskDetail: false,
-      listLoadStatus:false
+      listLoadStatus:false,
+      dialogTaskVisible:false,
+      editTask:null
     };
   },
   methods: {
@@ -276,6 +286,10 @@ export default {
         await this.getTaskList({page:this.page+1,limit:this.limit,status:this.showStatus})
       }
       this.listLoadStatus=false
+    },
+    editTaskOpen(task){
+      this.editTask=task
+      this.dialogTaskVisible=true
     }
   },
   async created(){
@@ -553,5 +567,9 @@ li::before {
   overflow-y: auto;
   flex: 1;
   padding-right: 4px;
+}
+
+.dialog-footer{
+  
 }
 </style>

@@ -55,7 +55,7 @@
               <div class="popover-menu-item"  @click="startRename(item)">重命名</div>
               <div class="popover-menu-item" @click="deleteDocument(item)">删除</div>
               <div class="popover-menu-item">移动到</div>
-              <div class="popover-menu-item" v-if="item.fileType==1">分享</div>
+              <div class="popover-menu-item" v-if="item.fileType==1">跳转到阅读</div>
             </div>
             <img class="more-icon" slot="reference" src="@/assets/ioc/document/more.png" />
           </el-popover>
@@ -126,7 +126,7 @@
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import "@wangeditor/editor/dist/css/style.css";
 import { toolbarConfig, editorConfig, editorMode } from "@/utils/editorConfig.js";
-import { getFileList, saveFile,getFileInfo,saveDocument,deleteDocument } from "@/api/file";
+import { getFileList, saveFile,getFileInfo,saveDocument,deleteDocument,updateDocument } from "@/api/file";
 import { getUniqueCode } from "@/api/public";
 
 export default {
@@ -343,30 +343,13 @@ export default {
         this.cancelRename();
         return;
       }
-      
-      try {
-        const res = await saveFile({
-          id: item.id,
-          name: newName,
-          fileType: item.fileType,
-          uniqueCode: this.uniqueCode
-        });
-
-        if (res.data.code === 200) {
-          this.$message.success("重命名成功");
-          // 更新本地数据
-          item.name = newName;
-          // 如果当前选中的是重命名的项，更新显示的名称
-          if (this.selectCatalogueId === item.id) {
-            this.currentDocName = newName;
-          }
-        } else {
-          this.$message.error("重命名失败");
+      //在这里发生一次消息更新一次消息的记录
+      await updateDocument({id:item.id,name:newName}).then(res=>{
+        res=res.data
+        if(res.code==200){
+          item.name=newName
         }
-      } catch (err) {
-        this.$message.error("重命名失败");
-      }
-      
+      })
       this.cancelRename();
     },
   },

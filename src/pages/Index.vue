@@ -18,7 +18,7 @@
                     <span class="username">{{user.name}}</span>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item @click.native="navigator('/personage')">个人主页</el-dropdown-item>
+                    <el-dropdown-item @click.native="jumpPersonage()">个人主页</el-dropdown-item>
                     <el-dropdown-item @click.native="logout()">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
@@ -100,7 +100,7 @@ export default {
     },
     isCollapse(){
       return this.$store.getters.collapse;
-    }
+    },
   },
   methods: {
     toggleCollapse() {
@@ -114,7 +114,12 @@ export default {
     logout() {
       this.$router.push('/login');
       this.$store.dispatch('logout');
+    },
+    jumpPersonage(){
+      window.open('/#/personage')
+      // this.navigator('/personage')
     }
+
   },
   created(){
     console.info('刷新了页面')

@@ -19,3 +19,7 @@ export function saveDocument(data) {
 export function deleteDocument(data) {
     return post('/app/file/delete', data)
 }
+
+export function updateDocument(data) {
+    return post('/app/file/update', data)
+}
