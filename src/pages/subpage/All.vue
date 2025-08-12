@@ -2,7 +2,25 @@
      <div id="app">
         <div class="layout-container">
             <div class="main-content">
-                你的任务完成量
+                <div class="robot-board">
+                    <div class="robot-avatar">
+                        <img src="@/assets/ioc/index/robot.png"/>
+                        <div style="font-size: small;color: rgb(114, 114, 114);">Tips提示您</div>
+                    </div>
+                    <div class="robot-message">
+                        回顾近期的任务管理状况，我们发现存在一些值得关注并亟待改进的问题。首先，在最近创建的一批六个任务中，执行结果并不理想：其中一个被取消，仅有一个顺利完成，尚有一个正在进行中。更令人担忧的是，从更广泛的统计来看，截至目前已完成的任务总数仅为二十三个，但被取消的任务数量却高达十二个。这种高比例的取消率非常值得警惕，我们必须坚决避免随意取消任务的行为。 频繁取消不仅直接导致计划目标无法达成，浪费了前期投入的资源和精力，更会严重损害整体计划的连贯性和最终效果，甚至影响团队的执行信心。
+                    </div>
+                </div>
+                <el-divider content-position="left">从这里开始</el-divider>
+                <div class="action-buttons">
+                    <button class="action-button task">
+                        <i class="fas fa-plus"></i> 创建任务
+                    </button>
+                    <button class="action-button">
+                        <i class="fas fa-project-diagram"></i> 创建计划
+                    </button>
+                </div>
+                <el-divider content-position="left">最近的小记</el-divider>
             </div>
                 
             <div class="status-cards">
@@ -96,9 +114,9 @@ export default{
         .main-content {
             flex: 1;
             background: white;
-            border-radius: 16px;
+            border-radius: 6px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            padding: 40px;
+            padding: 15px 20px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -298,4 +316,81 @@ export default{
                 font-size: 22px;
             }
         }
+        .robot-board {
+            display: flex;           /* 左右布局 */
+            align-items: flex-start;     /* 垂直居中 */
+            gap: 25px;               /* 图片与文字间距 */
+        }
+
+        .robot-avatar img {
+            width: 90px;             /* 图片宽度 */
+            height: auto;            /* 高度自动按比例 */
+        }
+
+        .robot-message {
+            background-color: #f0f0f0;   /* 气泡背景色 */
+            padding: 10px 14px;
+            border-radius: 12px;
+            line-height: 1.4;
+            max-width: 80%;           /* 防止太宽 */
+            position: relative;
+            text-align: left;  /* 文字左对齐 */
+        }
+
+        /* 气泡小三角 */
+        .robot-message::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 14px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-right: 8px solid #f0f0f0;
+            border-bottom: 8px solid transparent;
+        }
+
+            /* 按钮区域 */
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .action-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        .action-button i {
+            font-size: 18px;
+        }
+        
+        .action-button.task {
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .action-button.task:hover {
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+        }
+
 </style>

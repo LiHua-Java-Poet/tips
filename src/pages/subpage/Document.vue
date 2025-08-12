@@ -50,14 +50,19 @@
             @keyup.enter="saveRename(item)"
             @keyup.esc="cancelRename"
           />
-          <el-popover placement="bottom" trigger="click" popper-class="custom-popover" width="100">
+          <el-popover 
+            placement="bottom" 
+            trigger="click" 
+            popper-class="custom-popover" 
+            width="100" @click.stop
+          >
             <div class="popover-menu">
               <div class="popover-menu-item"  @click="startRename(item)">重命名</div>
               <div class="popover-menu-item" @click="deleteDocument(item)">删除</div>
               <div class="popover-menu-item">移动到</div>
               <div class="popover-menu-item" v-if="item.fileType==1">跳转到阅读</div>
             </div>
-            <img class="more-icon" slot="reference" src="@/assets/ioc/document/more.png" />
+            <img class="more-icon" slot="reference" src="@/assets/ioc/document/more.png"  @click.stop/>
           </el-popover>
         </div>
         <el-skeleton v-if="catalogueLoadStatus"/>
