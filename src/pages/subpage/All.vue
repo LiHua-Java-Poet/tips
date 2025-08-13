@@ -7,17 +7,23 @@
                         <img src="@/assets/ioc/index/robot.png"/>
                         <div style="font-size: small;color: rgb(114, 114, 114);">Tips提示您</div>
                     </div>
-                    <div class="robot-message">
+                    <!-- <div class="robot-message">
                         回顾近期的任务管理状况，我们发现存在一些值得关注并亟待改进的问题。首先，在最近创建的一批六个任务中，执行结果并不理想：其中一个被取消，仅有一个顺利完成，尚有一个正在进行中。更令人担忧的是，从更广泛的统计来看，截至目前已完成的任务总数仅为二十三个，但被取消的任务数量却高达十二个。这种高比例的取消率非常值得警惕，我们必须坚决避免随意取消任务的行为。 频繁取消不仅直接导致计划目标无法达成，浪费了前期投入的资源和精力，更会严重损害整体计划的连贯性和最终效果，甚至影响团队的执行信心。
+                    </div> -->
+                    <div class="robot-message">
+                        你目前没有任何的计划或者排期
                     </div>
                 </div>
                 <el-divider content-position="left">从这里开始</el-divider>
                 <div class="action-buttons">
-                    <button class="action-button task">
-                        <i class="fas fa-plus"></i> 创建任务
+                    <button class="action-button task" @click="addTaskOrPlan('创建任务')" >
+                        <i class="fas"></i> 创建任务
+                    </button>
+                    <button class="action-button"  @click="addTaskOrPlan('创建计划')">
+                        <i class="fas"></i> 创建计划
                     </button>
                     <button class="action-button">
-                        <i class="fas fa-project-diagram"></i> 创建计划
+                        <i class="fas"></i> 快捷小计
                     </button>
                 </div>
                 <el-divider content-position="left">最近的小记</el-divider>
@@ -71,6 +77,15 @@
                 </el-card>
             </div>
         </div>
+        <!-- 侧边栏 -->
+        <el-drawer
+            :title="title"
+            :visible.sync="drawer"
+            :direction="direction"
+            :before-close="handleClose"
+            size="600px">
+            <span>我来啦!</span>
+        </el-drawer>
     </div>
 </template>
 
@@ -89,7 +104,10 @@ export default{
                 processTask: 0,
                 totalPlan: 0,
                 totalTask: 0
-            }
+            },
+            drawer: false,
+            direction: 'rtl',
+            title:''
         }
     },
     created(){
@@ -98,6 +116,15 @@ export default{
         }).catch(err=>{
             console.info(err)
         })
+    },
+    methods:{
+        handleClose(){
+            this.drawer=false
+        },
+        addTaskOrPlan(name){
+            this.title=name
+            this.drawer=true
+        }
     }
 }
 </script>
@@ -317,9 +344,15 @@ export default{
             }
         }
         .robot-board {
-            display: flex;           /* 左右布局 */
-            align-items: flex-start;     /* 垂直居中 */
-            gap: 25px;               /* 图片与文字间距 */
+            display: flex;
+            align-items: flex-start; /* 保证头像在顶部对齐 */
+            gap: 25px;
+        }
+
+        .robot-avatar {
+            flex-shrink: 0; /* 防止被压缩 */
+            align-self: flex-start; /* 保证一直在最上方 */
+            text-align: center; /* Tips 提示文字居中 */
         }
 
         .robot-avatar img {
@@ -350,47 +383,39 @@ export default{
             border-bottom: 8px solid transparent;
         }
 
-            /* 按钮区域 */
+        /* 按钮区域调整为左对齐 */
         .action-buttons {
             display: flex;
             gap: 20px;
             margin-top: 10px;
             width: 100%;
-            justify-content: center;
+            justify-content: flex-start; /* ✅ 左对齐 */
         }
         
-        .action-button {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .action-button {
+        background: rgba(64, 158, 255); /* 固定按钮背景色（蓝色） */
+        color: white;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 4px; /* 方圆角效果 */
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: none; /* 去掉阴影 */
+    }
         
         .action-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(114, 114, 114, 0.4);
         }
         
         .action-button i {
             font-size: 18px;
         }
-        
-        .action-button.task {
-            background: linear-gradient(135deg, var(--success-color), #27ae60);
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
-        }
-        
-        .action-button.task:hover {
-            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
-        }
+
 
 </style>
