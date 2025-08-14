@@ -16,10 +16,10 @@
                 </div>
                 <el-divider content-position="left">从这里开始</el-divider>
                 <div class="action-buttons">
-                    <button class="action-button task" @click="addTaskOrPlan('创建任务')" >
+                    <button class="action-button" @click="addTask('创建任务')" >
                         <i class="fas"></i> 创建任务
                     </button>
-                    <button class="action-button"  @click="addTaskOrPlan('创建计划')">
+                    <button class="action-button"  @click="addPlan('创建计划')">
                         <i class="fas"></i> 创建计划
                     </button>
                     <button class="action-button">
@@ -27,6 +27,16 @@
                     </button>
                 </div>
                 <el-divider content-position="left">最近的小记</el-divider>
+                <div class="recent-notes">
+                    <div 
+                        v-for="(item, index) in messageList" 
+                        :key="index"
+                        class="note-item"
+                    >
+                        <div class="note-title">{{ item.sessionTitle }}</div>
+                        <div class="note-content">{{ item.content }}</div>
+                    </div>
+                </div>
             </div>
                 
             <div class="status-cards">
@@ -83,16 +93,94 @@
             :visible.sync="drawer"
             :direction="direction"
             :before-close="handleClose"
-            size="600px">
-            <span>我来啦!</span>
+            size="600px"
+        >
+            <!-- 表单 -->
+            <el-form ref="taskForm" :model="taskForm" :rules="rules" label-width="100px" style="padding-right: 30px;">
+
+            <el-form-item label="任务名" prop="taskName">
+                <el-input maxlength="20" v-model="taskForm.taskName" placeholder="请输入任务名" />
+            </el-form-item>
+
+            <el-form-item label="任务时间" prop="taskTime">
+                <el-date-picker
+                    v-model="taskForm.taskTime"
+                    type="date"
+                    placeholder="选择日期">
+                </el-date-picker>
+            </el-form-item>
+
+            <el-form-item label="备注内容" prop="itemToList">
+                <div v-for="(item, index) in taskForm.itemToList" :key="index" style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <span
+                    style="
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 24px;
+                        height: 24px;
+                        background-color: #e0e0e0;
+                        border-radius: 50%;
+                        font-size: 12px;
+                        color: #333;
+                        margin-right: 15px;
+                    "
+                    >
+                    {{ item.no }}
+                    </span>
+
+                    <!-- 序号内容 -->
+                    <el-input
+                    v-model="item.itemContext"
+                    placeholder="请输入内容"
+                    style="flex: 1; margin-right: 10px;"
+                    ></el-input>
+
+                    <!-- 删除按钮 -->
+                    <el-button type="danger" icon="el-icon-delete" @click="removeItem(index)" circle></el-button>
+                </div>
+
+                <!-- 添加按钮 -->
+                <el-button type="primary" icon="el-icon-plus" circle @click="addItem"></el-button>
+                </el-form-item>
+
+
+            <el-form-item label="任务类型" prop="taskType">
+                <el-select v-model="taskForm.taskType" placeholder="请选择类型">
+                <el-option label="学习" :value="1" />
+                <el-option label="锻炼" :value="2" />
+                <el-option label="写作" :value="3" />
+                <el-option label="阅读" :value="4" />
+                <el-option label="影视" :value="5" />
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="附件内容" prop="annexFiles">
+                <AnnexFileUpload v-model="taskForm.annexFiles"/>
+            </el-form-item>
+            </el-form>
+
+            <!-- 底部按钮 -->
+            <div style="text-align:right; margin-top:20px;padding-right: 30px;">
+                <el-button @click="handleClose()">取消</el-button>
+                <el-button type="primary" @click="submitFormTask">保存</el-button>
+            </div>
         </el-drawer>
     </div>
 </template>
 
 <script>
 import { getUserDataTo } from '@/api/public';
+import {getMessageList} from '@/api/collect'
+import AnnexFileUpload from '@/components/AnnexFileUpload.vue';
+import { getUniqueCode } from '@/api/public';
+import { saveTask } from '@/api/task';
+
 export default{
     name:'allPage',
+    components:{
+        AnnexFileUpload
+    },
     data(){
         return{
             userDataTo:{
@@ -107,7 +195,20 @@ export default{
             },
             drawer: false,
             direction: 'rtl',
-            title:''
+            title:'',
+            messageList:[], //记录的列表
+            uniqueCode:null,
+            taskForm: {
+                taskName: "",
+                taskTime: 0,
+                itemToList: [],
+                taskType: 1,
+                annexFiles:[]
+            },
+            rules: {
+                task_name: [{ required: true, message: "请输入任务名", trigger: "blur" }],
+                status: [{ required: true, message: "请选择状态", trigger: "change" }]
+            }
         }
     },
     created(){
@@ -116,21 +217,67 @@ export default{
         }).catch(err=>{
             console.info(err)
         })
+        getMessageList({
+            page:1,
+            limit:5
+        }).then(res=>{
+            this.messageList=res.data.data.list
+        }).catch(err=>{
+            console.info(err)
+        })
     },
     methods:{
         handleClose(){
+            this.taskForm = {
+                taskName: "",
+                taskTime: 0,
+                itemToList: [],
+                taskType: 1,
+                annexFiles:[]
+            }
             this.drawer=false
         },
-        addTaskOrPlan(name){
+        async addTask(name){
+            //获取到唯一码作为上传使用的
+            await getUniqueCode().then(res=>{
+                this.uniqueCode=res.data.data
+            })
+            this.taskForm.taskTime = new Date(); 
             this.title=name
             this.drawer=true
-        }
+            //初始化一遍时间
+        },
+        submitFormTask(){
+            const payload = {
+                ...this.taskForm,
+                uniqueCode: this.uniqueCode  // 这里加新属性
+            }
+            payload.taskTime=Math.floor(payload.taskTime.getTime() / 1000);
+            saveTask(payload).then(res=>{
+                if(res.data.code==200){
+                    this.$message.success('新增成功')
+                    this.handleClose()
+                }
+            })
+        },
+        addItem() {
+            this.taskForm.itemToList.push({
+            no: this.taskForm.itemToList.length + 1,
+            itemContext: ''
+            });
+        },
+        removeItem(index) {
+            this.taskForm.itemToList.splice(index, 1);
+            // 删除后重排序号
+            this.taskForm.itemToList.forEach((item, i) => {
+                item.no = i + 1;
+            });
+        },
     }
 }
 </script>
 
 <style>
-        
         .layout-container {
             display: flex;
             gap: 15px;
@@ -201,10 +348,6 @@ export default{
             background: #3498db;
             border-radius: 10px;
             margin-right: 10px;
-        }
-        
-        .task-card .plan-status-title::before {
-            background: #3498db;
         }
         
         .plan-card .plan-status-title::before {
@@ -396,10 +539,10 @@ export default{
         background: rgba(64, 158, 255); /* 固定按钮背景色（蓝色） */
         color: white;
         border: none;
-        padding: 12px 28px;
+        padding: 6px 14px;
         border-radius: 4px; /* 方圆角效果 */
         font-size: 16px;
-        font-weight: 600;
+        font-weight: 400;
         cursor: pointer;
         transition: background 0.3s ease;
         display: flex;
@@ -417,5 +560,43 @@ export default{
             font-size: 18px;
         }
 
+    .recent-notes {
+        width: 100%;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .note-item {
+        background: #ffffff;
+        padding: 12px 16px;
+        border-radius: 8px;
+        text-align: left; /* 确保所有文本靠左 */
+        border: 1px solid #e6e6e6;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .note-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-color: #d0d0d0;
+    }
+
+    /* 标题样式 */
+    .note-title {
+        font-size: 15px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+
+    /* 内容样式 */
+    .note-content {
+        font-size: 14px;
+        color: #555;
+        line-height: 1.5;
+    }
 
 </style>

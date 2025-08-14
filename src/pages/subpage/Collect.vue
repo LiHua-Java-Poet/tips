@@ -21,11 +21,16 @@
         <el-main class="chat-container">
             <!-- 聊天区域 -->
                 <!-- 消息显示区域 -->
-                <div class="chat-message-area">
-                  <div class="message" v-for="(msg, index) in messages" :key="index">
-                    <div class="message-bubble">{{ msg.content }}</div>
+              <div class="chat-message-area">
+                <div class="message" v-for="(msg, index) in messages" :key="index">
+                  <div class="message-bubble">
+                    {{ msg.content }}
                   </div>
+                  <span class="delete-btn" @click="deleteMessage(msg)">
+                    <img style="width: 20px;height: 20px;" src="@/assets/ioc/collect/delete.png"/>
+                  </span>
                 </div>
+              </div>
                 <!-- 控件区域 -->
                 <div>
                   <el-radio-group v-model="radio">
@@ -79,7 +84,7 @@
 </template>
 
 <script>
-import { getSessionList,saveSession ,getMessageList,saveMessage} from '@/api/collect';
+import { getSessionList,saveSession ,getMessageList,saveMessage,deleteMessage} from '@/api/collect';
 import { getUniqueCode } from '@/api/public';
 export default {
   name: "collectPage",
@@ -168,6 +173,19 @@ export default {
       await getMessageList({sessionId:id}).then(res=>{
         this.messages=res.data.data
       })
+    },
+    deleteMessage(msg){
+          this.$confirm('确认删除？')
+          .then(() => {
+            deleteMessage([msg.id]).then(()=>{
+              let index = this.messages.indexOf(msg);
+              if (index !== -1) {
+                  this.messages.splice(index, 1);
+              }
+              this.$message.success('删除成功')
+            })
+          })
+          .catch(() => {});
     }
   },
   mounted() {
@@ -294,7 +312,9 @@ export default {
 .message {
   margin-bottom: 10px;
   display: flex;
+  align-items: center;
 }
+
 .message-bubble {
   background-color: #f1f3f5;
   padding: 10px 14px;
@@ -304,6 +324,24 @@ export default {
   word-break: break-word;
   white-space: pre-wrap;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.message-bubble:hover {
+  background: #e9e9e9;
+}
+
+/* 默认隐藏按钮 */
+.delete-btn {
+  margin-left: 8px;
+  color: #999;
+  cursor: pointer;
+  display: none;
+  white-space: nowrap;
+}
+
+/* 当鼠标悬停在整条 message（气泡或按钮）时显示按钮 */
+.message:hover .delete-btn {
+  display: inline;
 }
 
 /* 控件（Radio）区域 */

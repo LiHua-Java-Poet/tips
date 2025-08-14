@@ -15,3 +15,7 @@ export function getMessageList(params) {
 export function saveMessage(data) {
     return post('/app/message/save', data)
 }
+
+export function deleteMessage(data) {
+    return post('/app/message/delete', data)
+}

@@ -148,6 +148,9 @@
                   </li>
                 </ul>
               </div>
+              <div style="margin-bottom: 10px;"><strong>附件内容:</strong>
+                <AnnexFileView/>
+              </div>
               <!-- 操作按钮 -->
               <div class="icon-row" v-if="selectedTaskInfo.status==1">
                 <el-tooltip effect="dark" content="完成任务" placement="top">
@@ -193,10 +196,14 @@
 
 <script>
 import { getTaskList,getTaskInfo,cancelTask,completeTask,deleteTask } from '@/api/task';
+import AnnexFileView from '@/components/AnnexFileView.vue';
 import {formatDate} from '@/utils/navigator'
 
 export default {
   name: "taskPage",
+  components:{
+    AnnexFileView
+  },
   data() {
     return {
       showStatus: 1,
@@ -266,8 +273,11 @@ export default {
             type: 'success',
             message: finish
           });
-          //修改切换任务
-          this.getTaskList({page:1,limit:10,status:this.showStatus})
+          //修改切换任务,这里改为前端去除掉对应的任务
+          const index = this.taskList.findIndex(item => item.id === id);
+          if (index !== -1) {
+            this.taskList.splice(index, 1);
+          }
           this.selectedTaskId=null
           if(this.taskList.length==0)return
           this.selectedTask(this.taskList[0].id)

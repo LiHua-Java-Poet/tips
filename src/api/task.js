@@ -17,5 +17,9 @@ export function completeTask(data) {
 }
 
 export function deleteTask(data) {
-    return post('/app/user/delete', data)
+    return post('/app/task/delete', data)
+}
+
+export function saveTask(data) {
+    return post('/app/task/save', data)
 }
