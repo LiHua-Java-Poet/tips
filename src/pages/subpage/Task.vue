@@ -149,7 +149,7 @@
                 </ul>
               </div>
               <div style="margin-bottom: 10px;"><strong>附件内容:</strong>
-                <AnnexFileView/>
+                <AnnexFileView :fileList="selectedTaskInfo.annexFiles"/>
               </div>
               <!-- 操作按钮 -->
               <div class="icon-row" v-if="selectedTaskInfo.status==1">

@@ -137,11 +137,11 @@
                     ></el-input>
 
                     <!-- 删除按钮 -->
-                    <el-button type="danger" icon="el-icon-delete" @click="removeItem(index)" circle></el-button>
+                    <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeItem(index)" circle></el-button>
                 </div>
 
                 <!-- 添加按钮 -->
-                <el-button type="primary" icon="el-icon-plus" circle @click="addItem"></el-button>
+                <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="addItem"></el-button>
                 </el-form-item>
 
 
@@ -155,8 +155,11 @@
                 </el-select>
             </el-form-item>
 
-            <el-form-item label="附件内容" prop="annexFiles">
-                <AnnexFileUpload v-model="taskForm.annexFiles"/>
+            <el-form-item label="附件内容">
+                <AnnexFileUpload 
+                :value="taskForm.annexFiles"
+                @update="taskForm.annexFiles = $event"
+                ref="AnnexFileUpload"/>
             </el-form-item>
             </el-form>
 
@@ -200,7 +203,7 @@ export default{
             uniqueCode:null,
             taskForm: {
                 taskName: "",
-                taskTime: 0,
+                taskTime: null,
                 itemToList: [],
                 taskType: 1,
                 annexFiles:[]
@@ -228,14 +231,20 @@ export default{
     },
     methods:{
         handleClose(){
-            this.taskForm = {
-                taskName: "",
-                taskTime: 0,
-                itemToList: [],
-                taskType: 1,
-                annexFiles:[]
-            }
-            this.drawer=false
+            this.$confirm('确认关闭？')
+            .then(() => {
+                Object.assign(this.taskForm, {
+                    taskName: "",
+                    taskTime: null,
+                    itemToList: [],
+                    taskType: 1,
+                    annexFiles:[]
+                });
+                this.drawer=false
+                    //清空一遍子组件的上传内容
+                this.$refs.AnnexFileUpload.cleanFileList();
+            })
+            .catch(() => {return});
         },
         async addTask(name){
             //获取到唯一码作为上传使用的
@@ -256,7 +265,16 @@ export default{
             saveTask(payload).then(res=>{
                 if(res.data.code==200){
                     this.$message.success('新增成功')
-                    this.handleClose()
+                    Object.assign(this.taskForm, {
+                        taskName: "",
+                        taskTime: null,
+                        itemToList: [],
+                        taskType: 1,
+                        annexFiles:[]
+                    });
+                    this.drawer=false
+                        //清空一遍子组件的上传内容
+                    this.$refs.AnnexFileUpload.cleanFileList();
                 }
             })
         },

@@ -59,39 +59,24 @@ import { post } from '@/api/index';
 
 export default {
   name: "AnnexFileUpload",
-  computed: {
-    fileList: {
-      get() {
-        return this.modelValue;
-      },
-      set(val) {
-        this.$emit('update:modelValue', val); // 双向绑定
-      }
-    }
-  },
   data() {
     return {
-      // fileList: [],
+      fileList: [],
       fileTypeIcons: {
         pdf: '/ioc/index/pdf.png',
-        doc: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755156099987.jpg',
-        docx: '@/assets/ioc/index/pdf.png',
-        xls: '@/assets/ioc/index/pdf.png',
-        xlsx: '@/assets/ioc/index/pdf.png',
-        txt: '@/assets/ioc/index/pdf.png',
-        zip: '@/assets/ioc/index/pdf.png',
-        mp3: '@/assets/ioc/index/pdf.png',
-        mp4: '@/assets/ioc/index/pdf.png',
-        default: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755156099987.jpg'
+        doc: '/ioc/index/doc.png',
+        docx: '/ioc/index/doc.png',
+        xls: '/ioc/index/xls.png',
+        xlsx: '/ioc/index/xls.png',
+        txt: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755183395395.png',
+        zip: '/ioc/index/zip.png',
+        mp3: '/ioc/index/mp3.png',
+        mp4: '/ioc/index/mp4.png',
+        default: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755183460029.png'
       }
     };
   },
-  props: {
-    modelValue: {
-      type: Array,
-      default: () => []
-    }
-  },
+  props: ['value'],
   methods: {
     triggerFileSelect() {
       this.$refs.fileInput.click();
@@ -125,7 +110,10 @@ export default {
               previewList: isImage ? [url] : []
             };
 
-            this.fileList = [...this.fileList, fileObj];
+            // this.fileList = [...this.fileList, fileObj];
+            this.fileList.push(fileObj);
+            const newFiles = [...this.fileList, fileObj];
+            this.$emit('update', newFiles);
           })
           .catch(err => {
             console.error('上传失败', file.name, err);
@@ -136,8 +124,11 @@ export default {
       const newList = [...this.fileList];
       newList.splice(index, 1);
       this.fileList = newList;
-    }
-  }
+    },
+    cleanFileList() {
+      this.fileList=[]
+    },
+  },
 };
 </script>
 

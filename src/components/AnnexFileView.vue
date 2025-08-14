@@ -1,7 +1,6 @@
 <template>
   <div class="batch-upload">
     <div class="file-grid">
-      <!-- 文件格子 -->
       <div
         class="file-cell"
         v-for="(file, index) in fileList"
@@ -9,28 +8,27 @@
       >
         <!-- 图片文件 -->
         <el-image
-          v-if="file.isImage"
+          v-if="isImage(file)"
           :src="file.filePath"
           fit="cover"
           class="thumb"
-          :preview-src-list="file.previewList"
+          :preview-src-list="imagePreviewList"
         ></el-image>
 
         <!-- 非图片文件 -->
         <div v-else class="file-icon">
           <img
-            :src="fileTypeIcons[file.fileSuffix] || fileTypeIcons.default"
+            :src="getFileIcon(file.fileSuffix)"
             alt="file icon"
             class="file-type-img"
           />
         </div>
 
-        <!-- 悬停下载图标 -->
+        <!-- 下载按钮 -->
         <div class="hover-overlay" @click.stop>
           <span @click.stop="downloadFile(file.filePath, file.fileName)">⬇</span>
         </div>
 
-        <!-- 文件名 -->
         <span class="file-name" :title="file.fileName">{{ file.fileName }}</span>
       </div>
     </div>
@@ -40,40 +38,69 @@
 <script>
 export default {
   name: "AnnexFileView",
-  props: {
-    fileList: {
-      type: Array,
-      default: () => []
-    }
-  },
+  props: ['fileList'],
   data() {
     return {
       fileTypeIcons: {
         pdf: '/ioc/index/pdf.png',
-        doc: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755156099987.jpg',
-        docx: '/ioc/index/pdf.png',
-        xls: '/ioc/index/pdf.png',
-        xlsx: '/ioc/index/pdf.png',
-        txt: '/ioc/index/pdf.png',
-        zip: '/ioc/index/pdf.png',
-        mp3: '/ioc/index/pdf.png',
-        mp4: '/ioc/index/pdf.png',
-        default: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755156099987.jpg'
+        doc: '/ioc/index/doc.png',
+        docx: '/ioc/index/doc.png',
+        xls: '/ioc/index/xls.png',
+        xlsx: '/ioc/index/xls.png',
+        txt: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755183395395.png',
+        zip: '/ioc/index/zip.png',
+        mp3: '/ioc/index/mp3.png',
+        mp4: '/ioc/index/mp4.png',
+        default: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755183460029.png'
       }
     };
   },
-  methods: {
-    downloadFile(url, name) {
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  computed: {
+    /** 生成所有图片的预览列表 */
+    imagePreviewList() {
+      return this.fileList
+        .filter(file => this.isImage(file))
+        .map(file => file.filePath);
     }
+  },
+  methods: {
+    /** 判断是否是图片（兼容 fileSuffix 缺失的情况） */
+    isImage(file) {
+      const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+      let ext = file.fileSuffix?.toLowerCase();
+      if (!ext && file.filePath) {
+        const match = file.filePath.match(/\.(\w+)(\?.*)?$/);
+        ext = match ? match[1].toLowerCase() : '';
+      }
+      return imageExts.includes(ext);
+    },
+    /** 获取文件类型图标 */
+    getFileIcon(suffix) {
+      return this.fileTypeIcons[suffix?.toLowerCase()] || this.fileTypeIcons.default;
+    },
+    /** 下载文件（跨域 & 本地都支持） */
+    downloadFile(url, name) {
+      fetch(url, { mode: 'cors' })
+        .then(res => res.blob())
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = name || 'download';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl); // 释放内存
+        })
+        .catch(err => {
+          console.error('下载失败:', err);
+        });
+    }
+
   }
 };
 </script>
+
 
 <style scoped>
 .batch-upload {
