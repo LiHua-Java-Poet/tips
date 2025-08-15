@@ -1,32 +1,15 @@
 <template>
-  <div 
-    class="batch-upload"
-    @dragover.prevent
-    @drop.prevent="handleDrop"
-  >
+  <div class="batch-upload" @dragover.prevent @drop.prevent="handleDrop">
     <div class="file-grid">
       <!-- 文件格子 -->
-      <div
-        class="file-cell"
-        v-for="(file, index) in fileList"
-        :key="index"
-      >
+      <div class="file-cell" v-for="(file, index) in fileList" :key="index">
         <!-- 图片文件 -->
-        <el-image
-          v-if="file.isImage"
-          :src="file.filePath"
-          fit="cover"
-          class="thumb"
-          :preview-src-list="file.previewList"
-        ></el-image>
+        <el-image v-if="file.isImage" :src="file.filePath" fit="cover" class="thumb"
+          :preview-src-list="file.previewList"></el-image>
 
         <!-- 非图片文件 -->
         <div v-else class="file-icon">
-          <img
-            :src="fileTypeIcons[file.fileSuffix] || fileTypeIcons.default"
-            alt="file icon"
-            class="file-type-img"
-          />
+          <img :src="fileTypeIcons[file.fileSuffix] || fileTypeIcons.default" alt="file icon" class="file-type-img" />
         </div>
 
         <!-- 悬停删除图标 -->
@@ -40,13 +23,7 @@
 
       <!-- 上传按钮格子 -->
       <div class="upload-cell" @click="triggerFileSelect">
-        <input
-          type="file"
-          ref="fileInput"
-          multiple
-          @change="handleFilesSelected"
-          style="display:none;"
-        />
+        <input type="file" ref="fileInput" multiple @change="handleFilesSelected" style="display:none;" />
         <i class="fas fa-upload"></i>
         <p>上传文件</p>
       </div>
@@ -111,7 +88,7 @@ export default {
             };
 
             // this.fileList = [...this.fileList, fileObj];
-            this.fileList.push(fileObj);
+            // this.fileList.push(fileObj);
             const newFiles = [...this.fileList, fileObj];
             this.$emit('update', newFiles);
           })
@@ -121,13 +98,40 @@ export default {
       }
     },
     removeFile(index) {
-      const newList = [...this.fileList];
-      newList.splice(index, 1);
-      this.fileList = newList;
+      this.fileList.splice(index, 1);
+      this.$emit('update', this.fileList); // 同步给父组件
     },
     cleanFileList() {
-      this.fileList=[]
+      this.fileList = []
+      this.$emit('update', []);
     },
+    formatFiles(files) {
+      return (files || []).map(file => {
+        const suffix = (file.fileSuffix || file.suffix || file.name?.split('.').pop() || '').toLowerCase();
+        const filePath = file.filePath || file.url || '';
+        const fileName = file.fileName || file.name || '';
+
+        const isImage = /(png|jpg|jpeg|gif|bmp)/i.test(suffix);
+
+        return {
+          fileName,
+          filePath,
+          fileSuffix: suffix,
+          isImage,
+          previewList: isImage ? [filePath] : []
+        };
+      });
+    },
+  },
+  watch: {
+    // 监听父组件传入的值，初始化或更新 fileList
+    value: {
+      handler(newVal) {
+        this.fileList = this.formatFiles(newVal);
+      },
+      immediate: true, // 组件一创建就执行
+      deep: true
+    }
   },
 };
 </script>
@@ -141,6 +145,7 @@ export default {
   min-height: 140px;
   position: relative;
 }
+
 .file-grid {
   display: flex;
   flex-wrap: wrap;
@@ -161,10 +166,12 @@ export default {
   cursor: pointer;
   background-color: #f0f5ff;
 }
+
 .upload-cell i {
   font-size: 24px;
   color: #1890ff;
 }
+
 .upload-cell p {
   font-size: 12px;
   color: #1890ff;
@@ -228,7 +235,7 @@ export default {
   right: 4px;
   width: 20px;
   height: 20px;
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -237,9 +244,11 @@ export default {
   transition: opacity 0.2s;
   z-index: 2;
 }
+
 .file-cell:hover .hover-overlay {
   opacity: 1;
 }
+
 .hover-overlay span {
   color: #fff;
   font-size: 12px;

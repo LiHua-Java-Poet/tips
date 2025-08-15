@@ -3,15 +3,10 @@
     <!-- 进度条背景 -->
     <dev class="progress-bar-background">
       <!-- 已完成进度条填充部分 -->
-      <dev
-        class="progress-bar-fill progress-bar-completed"
-        :style="{ width: completedWidth + '%' }"
-      ></dev>
+      <dev class="progress-bar-fill progress-bar-completed" :style="{ width: completedWidth + '%' }"></dev>
       <!-- 进行中进度条填充部分 -->
-      <dev
-        class="progress-bar-fill progress-bar-toward"
-        :style="{ width: towardWidth + '%', marginLeft: completedWidth + '%' }"
-      ></dev>
+      <dev class="progress-bar-fill progress-bar-toward"
+        :style="{ width: towardWidth + '%', marginLeft: completedWidth + '%' }"></dev>
     </dev>
     <!-- 显示总进度 -->
     <dev class="progress-text">
@@ -78,34 +73,43 @@ export default {
 .progress-bar-background {
   width: 100%;
   height: 10px;
-  background-color: #e0e0e0; /* 进度条背景颜色 */
+  background-color: #e0e0e0;
+  /* 进度条背景颜色 */
   border-radius: 5px;
   overflow: hidden;
-  position: relative; /* 用于定位填充部分 */
+  position: relative;
+  /* 用于定位填充部分 */
 }
 
 .progress-bar-fill {
   height: 100%;
-  transition: width 0.3s ease, margin-left 0.3s ease; /* 添加动画效果 */
-  position: absolute; /* 使填充部分准确定位 */
+  transition: width 0.3s ease, margin-left 0.3s ease;
+  /* 添加动画效果 */
+  position: absolute;
+  /* 使填充部分准确定位 */
   top: 0;
 }
 
 .progress-bar-completed {
-  background-color: #007cff; /* 已完成进度颜色 */
-  border-radius: 5px 0 0 5px; /* 仅已完成进度条左侧圆角 */
+  background-color: #007cff;
+  /* 已完成进度颜色 */
+  border-radius: 5px 0 0 5px;
+  /* 仅已完成进度条左侧圆角 */
 }
 
 .progress-bar-toward {
-  background-color: #68c23a; /* 进行中进度颜色 */
-  border-radius: 0 5px 5px 0; /* 仅进行中进度条右侧圆角 */
+  background-color: #68c23a;
+  /* 进行中进度颜色 */
+  border-radius: 0 5px 5px 0;
+  /* 仅进行中进度条右侧圆角 */
 }
 
 .progress-text {
   width: 100%;
   margin-top: 8px;
   font-size: 14px;
-  color: #555; /* 文字颜色 */
+  color: #555;
+  /* 文字颜色 */
   text-align: center;
 }
 </style>

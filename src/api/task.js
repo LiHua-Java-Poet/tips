@@ -23,3 +23,7 @@ export function deleteTask(data) {
 export function saveTask(data) {
     return post('/app/task/save', data)
 }
+
+export function updateTask(data) {
+    return post('/app/task/update', data)
+}

@@ -1,27 +1,14 @@
 <template>
   <div class="batch-upload">
     <div class="file-grid">
-      <div
-        class="file-cell"
-        v-for="(file, index) in fileList"
-        :key="index"
-      >
+      <div class="file-cell" v-for="(file, index) in fileList" :key="index">
         <!-- 图片文件 -->
-        <el-image
-          v-if="isImage(file)"
-          :src="file.filePath"
-          fit="cover"
-          class="thumb"
-          :preview-src-list="imagePreviewList"
-        ></el-image>
+        <el-image v-if="isImage(file)" :src="file.filePath" fit="cover" class="thumb"
+          :preview-src-list="imagePreviewList"></el-image>
 
         <!-- 非图片文件 -->
         <div v-else class="file-icon">
-          <img
-            :src="getFileIcon(file.fileSuffix)"
-            alt="file icon"
-            class="file-type-img"
-          />
+          <img :src="getFileIcon(file.fileSuffix)" alt="file icon" class="file-type-img" />
         </div>
 
         <!-- 下载按钮 -->
@@ -109,12 +96,14 @@ export default {
   min-height: 140px;
   position: relative;
 }
+
 .file-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: flex-start;
 }
+
 .file-cell {
   width: 80px;
   display: flex;
@@ -122,6 +111,7 @@ export default {
   align-items: center;
   position: relative;
 }
+
 .thumb {
   width: 80px;
   height: 80px;
@@ -129,6 +119,7 @@ export default {
   object-fit: cover;
   z-index: 1;
 }
+
 .file-icon {
   width: 80px;
   height: 80px;
@@ -139,6 +130,7 @@ export default {
   border-radius: 4px;
   background-color: #fafafa;
 }
+
 .file-name {
   display: block;
   font-size: 12px;
@@ -149,11 +141,13 @@ export default {
   text-overflow: ellipsis;
   margin-top: 4px;
 }
+
 .file-type-img {
   width: 60px;
   height: 60px;
   object-fit: contain;
 }
+
 /* 下载图标 */
 .hover-overlay {
   position: absolute;
@@ -161,7 +155,7 @@ export default {
   right: 4px;
   width: 20px;
   height: 20px;
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -170,9 +164,11 @@ export default {
   transition: opacity 0.2s;
   z-index: 2;
 }
+
 .file-cell:hover .hover-overlay {
   opacity: 1;
 }
+
 .hover-overlay span {
   color: #fff;
   font-size: 12px;

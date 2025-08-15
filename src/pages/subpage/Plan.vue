@@ -1,31 +1,19 @@
 <template>
   <el-container style="height: 100%;">
-    <el-header >
+    <el-header>
       <el-row>
         <el-col :span="4">
-          <div
-            class="status-button"
-            :class="{ process: showStatus === 1 }"
-            @click="setStatus(1)"
-          >
+          <div class="status-button" :class="{ process: showStatus === 1 }" @click="setStatus(1)">
             进行中
           </div>
         </el-col>
         <el-col :span="4">
-          <div
-            class="status-button"
-            :class="{ finish: showStatus === 2 }"
-            @click="setStatus(2)"
-          >
+          <div class="status-button" :class="{ finish: showStatus === 2 }" @click="setStatus(2)">
             已完成
           </div>
         </el-col>
         <el-col :span="4">
-          <div
-            class="status-button"
-            :class="{ cancel: showStatus === 3 }"
-            @click="setStatus(3)"
-          >
+          <div class="status-button" :class="{ cancel: showStatus === 3 }" @click="setStatus(3)">
             已取消
           </div>
         </el-col>
@@ -33,61 +21,42 @@
     </el-header>
     <el-container>
       <el-aside width="350px" class="aside-custom">
-            <div class="popover-wrapper">
-                <el-input
-                  style="width: 90%;"
-                    placeholder="请输入搜索内容"
-                    prefix-icon="el-icon-search"
-                    v-model="searchText">
-                </el-input>
-                <el-popover
-                    style="cursor: pointer;margin-left: 2%;padding-top: 2px;"
-                    placement="bottom"
-                    width="500"
-                    trigger="click"
-                    >
-                    <svg t="1750918798427"  slot="reference" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8560" width="25" height="25"><path d="M741.248 79.68l-234.112 350.08v551.488l55.296 24.704v-555.776l249.152-372.544c8.064-32.96-10.496-59.712-41.152-59.712h-709.248c-30.464 0-49.28 26.752-41.344 59.712l265.728 372.544v432.256l55.36 24.704v-478.592l-248.896-348.864h649.216z m-68.032 339.648c0-16.832 12.096-30.592 27.264-30.848h277.888c15.232 0 27.712 13.824 27.712 30.848s-12.416 30.848-27.712 30.848h-277.888c-15.168-0.32-27.264-14.016-27.264-30.848z m0 185.216c0-16.832 12.096-30.592 27.264-30.848h277.888c15.232 0 27.712 13.824 27.712 30.848s-12.416 30.848-27.712 30.848h-277.888c-15.168-0.256-27.264-14.016-27.264-30.848z m0 185.28c0-16.832 12.096-30.592 27.264-30.848h277.888c15.232 0 27.712 13.824 27.712 30.848s-12.416 30.848-27.712 30.848h-277.888c-15.168-0.32-27.264-13.952-27.264-30.848z" p-id="8561"></path></svg>
-                    <el-form label-width="80px" size="small">
-                        <el-form-item label="起止日期">
-                            <el-date-picker
-                                v-model="dateRange"
-                                type="daterange"
-                                range-separator="至"
-                                start-placeholder="开始日期"
-                                end-placeholder="结束日期"
-                                style="width: 100%;"
-                            ></el-date-picker>
-                        </el-form-item>
-                    </el-form>
-                </el-popover>
-            </div>
-            <div class="plan-scroll-wrapper">
-              <el-card class="plan-card" 
-                v-for="(item, index) in planList"
-                :key="index"
-                :class="{ selected: selectedPlanId === item.id }"
-                @click.native="selectedPlan(item.id)"
-              >
-                <div class="card-body">
-                  <el-image
-                    class="card-icon"
-                    :src="item.icon"
-                    :alt="item.planName"
-                    fit="cover"
-                    lazy
-                    :preview-src-list="[item.icon]"
-                  />
-                  <div class="card-content">
-                    <div class="card-title">{{ item.planName }}</div>
-                    <div class="card-description">{{ item.description }}</div>
-                    <div class="card-progress">
-                      进度：{{ item.taskProgress }} / {{ item.taskTotal }}
-                    </div>
-                    <div class="card-info">{{ item.planInfo }}</div>
-                  </div>
+        <div class="popover-wrapper">
+          <el-input style="width: 90%;" placeholder="请输入搜索内容" prefix-icon="el-icon-search" v-model="searchText">
+          </el-input>
+          <el-popover style="cursor: pointer;margin-left: 2%;padding-top: 2px;" placement="bottom" width="500"
+            trigger="click">
+            <svg t="1750918798427" slot="reference" class="icon" viewBox="0 0 1024 1024" version="1.1"
+              xmlns="http://www.w3.org/2000/svg" p-id="8560" width="25" height="25">
+              <path
+                d="M741.248 79.68l-234.112 350.08v551.488l55.296 24.704v-555.776l249.152-372.544c8.064-32.96-10.496-59.712-41.152-59.712h-709.248c-30.464 0-49.28 26.752-41.344 59.712l265.728 372.544v432.256l55.36 24.704v-478.592l-248.896-348.864h649.216z m-68.032 339.648c0-16.832 12.096-30.592 27.264-30.848h277.888c15.232 0 27.712 13.824 27.712 30.848s-12.416 30.848-27.712 30.848h-277.888c-15.168-0.32-27.264-14.016-27.264-30.848z m0 185.216c0-16.832 12.096-30.592 27.264-30.848h277.888c15.232 0 27.712 13.824 27.712 30.848s-12.416 30.848-27.712 30.848h-277.888c-15.168-0.256-27.264-14.016-27.264-30.848z m0 185.28c0-16.832 12.096-30.592 27.264-30.848h277.888c15.232 0 27.712 13.824 27.712 30.848s-12.416 30.848-27.712 30.848h-277.888c-15.168-0.32-27.264-13.952-27.264-30.848z"
+                p-id="8561"></path>
+            </svg>
+            <el-form label-width="80px" size="small">
+              <el-form-item label="起止日期">
+                <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
+                  end-placeholder="结束日期" style="width: 100%;"></el-date-picker>
+              </el-form-item>
+            </el-form>
+          </el-popover>
+        </div>
+        <div class="plan-scroll-wrapper">
+          <el-card class="plan-card" v-for="(item, index) in planList" :key="index"
+            :class="{ selected: selectedPlanId === item.id }" @click.native="selectedPlan(item.id)">
+            <div class="card-body">
+              <el-image class="card-icon" :src="item.icon" :alt="item.planName" fit="cover" lazy
+                :preview-src-list="[item.icon]" />
+              <div class="card-content">
+                <div class="card-title">{{ item.planName }}</div>
+                <div class="card-description">{{ item.description }}</div>
+                <div class="card-progress">
+                  进度：{{ item.taskProgress }} / {{ item.taskTotal }}
                 </div>
-              </el-card>
+                <div class="card-info">{{ item.planInfo }}</div>
+              </div>
             </div>
+          </el-card>
+        </div>
       </el-aside>
       <el-container>
         <el-main style="background-color: #fff; border-radius: 10px; padding: 20px;">
@@ -114,11 +83,8 @@
                 <p class="plan-desc">{{ selectedPlanInfo.description }}</p>
               </div>
             </div>
-            <ProgressBar
-              :total="selectedPlanInfo.taskTotal"
-              :completed="selectedPlanInfo.taskProgress"
-              :toward="selectedPlanInfo.towardProgress"
-            />
+            <ProgressBar :total="selectedPlanInfo.taskTotal" :completed="selectedPlanInfo.taskProgress"
+              :toward="selectedPlanInfo.towardProgress" />
             <div class="plan-meta">
               <p><strong>计划周期：</strong> {{ getCycleText(selectedPlanInfo.cycleType) }}</p>
               <p><strong>计划类型：</strong> {{ getPlanTypeText(selectedPlanInfo.planType) }}</p>
@@ -139,8 +105,8 @@
 </template>
 
 <script>
-import { getPlanList,getPlanInfo } from '@/api/plan';
-import {formatDate} from '@/utils/navigator'
+import { getPlanList, getPlanInfo } from '@/api/plan';
+import { formatDate } from '@/utils/navigator'
 import ProgressBar from '@/components/ProgressBar.vue';
 
 export default {
@@ -149,17 +115,17 @@ export default {
     return {
       showStatus: 1,
       dateRange: [], // 存储起止日期，[startDate, endDate]
-      searchText:'',
-      planList:[],
-      loadingPlanDetail:false,
-      selectedPlanId:null,
+      searchText: '',
+      planList: [],
+      loadingPlanDetail: false,
+      selectedPlanId: null,
       selectedPlanInfo: null,
       totalProgress: 100,
       completProgress: 1,
       towardProgress: 2,
     };
   },
-  components:{
+  components: {
     ProgressBar
   },
   methods: {
@@ -167,22 +133,22 @@ export default {
     setStatus(status) {
       this.showStatus = status;
     },
-    getPlanList(params){
-      return getPlanList(params).then(res=>{
-        const data=res.data
-        this.planList=data.data.list
-      }).catch(error=>{
+    getPlanList(params) {
+      return getPlanList(params).then(res => {
+        const data = res.data
+        this.planList = data.data.list
+      }).catch(error => {
         console.info(error)
       })
     },
-    selectedPlan(id){
+    selectedPlan(id) {
       this.loadingPlanDetail = true;
-      this.selectedPlanId=id
+      this.selectedPlanId = id
       //当选中了任务id之后需要查询对应的数据
-      getPlanInfo({id:id}).then(res=>{
+      getPlanInfo({ id: id }).then(res => {
         const data = res.data;
         this.selectedPlanInfo = data.data; // 设置详情数据
-        this.loadingPlanDetail=false
+        this.loadingPlanDetail = false
       })
     },
     getProgressPercentage(plan) {
@@ -207,22 +173,22 @@ export default {
       return map[planType] || '未知';
     },
   },
-  async created(){
-    await this.getPlanList({page:1,limit:10,status:1})
+  async created() {
+    await this.getPlanList({ page: 1, limit: 10, status: 1 })
     //当加初次加载完成后，默认选中第一个任务
-    if(this.planList.length==0)return
+    if (this.planList.length == 0) return
     //当长度不为0时显示第一个计划
     this.selectedPlan(this.planList[0].id)
   },
-  watch:{
-      async showStatus(newValue){
-        this.planList=[]
-        await this.getPlanList({page:1,limit:10,status:newValue})
-        this.selectedplanId=null
-        if(this.planList.length==0)return
-        //当长度不为0时显示第一个计划
-        this.selectedPlan(this.planList[0].id)
-      }
+  watch: {
+    async showStatus(newValue) {
+      this.planList = []
+      await this.getPlanList({ page: 1, limit: 10, status: newValue })
+      this.selectedplanId = null
+      if (this.planList.length == 0) return
+      //当长度不为0时显示第一个计划
+      this.selectedPlan(this.planList[0].id)
+    }
   }
 };
 </script>
@@ -252,11 +218,13 @@ export default {
   color: white;
   border: none;
 }
+
 .status-button.finish {
   background-color: #67c23a;
   color: white;
   border: none;
 }
+
 .status-button.cancel {
   background-color: #f56c6c;
   color: white;
@@ -279,6 +247,7 @@ export default {
   fill: #666;
   transition: all 0.2s;
 }
+
 .icon:hover {
   fill: #409eff;
   transform: scale(1.1);
@@ -296,6 +265,7 @@ export default {
   align-items: center;
   font-weight: 500;
 }
+
 .plan-card:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
@@ -315,7 +285,8 @@ export default {
   border-radius: 8px;
   margin-right: 12px;
   object-fit: cover;
-  flex-shrink: 0; /* ✅ 禁止图片缩放 */
+  flex-shrink: 0;
+  /* ✅ 禁止图片缩放 */
 }
 
 .card-content {
@@ -324,7 +295,8 @@ export default {
   justify-content: space-between;
   flex: 1 1 auto;
   overflow: hidden;
-  min-width: 0; /* ✅ 防止flex溢出必须项 */
+  min-width: 0;
+  /* ✅ 防止flex溢出必须项 */
 }
 
 .card-title,
@@ -344,12 +316,14 @@ export default {
 .card-progress {
   color: #409eff;
 }
+
 .card-info {
   color: #999;
 }
 
 .selected {
-  background-color: rgb(234, 234, 234); /* 深色 */
+  background-color: rgb(234, 234, 234);
+  /* 深色 */
 }
 
 /* 弹出表单优化（你可放在 style scoped 里） */
@@ -384,21 +358,26 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  height: 100%; /* 填满容器高度 */
+  height: 100%;
+  /* 填满容器高度 */
 }
 
 .plan-scroll-wrapper {
   flex: 1;
   overflow-y: auto;
   max-height: 500px;
-  padding-right: 6px; /* 预留空间防止遮挡 */
-  scrollbar-width: none;           /* Firefox */
-  -ms-overflow-style: none;        /* IE */
+  padding-right: 6px;
+  /* 预留空间防止遮挡 */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE */
 }
 
 /* Chrome */
 .plan-scroll-wrapper::-webkit-scrollbar {
-  width: 6px;            /* 始终保留宽度，防止跳动 */
+  width: 6px;
+  /* 始终保留宽度，防止跳动 */
   background: transparent;
 }
 

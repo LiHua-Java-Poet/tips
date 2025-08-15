@@ -1,106 +1,79 @@
 <template>
-    <el-container style="height: 100%;">
-      <el-aside width="250px" class="aside-custom">
-            <div class="collect-add"  @click="openAddDialog">
-                <img style="width: 30px; height: 30px;" src="../../assets/ioc/collect/add.png">
-                <span>新增会话</span>
+  <el-container style="height: 100%;">
+    <el-aside width="250px" class="aside-custom">
+      <div class="collect-add" @click="openAddDialog">
+        <img style="width: 30px; height: 30px;" src="../../assets/ioc/collect/add.png">
+        <span>新增会话</span>
+      </div>
+      <div class="collect-scroll-wrapper">
+        <el-card class="collect-card" v-for="(item, index) in sessionList" :key="index"
+          :class="{ selected: selectedSeeionId === item.id }" @click.native="selectSeeion(item.id)">
+          {{ item.title }}
+        </el-card>
+        <el-empty description="没有会话" image-size="100" v-if="sessionList.length == 0"></el-empty>
+      </div>
+    </el-aside>
+    <el-container>
+      <el-main class="chat-container">
+        <!-- 聊天区域 -->
+        <!-- 消息显示区域 -->
+        <div class="chat-message-area">
+          <div class="message" v-for="(msg, index) in messages" :key="index">
+            <div class="message-bubble">
+              {{ msg.content }}
             </div>
-            <div class="collect-scroll-wrapper">
-                <el-card class="collect-card" 
-                v-for="(item,index) in sessionList" 
-                :key="index"
-                :class="{ selected: selectedSeeionId === item.id }"
-                @click.native="selectSeeion(item.id)"
-                >
-                    {{ item.title }}
-                </el-card>
-                <el-empty description="没有会话" image-size="100" v-if="sessionList.length==0"></el-empty>
-            </div>
-      </el-aside>
-      <el-container>
-        <el-main class="chat-container">
-            <!-- 聊天区域 -->
-                <!-- 消息显示区域 -->
-              <div class="chat-message-area">
-                <div class="message" v-for="(msg, index) in messages" :key="index">
-                  <div class="message-bubble">
-                    {{ msg.content }}
-                  </div>
-                  <span class="delete-btn" @click="deleteMessage(msg)">
-                    <img style="width: 20px;height: 20px;" src="@/assets/ioc/collect/delete.png"/>
-                  </span>
-                </div>
-              </div>
-                <!-- 控件区域 -->
-                <div>
-                  <el-radio-group v-model="radio">
-                    <el-radio :label="1">仅记录</el-radio>
-                    <el-radio :label="2">知识库</el-radio>
-                    <el-radio :label="3">Ai回复</el-radio>
-                  </el-radio-group>
-                </div>
-                <!-- 信息输入区域 -->
-                <div class="chat-input-area">
-                  <el-input
-                    type="textarea"
-                    v-model="newMessage"
-                    class="input-box"
-                    maxlength="5000"
-                    show-word-limit
-                    :rows="5"
-                    resize="none"
-                    placeholder="请输入消息..."
-                    @keydown.native="handleKeydown"
-                  />
-                  <el-button
-                    type="primary"
-                    class="send-button"
-                    @click="sendMessage"
-                  >
-                    发送
-                  </el-button>
-                </div>
-        </el-main>
-      </el-container>
-      <el-dialog
-        title="新增会话"
-        :visible.sync="dialogVisible"
-        width="400px"
-        @close="newSessionTitle = ''"
-      >
-        <el-input
-          v-model="newSessionTitle"
-          placeholder="请输入会话标题"
-          maxlength="100"
-          show-word-limit
-        />
-        <template #footer>
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="addSession">新增</el-button>
-        </template>
-      </el-dialog>
-
+            <span class="delete-btn" @click="deleteMessage(msg)">
+              <img style="width: 20px;height: 20px;" src="@/assets/ioc/collect/delete.png" />
+            </span>
+          </div>
+        </div>
+        <!-- 控件区域 -->
+        <div>
+          <el-radio-group v-model="radio">
+            <el-radio :label="1">仅记录</el-radio>
+            <el-radio :label="2">知识库</el-radio>
+            <el-radio :label="3">Ai回复</el-radio>
+          </el-radio-group>
+        </div>
+        <!-- 信息输入区域 -->
+        <div class="chat-input-area">
+          <el-input type="textarea" v-model="newMessage" class="input-box" maxlength="5000" show-word-limit :rows="5"
+            resize="none" placeholder="请输入消息..." @keydown.native="handleKeydown" />
+          <el-button type="primary" class="send-button" @click="sendMessage">
+            发送
+          </el-button>
+        </div>
+      </el-main>
     </el-container>
+    <el-dialog title="新增会话" :visible.sync="dialogVisible" width="400px" @close="newSessionTitle = ''">
+      <el-input v-model="newSessionTitle" placeholder="请输入会话标题" maxlength="100" show-word-limit />
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="addSession">新增</el-button>
+      </template>
+    </el-dialog>
+
+  </el-container>
 </template>
 
 <script>
-import { getSessionList,saveSession ,getMessageList,saveMessage,deleteMessage} from '@/api/collect';
+import { getSessionList, saveSession, getMessageList, saveMessage, deleteMessage } from '@/api/collect';
 import { getUniqueCode } from '@/api/public';
 export default {
   name: "collectPage",
   data() {
     return {
-        showStatus: 1,
-        dateRange: [], // 存储起止日期，[startDate, endDate]
-        searchText:'',
-        messages: [],
-        newMessage: '',
-        radio:1,
-        sessionList: [],
-        dialogVisible: false,
-        newSessionTitle: '',
-        sessionCode:'',
-        selectedSeeionId:null,
+      showStatus: 1,
+      dateRange: [], // 存储起止日期，[startDate, endDate]
+      searchText: '',
+      messages: [],
+      newMessage: '',
+      radio: 1,
+      sessionList: [],
+      dialogVisible: false,
+      newSessionTitle: '',
+      sessionCode: '',
+      selectedSeeionId: null,
     };
   },
   methods: {
@@ -108,21 +81,21 @@ export default {
       this.showStatus = status;
     },
     async sendMessage() {
-        const content = this.newMessage.trim();
-        if (content) {
+      const content = this.newMessage.trim();
+      if (content) {
         await saveMessage({
-          sessionId:this.selectedSeeionId,
-          collectType:1,
-          content:content,
-          messageType:this.radio
+          sessionId: this.selectedSeeionId,
+          collectType: 1,
+          content: content,
+          messageType: this.radio
         })
         this.messages.push({ text: content });
         this.newMessage = '';
         this.$nextTick(() => {
-            const container = this.$el.querySelector('.chat-message-area');
-            container.scrollTop = container.scrollHeight;
+          const container = this.$el.querySelector('.chat-message-area');
+          container.scrollTop = container.scrollHeight;
         });
-        }
+      }
     },
     handleKeydown(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -134,7 +107,7 @@ export default {
       const res = await getSessionList();
       this.sessionList = res.data.data || [];
       //刷新一次会话列表的话，先选中第一个
-      if(this.sessionList.length>0){
+      if (this.sessionList.length > 0) {
         this.selectSeeion(this.sessionList[0].id)
       }
     },
@@ -143,7 +116,7 @@ export default {
         this.$message.warning('请输入会话标题');
         return;
       }
-      const res = await saveSession({ title: this.newSessionTitle,uniqueCode: this.sessionCode });
+      const res = await saveSession({ title: this.newSessionTitle, uniqueCode: this.sessionCode });
       if (res.data.code === 200) {
         this.$message.success('新增成功');
         this.dialogVisible = false;
@@ -168,24 +141,24 @@ export default {
         console.error(e);
       }
     },
-    async selectSeeion(id){
-      this.selectedSeeionId=id
-      await getMessageList({sessionId:id}).then(res=>{
-        this.messages=res.data.data
+    async selectSeeion(id) {
+      this.selectedSeeionId = id
+      await getMessageList({ sessionId: id }).then(res => {
+        this.messages = res.data.data
       })
     },
-    deleteMessage(msg){
-          this.$confirm('确认删除？')
-          .then(() => {
-            deleteMessage([msg.id]).then(()=>{
-              let index = this.messages.indexOf(msg);
-              if (index !== -1) {
-                  this.messages.splice(index, 1);
-              }
-              this.$message.success('删除成功')
-            })
+    deleteMessage(msg) {
+      this.$confirm('确认删除？')
+        .then(() => {
+          deleteMessage([msg.id]).then(() => {
+            let index = this.messages.indexOf(msg);
+            if (index !== -1) {
+              this.messages.splice(index, 1);
+            }
+            this.$message.success('删除成功')
           })
-          .catch(() => {});
+        })
+        .catch(() => { });
     }
   },
   mounted() {
@@ -195,7 +168,7 @@ export default {
         container.scrollTop = container.scrollHeight;
       }
     });
-    this.fetchSessions(); 
+    this.fetchSessions();
   },
   computed: {
 
@@ -215,7 +188,8 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 0; /* 关键 */
+  min-height: 0;
+  /* 关键 */
 }
 
 /* 新增会话按钮 */
@@ -232,10 +206,12 @@ export default {
   transition: all 0.3s ease;
   margin-bottom: 10px;
 }
+
 .collect-add:hover {
   background-color: #f0faff;
   border-color: #409eff;
 }
+
 .collect-add img {
   width: 20px;
   height: 20px;
@@ -245,7 +221,8 @@ export default {
 /* 滚动区域填满剩余空间 */
 .collect-scroll-wrapper {
   flex: 1;
-  min-height: 0; /* 关键：允许滚动区域缩放 */
+  min-height: 0;
+  /* 关键：允许滚动区域缩放 */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -257,10 +234,12 @@ export default {
 .collect-scroll-wrapper::-webkit-scrollbar {
   width: 6px;
 }
+
 .collect-scroll-wrapper::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: 4px;
 }
+
 .collect-scroll-wrapper:hover::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
 }
@@ -276,11 +255,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  min-height: 40px;      /* 避免卡片被压缩 */
+  min-height: 40px;
+  /* 避免卡片被压缩 */
   text-align: left;
   flex: none;
   height: 40px;
 }
+
 .collect-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -386,7 +367,7 @@ export default {
 }
 
 .selected {
-  background-color: rgb(234, 234, 234); /* 深色 */
+  background-color: rgb(234, 234, 234);
+  /* 深色 */
 }
 </style>
-

@@ -4,11 +4,7 @@
     <el-aside width="250px" class="aside-custom">
       <!-- 搜索栏 -->
       <div class="search-wrapper">
-        <el-input
-          placeholder="请输入内容"
-          prefix-icon="el-icon-search"
-          v-model="searchText"
-        />
+        <el-input placeholder="请输入内容" prefix-icon="el-icon-search" v-model="searchText" />
         <div class="aside-icon-div" @click="openAddFile">
           <img class="aside-icon" src="@/assets/ioc/document/save.png" />
         </div>
@@ -26,47 +22,29 @@
 
       <!-- 文件列表 -->
       <div class="scroll-area">
-        <div
-          class="select-item"
-          v-for="(item, index) in catalogueList"
-          :key="index"
-          :class="{ selected: selectCatalogueId === item.id }"
-          @click="handleClickFile(item)"
-          @dblclick="handleDoubleClickFile(item)"
-        >
+        <div class="select-item" v-for="(item, index) in catalogueList" :key="index"
+          :class="{ selected: selectCatalogueId === item.id }" @click="handleClickFile(item)"
+          @dblclick="handleDoubleClickFile(item)">
           <img
-            :src="item.fileType == 2 ? require('@/assets/ioc/document/folder.png') : require('@/assets/ioc/document/file.png')"
-          />
+            :src="item.fileType == 2 ? require('@/assets/ioc/document/folder.png') : require('@/assets/ioc/document/file.png')" />
           <!-- 修改：条件渲染文件名或输入框 -->
-          <div v-if="editingItemId !== item.id" >
+          <div v-if="editingItemId !== item.id">
             {{ item.name }}
           </div>
-          <el-input
-            v-else
-            v-model="editingName"
-            ref="renameInput"
-            size="mini"
-            @blur="saveRename(item)"
-            @keyup.enter="saveRename(item)"
-            @keyup.esc="cancelRename"
-          />
-          <el-popover 
-            placement="bottom" 
-            trigger="click" 
-            popper-class="custom-popover" 
-            width="100" @click.stop
-          >
+          <el-input v-else v-model="editingName" ref="renameInput" size="mini" @blur="saveRename(item)"
+            @keyup.enter="saveRename(item)" @keyup.esc="cancelRename" />
+          <el-popover placement="bottom" trigger="click" popper-class="custom-popover" width="100" @click.stop>
             <div class="popover-menu">
-              <div class="popover-menu-item"  @click="startRename(item)">重命名</div>
+              <div class="popover-menu-item" @click="startRename(item)">重命名</div>
               <div class="popover-menu-item" @click="deleteDocument(item)">删除</div>
               <div class="popover-menu-item">移动到</div>
-              <div class="popover-menu-item" v-if="item.fileType==1">跳转到阅读</div>
+              <div class="popover-menu-item" v-if="item.fileType == 1">跳转到阅读</div>
             </div>
-            <img class="more-icon" slot="reference" src="@/assets/ioc/document/more.png"  @click.stop/>
+            <img class="more-icon" slot="reference" src="@/assets/ioc/document/more.png" @click.stop />
           </el-popover>
         </div>
-        <el-skeleton v-if="catalogueLoadStatus"/>
-        <div v-if="!catalogueLoadStatus&&catalogueList.length==0">
+        <el-skeleton v-if="catalogueLoadStatus" />
+        <div v-if="!catalogueLoadStatus && catalogueList.length == 0">
           <el-empty description="没有文档请创建"></el-empty>
         </div>
       </div>
@@ -100,14 +78,9 @@
         </div>
         <!-- 编辑器正常状态 -->
         <template v-else>
-          <Toolbar :editor="editor" :defaultConfig="toolbarConfig" :mode="mode" style="border-bottom: 1px solid #ccc"/>
-          <Editor 
-            v-model="html"
-            :defaultConfig="editorConfig"
-            :mode="mode"
-            @onCreated="onCreated"
-            style="height: 100%; overflow-y: hidden"
-          />
+          <Toolbar :editor="editor" :defaultConfig="toolbarConfig" :mode="mode" style="border-bottom: 1px solid #ccc" />
+          <Editor v-model="html" :defaultConfig="editorConfig" :mode="mode" @onCreated="onCreated"
+            style="height: 100%; overflow-y: hidden" />
         </template>
       </div>
     </el-main>
@@ -131,7 +104,7 @@
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import "@wangeditor/editor/dist/css/style.css";
 import { toolbarConfig, editorConfig, editorMode } from "@/utils/editorConfig.js";
-import { getFileList, saveFile,getFileInfo,saveDocument,deleteDocument,updateDocument } from "@/api/file";
+import { getFileList, saveFile, getFileInfo, saveDocument, deleteDocument, updateDocument } from "@/api/file";
 import { getUniqueCode } from "@/api/public";
 
 export default {
@@ -147,7 +120,7 @@ export default {
       searchText: "",
       currentDocId: null,
       currentDocName: "",
-      currentFile:null,
+      currentFile: null,
       catalogueList: [],
       newfileTitle: "",
       dialogVisible: false,
@@ -157,8 +130,8 @@ export default {
       uniqueCode: "",
       selectCatalogueId: null,
       folderStack: [],
-      catalogueLoadStatus:false,
-      loadingContent:false,
+      catalogueLoadStatus: false,
+      loadingContent: false,
       editingItemId: null,   // 新增：当前正在编辑的文件/文件夹ID
       editingName: "",       // 新增：编辑中的名称
     };
@@ -206,15 +179,15 @@ export default {
     async handleClickFile(item) {
       this.selectCatalogueId = item.id;
       this.currentDocName = item.name;
-      
+
       if (item.fileType === 1) {
         // 文件：加载内容
         this.currentDocId = item.id;
         this.currentFile = item;
-        
+
         // 显示加载状态
         this.loadingContent = true;
-        
+
         try {
           const res = await getFileInfo({ id: item.id });
           if (res.data.code === 200) {
@@ -258,14 +231,14 @@ export default {
       }
     },
     async loadCatalogue() {
-      this.catalogueLoadStatus=true
-      this.catalogueList=[]
+      this.catalogueLoadStatus = true
+      this.catalogueList = []
       const res = await getFileList({ pid: this.currentFilePid });
-      this.catalogueLoadStatus=false
+      this.catalogueLoadStatus = false
       this.catalogueList = res.data.data;
     },
-    selectFirstFile(){
-      if(this.catalogueList.length>0){
+    selectFirstFile() {
+      if (this.catalogueList.length > 0) {
         const firstFileTypeOne = this.catalogueList.find(item => item.fileType === 1);
         this.handleClickFile(firstFileTypeOne)
       }
@@ -294,16 +267,16 @@ export default {
         this.$message.error("保存异常");
       }
     },
-    deleteDocument(item){
-        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        })
+    deleteDocument(item) {
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
         .then(() => {
-          deleteDocument([item.id]).then(res=>{
-            res=res.data
-            if(res.code==200){
+          deleteDocument([item.id]).then(res => {
+            res = res.data
+            if (res.code == 200) {
               this.$message.success("删除成功")
               this.loadCatalogue()
             }
@@ -312,14 +285,14 @@ export default {
           this.$message({
             type: 'info',
             message: '已取消删除'
-          });          
+          });
         });
     },
-        // 新增：开始重命名
+    // 新增：开始重命名
     startRename(item) {
       this.editingItemId = item.id;
       this.editingName = item.name;
-      
+
       // 下一个tick聚焦到输入框
       this.$nextTick(() => {
         if (this.$refs.renameInput && this.$refs.renameInput[0]) {
@@ -327,32 +300,32 @@ export default {
         }
       });
     },
-    
+
     // 新增：取消重命名
     cancelRename() {
       this.editingItemId = null;
       this.editingName = "";
     },
-    
+
     // 新增：保存重命名
     async saveRename(item) {
       if (!this.editingItemId) return;
-      
+
       const newName = this.editingName.trim();
       if (!newName) {
         this.$message.warning("名称不能为空");
         return;
       }
-      
+
       if (newName === item.name) {
         this.cancelRename();
         return;
       }
       //在这里发生一次消息更新一次消息的记录
-      await updateDocument({id:item.id,name:newName}).then(res=>{
-        res=res.data
-        if(res.code==200){
-          item.name=newName
+      await updateDocument({ id: item.id, name: newName }).then(res => {
+        res = res.data
+        if (res.code == 200) {
+          item.name = newName
         }
       })
       this.cancelRename();
@@ -385,7 +358,8 @@ export default {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
-  border-top: 1px solid #ccc;;
+  border-top: 1px solid #ccc;
+  ;
 }
 
 /* toolbar 高度固定 */
@@ -400,10 +374,11 @@ export default {
   overflow-y: auto;
 }
 
-.main-contain{
-    background-color: rgb(255, 255, 255);
-    border-radius: 8px;
+.main-contain {
+  background-color: rgb(255, 255, 255);
+  border-radius: 8px;
 }
+
 .aside-custom {
   display: flex;
   flex-direction: column;
@@ -412,13 +387,14 @@ export default {
   overflow: hidden;
 }
 
-.aside-icon-div{
+.aside-icon-div {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-left: 5px;
 }
-.aside-icon{
+
+.aside-icon {
   height: 30px;
   width: 30px;
   cursor: pointer;
@@ -453,18 +429,22 @@ export default {
   width: 20px;
   height: 20px;
   margin-right: 8px;
-  cursor: pointer; /* 鼠标变为手势 */
+  cursor: pointer;
+  /* 鼠标变为手势 */
 }
 
 .select-item div {
-    flex: 1;
-    margin: 0 8px;
-    white-space: nowrap;        /* 不换行 */
-    overflow: hidden;           /* 超出隐藏 */
-    text-overflow: ellipsis;    /* 省略号显示 */
-    color: rgb(115, 115, 115);
-    pointer-events: none;
-    font-size: small;
+  flex: 1;
+  margin: 0 8px;
+  white-space: nowrap;
+  /* 不换行 */
+  overflow: hidden;
+  /* 超出隐藏 */
+  text-overflow: ellipsis;
+  /* 省略号显示 */
+  color: rgb(115, 115, 115);
+  pointer-events: none;
+  font-size: small;
 }
 
 .select-item img:last-child {
@@ -472,23 +452,26 @@ export default {
   height: 18px;
   margin-left: 8px;
 }
-.select-item::after{
+
+.select-item::after {
   content: "";
   position: absolute;
   left: 0;
   bottom: 0;
   height: 1px;
   width: 100%;
-  background-color: rgb(230, 230, 230); /* 线的颜色 */
+  background-color: rgb(230, 230, 230);
+  /* 线的颜色 */
 }
-.selected{
+
+.selected {
   background-color: #f5f7fa;
 }
 
 .more-icon {
   width: 16px;
   height: 16px;
-  margin-left: auto; 
+  margin-left: auto;
   padding: 4px;
   border-radius: 4px;
   cursor: pointer;
@@ -496,7 +479,7 @@ export default {
 }
 
 .more-icon:hover {
-  background-color: rgba(0, 0, 0, 0.05); 
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 
@@ -532,8 +515,10 @@ export default {
 }
 
 .custom-popover {
-  min-width: 100px !important;  /* 或者 min-width: 0 !important; 彻底取消 */
-  max-width: none !important;   /* 解除最大宽度限制，避免宽度冲突 */
+  min-width: 100px !important;
+  /* 或者 min-width: 0 !important; 彻底取消 */
+  max-width: none !important;
+  /* 解除最大宽度限制，避免宽度冲突 */
 }
 
 /* 搜索栏固定 */
@@ -568,7 +553,8 @@ export default {
   position: relative;
   display: flex;
   align-items: center;
-  height: 40px; /* 或你想要的高度 */
+  height: 40px;
+  /* 或你想要的高度 */
 }
 
 .left-icon {
@@ -577,10 +563,10 @@ export default {
   cursor: pointer;
 }
 
-.content-header-title{
-    font-size: larger;
-    color: rgb(115, 115, 115);
-    font-weight: bold;
+.content-header-title {
+  font-size: larger;
+  color: rgb(115, 115, 115);
+  font-weight: bold;
 }
 
 /* 新增：加载状态样式 */
@@ -608,12 +594,14 @@ export default {
 }
 
 .editor-container {
-  position: relative; /* 为加载状态提供定位上下文 */
+  position: relative;
+  /* 为加载状态提供定位上下文 */
   display: flex;
   flex-direction: column;
   flex: 1;
   overflow: hidden;
-  border-top: 1px solid #ccc;;
+  border-top: 1px solid #ccc;
+  ;
 }
 
 /* 新增：重命名输入框样式 */
