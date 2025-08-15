@@ -728,6 +728,4 @@ li::before {
   flex: 1;
   padding-right: 4px;
 }
-
-.dialog-footer {}
 </style>

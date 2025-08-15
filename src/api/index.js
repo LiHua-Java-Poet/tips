@@ -6,6 +6,7 @@ import { Message } from 'element-ui';
 
 
 const baseURL= 'http://localhost:8901'
+// const baseURL= 'http://192.168.89.249:8901'
 // const baseURL= 'http://112.74.191.203:8901'
 
 // 创建axios实例  
