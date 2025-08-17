@@ -37,13 +37,6 @@ export default {
 
 <style scoped>
 /* 重置全局样式 */
-html,
-body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-}
 
 /* 主容器 */
 .login-container {
