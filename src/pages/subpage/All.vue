@@ -22,7 +22,7 @@
                     <button class="action-button" @click="addPlan('创建计划')">
                         <i class="fas"></i> 创建计划
                     </button>
-                    <button class="action-button" @click="messageVisible = true">
+                    <button class="action-button" @click="openAddMessage()">
                         <i class="fas"></i> 快捷小计
                     </button>
                 </div>
@@ -158,7 +158,7 @@
             <div style="margin-bottom: 15px;">
                 <span>请选择会话</span>
                 <el-select v-model="collectForm.sessionId" placeholder="请选择" style="width: 100%; margin-top: 5px;">
-                    <el-option v-for="item in sessionList" :key="item.value" :label="item.label" :value="item.value" />
+                    <el-option v-for="item in sessionList" :key="item.id" :label="item.title" :value="item.id" />
                 </el-select>
             </div>
 
@@ -167,7 +167,7 @@
 
             <template #footer>
                 <el-button @click="messageVisible = false">取消</el-button>
-                <el-button type="primary" @click="addSession">新增</el-button>
+                <el-button type="primary" @click="addMessage()">新增</el-button>
             </template>
         </el-dialog>
 
@@ -180,6 +180,7 @@ import { getMessageList } from '@/api/collect'
 import AnnexFileUpload from '@/components/AnnexFileUpload.vue';
 import { getUniqueCode } from '@/api/public';
 import { saveTask } from '@/api/task';
+import { getSessionList, saveMessage } from '@/api/collect'
 
 export default {
     name: 'allPage',
@@ -299,6 +300,37 @@ export default {
                 item.no = i + 1;
             });
         },
+        async openAddMessage() {
+            //打开新增一条信息
+            await getSessionList().then(res => {
+                res = res.data
+                this.sessionList = res.data
+            })
+            //默认选中第一个
+            if (this.sessionList.length > 0) {
+                this.collectForm.sessionId=this.sessionList[0].id
+            }
+            this.messageVisible = true
+        },
+        async addMessage() {
+            //新增消息
+            await saveMessage(this.collectForm).then(res => {
+                res = res.data
+                if (res.code == 200) {
+                    this.$message.success('创建成功')
+                }
+            })
+            this.messageVisible = false
+            //重新获取一次小计
+            getMessageList({
+                page: 1,
+                limit: 5
+            }).then(res => {
+                this.messageList = res.data.data.list
+            }).catch(err => {
+                console.info(err)
+            })
+        }
     }
 }
 </script>
