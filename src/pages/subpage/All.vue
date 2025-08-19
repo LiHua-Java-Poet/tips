@@ -84,7 +84,7 @@
             </div>
         </div>
         <!-- 侧边栏 -->
-        <el-drawer :title="title" :visible.sync="drawer" :direction="direction" :before-close="handleClose"
+        <el-drawer :title="title" :visible.sync="taskForm.drawer" :direction="direction" :before-close="handleTaskClose"
             size="600px">
             <!-- 表单 -->
             <el-form ref="taskForm" :model="taskForm" :rules="rules" label-width="100px" style="padding-right: 30px;">
@@ -121,12 +121,13 @@
                             style="flex: 1; margin-right: 10px;"></el-input>
 
                         <!-- 删除按钮 -->
-                        <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeItem(index)"
+                        <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeItem(index, 'task')"
                             circle></el-button>
                     </div>
 
                     <!-- 添加按钮 -->
-                    <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="addItem"></el-button>
+                    <el-button type="primary" icon="el-icon-plus" size="mini" circle
+                        @click="addItem('task')"></el-button>
                 </el-form-item>
 
 
@@ -137,19 +138,104 @@
                         <el-option label="写作" :value="3" />
                         <el-option label="阅读" :value="4" />
                         <el-option label="影视" :value="5" />
+                        <el-option label="其他" :value="6" />
                     </el-select>
                 </el-form-item>
 
                 <el-form-item label="附件内容">
                     <AnnexFileUpload :value="taskForm.annexFiles" @update="taskForm.annexFiles = $event"
-                        ref="AnnexFileUpload" />
+                        ref="AnnexFileUploadTask" />
                 </el-form-item>
             </el-form>
 
             <!-- 底部按钮 -->
             <div style="text-align:right; margin-top:20px;padding-right: 30px;">
-                <el-button @click="handleClose()">取消</el-button>
+                <el-button @click="handleTaskClose()">取消</el-button>
                 <el-button type="primary" @click="submitFormTask">保存</el-button>
+            </div>
+        </el-drawer>
+
+        <!-- 计划增加 -->
+        <el-drawer :title="title" :visible.sync="planForm.drawer" :direction="direction" :before-close="handlePlanClose"
+            size="600px">
+            <!-- 表单 -->
+            <el-form ref="planForm" :model="planForm" :rules="rules" label-width="100px" style="padding-right: 30px;">
+
+                <el-form-item label="计划图标" prop="icon">
+                    <AvatarUpload v-model="planForm.icon" />
+                </el-form-item>
+
+                <el-form-item label="计划名" prop="planName">
+                    <el-input maxlength="20" v-model="planForm.planName" placeholder="请输入计划名" />
+                </el-form-item>
+
+                <el-form-item label="任务数" prop="taskTotal">
+                    <el-input-number v-model="planForm.taskTotal" size="small" :min="1" :max="99999"
+                        label="描述文字"></el-input-number>
+                </el-form-item>
+
+                <el-form-item label="描述" prop="description">
+                    <el-input type="textarea" v-model="planForm.description" placeholder="请输入计划描述" maxlength="100"
+                        show-word-limit :rows="4" style="width: 100%;" />
+                </el-form-item>
+
+                <el-form-item label="任务规则" prop="taskRule">
+                    <el-input maxlength="20" v-model="planForm.taskRule" placeholder="任务示例" />
+                </el-form-item>
+
+                <el-form-item label="计划内容" prop="itemToList">
+                    <div v-for="(item, index) in planForm.itemToList" :key="index"
+                        style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <span style="
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 24px;
+                        height: 24px;
+                        background-color: #e0e0e0;
+                        border-radius: 50%;
+                        font-size: 12px;
+                        color: #333;
+                        margin-right: 15px;
+                    ">
+                            {{ item.no }}
+                        </span>
+
+                        <!-- 序号内容 -->
+                        <el-input v-model="item.itemContext" placeholder="请输入内容"
+                            style="flex: 1; margin-right: 10px;"></el-input>
+
+                        <!-- 删除按钮 -->
+                        <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeItem(index, 'plan')"
+                            circle></el-button>
+                    </div>
+
+                    <!-- 添加按钮 -->
+                    <el-button type="primary" icon="el-icon-plus" size="mini" circle
+                        @click="addItem('plan')"></el-button>
+                </el-form-item>
+
+
+                <el-form-item label="计划类型" prop="taskType">
+                    <el-select v-model="taskForm.taskType" placeholder="请选择类型">
+                        <el-option label="学习" :value="1" />
+                        <el-option label="锻炼" :value="2" />
+                        <el-option label="写作" :value="3" />
+                        <el-option label="阅读" :value="4" />
+                        <el-option label="影视" :value="5" />
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item label="附件内容">
+                    <AnnexFileUpload :value="planForm.annexFiles" @update="planForm.annexFiles = $event"
+                        ref="AnnexFileUploadPlan" />
+                </el-form-item>
+            </el-form>
+
+            <!-- 底部按钮 -->
+            <div style="text-align:right; margin-top:20px;padding-right: 30px;margin-bottom: 30px;">
+                <el-button @click="handlePlanClose()">取消</el-button>
+                <el-button type="primary" @click="submitFormPlan">保存</el-button>
             </div>
         </el-drawer>
 
@@ -181,11 +267,13 @@ import AnnexFileUpload from '@/components/AnnexFileUpload.vue';
 import { getUniqueCode } from '@/api/public';
 import { saveTask } from '@/api/task';
 import { getSessionList, saveMessage } from '@/api/collect'
+import AvatarUpload from '@/components/AvatarUpload.vue'
 
 export default {
     name: 'allPage',
     components: {
-        AnnexFileUpload
+        AnnexFileUpload,
+        AvatarUpload
     },
     data() {
         return {
@@ -199,16 +287,26 @@ export default {
                 totalPlan: 0,
                 totalTask: 0
             },
-            drawer: false,
             direction: 'rtl',
             title: '',
             messageList: [], //记录的列表
             uniqueCode: null,
             taskForm: {
+                drawer: false,
                 taskName: "",
                 taskTime: null,
                 itemToList: [],
                 taskType: 1,
+                annexFiles: []
+            },
+            planForm: {
+                drawer: false,
+                icon:'',
+                planName: "",
+                taskTotal: 0,
+                taskRule: '',
+                itemToList: [],
+                planType: 1,
                 annexFiles: []
             },
             rules: {
@@ -239,19 +337,39 @@ export default {
         })
     },
     methods: {
-        handleClose() {
+        handleTaskClose() {
             this.$confirm('确认关闭？')
                 .then(() => {
                     Object.assign(this.taskForm, {
+                        drawer: false,
                         taskName: "",
                         taskTime: null,
                         itemToList: [],
                         taskType: 1,
                         annexFiles: []
                     });
-                    this.drawer = false
                     //清空一遍子组件的上传内容
-                    this.$refs.AnnexFileUpload.cleanFileList();
+                    this.$refs.AnnexFileUploadTask.cleanFileList();
+                })
+                .catch(() => { return });
+        },
+        handlePlanClose() {
+            this.$confirm('确认关闭？')
+                .then(() => {
+                    Object.assign(this.planForm, {
+                        drawer: false,
+                        icon:'',
+                        planName: "",
+                        taskTotal: 0,
+                        taskRule: '',
+                        itemToList: [],
+                        planType: 1,
+                        annexFiles: []
+                    });
+                    //清空一遍子组件的上传内容
+                    this.$refs.AnnexFileUploadPlan.cleanFileList();
+                    //额外清除一遍投标
+                    
                 })
                 .catch(() => { return });
         },
@@ -262,7 +380,17 @@ export default {
             })
             this.taskForm.taskTime = new Date();
             this.title = name
-            this.drawer = true
+            this.taskForm.drawer = true
+            //初始化一遍时间
+        },
+        async addPlan(name) {
+            //获取到唯一码作为上传使用的
+            await getUniqueCode().then(res => {
+                this.uniqueCode = res.data.data
+            })
+            this.planForm.taskTime = new Date();
+            this.title = name
+            this.planForm.drawer = true
             //初始化一遍时间
         },
         submitFormTask() {
@@ -281,22 +409,37 @@ export default {
                         taskType: 1,
                         annexFiles: []
                     });
-                    this.drawer = false
+                    this.taskForm.drawer = false
                     //清空一遍子组件的上传内容
                     this.$refs.AnnexFileUpload.cleanFileList();
                 }
             })
         },
-        addItem() {
-            this.taskForm.itemToList.push({
+        submitFormPlan() {
+            console.info(this.planForm)
+        },
+        addItem(mark) {
+            let targer = null
+            if (mark == 'task') {
+                targer = this.taskForm
+            } else {
+                targer = this.planForm
+            }
+            targer.itemToList.push({
                 no: this.taskForm.itemToList.length + 1,
                 itemContext: ''
             });
         },
-        removeItem(index) {
-            this.taskForm.itemToList.splice(index, 1);
+        removeItem(index, mark) {
+            let targer = null
+            if (mark == 'task') {
+                targer = this.taskForm
+            } else {
+                targer = this.planForm
+            }
+            targer.itemToList.splice(index, 1);
             // 删除后重排序号
-            this.taskForm.itemToList.forEach((item, i) => {
+            targer.itemToList.forEach((item, i) => {
                 item.no = i + 1;
             });
         },
@@ -308,7 +451,7 @@ export default {
             })
             //默认选中第一个
             if (this.sessionList.length > 0) {
-                this.collectForm.sessionId=this.sessionList[0].id
+                this.collectForm.sessionId = this.sessionList[0].id
             }
             this.messageVisible = true
         },
