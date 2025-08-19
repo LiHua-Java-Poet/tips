@@ -180,7 +180,7 @@
                 </el-form-item>
 
                 <el-form-item label="任务规则" prop="taskRule">
-                    <el-input maxlength="20" v-model="planForm.taskRule" placeholder="任务示例" />
+                    <el-input maxlength="20" v-model="planForm.taskRule" placeholder="任务 第一天" />
                 </el-form-item>
 
                 <el-form-item label="计划内容" prop="itemToList">
@@ -268,6 +268,7 @@ import { getUniqueCode } from '@/api/public';
 import { saveTask } from '@/api/task';
 import { getSessionList, saveMessage } from '@/api/collect'
 import AvatarUpload from '@/components/AvatarUpload.vue'
+import { savePlan } from '@/api/plan'
 
 export default {
     name: 'allPage',
@@ -301,7 +302,7 @@ export default {
             },
             planForm: {
                 drawer: false,
-                icon:'',
+                icon: '',
                 planName: "",
                 taskTotal: 0,
                 taskRule: '',
@@ -358,7 +359,7 @@ export default {
                 .then(() => {
                     Object.assign(this.planForm, {
                         drawer: false,
-                        icon:'',
+                        icon: '',
                         planName: "",
                         taskTotal: 0,
                         taskRule: '',
@@ -369,7 +370,7 @@ export default {
                     //清空一遍子组件的上传内容
                     this.$refs.AnnexFileUploadPlan.cleanFileList();
                     //额外清除一遍投标
-                    
+
                 })
                 .catch(() => { return });
         },
@@ -411,12 +412,33 @@ export default {
                     });
                     this.taskForm.drawer = false
                     //清空一遍子组件的上传内容
-                    this.$refs.AnnexFileUpload.cleanFileList();
+                    this.$refs.AnnexFileUploadTask.cleanFileList();
                 }
             })
         },
         submitFormPlan() {
-            console.info(this.planForm)
+            //创建任务
+            const payload = {
+                ...this.planForm,
+                uniqueCode: this.uniqueCode  // 这里加新属性
+            }
+            savePlan(payload).then(res => {
+                if (res.data.code == 200) {
+                    this.$message.success('新增成功')
+                    Object.assign(this.planForm, {
+                        drawer: false,
+                        icon: '',
+                        planName: "",
+                        taskTotal: 0,
+                        taskRule: '',
+                        itemToList: [],
+                        planType: 1,
+                        annexFiles: []
+                    });
+                    //清空一遍子组件的上传内容
+                    this.$refs.AnnexFileUploadPlan.cleanFileList();
+                }
+            })
         },
         addItem(mark) {
             let targer = null

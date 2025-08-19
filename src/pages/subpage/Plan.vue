@@ -52,7 +52,6 @@
                 <div class="card-progress">
                   进度：{{ item.taskProgress }} / {{ item.taskTotal }}
                 </div>
-                <div class="card-info">{{ item.planInfo }}</div>
               </div>
             </div>
           </el-card>
@@ -75,23 +74,107 @@
           </div>
 
           <!-- 显示计划信息 -->
-          <div v-else-if="selectedPlanInfo" class="plan-detail">
-            <div class="plan-header">
-              <el-image :src="selectedPlanInfo.icon" class="plan-icon" fit="cover" />
-              <div class="plan-title">
-                <h2>{{ selectedPlanInfo.planName }}</h2>
-                <p class="plan-desc">{{ selectedPlanInfo.description }}</p>
+          <!-- 计划信息块 -->
+          <div v-if="selectedPlanInfo" class="plan-detail">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <!-- 左侧：图标 + 标题 + 描述 -->
+              <div style="display: flex; align-items: center;">
+                <!-- 图标 -->
+                <el-image :src="selectedPlanInfo.icon" :preview-src-list="[selectedPlanInfo.icon]" preview-teleported
+                  style="width: 65px; height: 65px; border-radius: 8px; margin-right: 12px;" fit="cover" />
+                <!-- 标题 + 描述 -->
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 18px; font-weight: bold;">{{ selectedPlanInfo.planName }}</span>
+                  <span style="font-size: 14px; color: rgb(114, 114, 114); margin-top: 4px;">
+                    {{ selectedPlanInfo.description || '无描述' }}
+                  </span>
+                </div>
               </div>
+
+
+              <!-- 右侧：编辑按钮 -->
+              <el-tooltip content="编辑计划信息" placement="top">
+                <img style="width: 30px;height: 30px; cursor: pointer;" src="@/assets/ioc/task/edit.png"
+                  @click="editPlanOpen()" />
+              </el-tooltip>
             </div>
+
+            <!-- 进度条 -->
             <ProgressBar :total="selectedPlanInfo.taskTotal" :completed="selectedPlanInfo.taskProgress"
               :toward="selectedPlanInfo.towardProgress" />
-            <div class="plan-meta">
-              <p><strong>计划周期：</strong> {{ getCycleText(selectedPlanInfo.cycleType) }}</p>
-              <p><strong>计划类型：</strong> {{ getPlanTypeText(selectedPlanInfo.planType) }}</p>
-              <p><strong>计划说明：</strong> {{ selectedPlanInfo.planInfo || '无' }}</p>
-              <p><strong>开始时间：</strong> {{ formatDate(selectedPlanInfo.startTime) }}</p>
-              <p><strong>预期完成时间：</strong> {{ formatDate(selectedPlanInfo.expectedTime) }}</p>
+
+            <!-- 基础信息 -->
+            <div style="margin-bottom: 10px;"><strong>计划名称：</strong>{{ selectedPlanInfo.planName }}</div>
+            <div style="margin-bottom: 10px;"><strong>计划说明：</strong>{{ selectedPlanInfo.description || '无' }}</div>
+            <div style="margin-bottom: 10px;"><strong>计划周期：</strong>{{ getCycleText(selectedPlanInfo.cycleType) }}</div>
+            <div style="margin-bottom: 10px;"><strong>计划类型：</strong>{{ getPlanTypeText(selectedPlanInfo.planType) }}</div>
+            <div style="margin-bottom: 10px;"><strong>开始时间：</strong>{{ formatDate(selectedPlanInfo.startTime) }}</div>
+            <!-- <div style="margin-bottom: 10px;"><strong>预期完成时间：</strong>{{ formatDate(selectedPlanInfo.expectedTime) }}</div> -->
+
+            <!-- 备注内容 -->
+            <div v-if="selectedPlanInfo.planInfo?.length > 0" style="margin-bottom: 10px;">
+              <strong>备注内容：</strong>
+              <ul style="padding-left: 20px; margin-top: 10px;">
+                <li v-for="(item, index) in selectedPlanInfo.planInfo" :key="index" style="margin-bottom: 6px;">
+                  <span style="font-weight: 500; color: #408af4;">{{ item.no }}.</span>
+                  <span style="margin-left: 6px;">{{ item.itemContext }}</span>
+                </li>
+              </ul>
             </div>
+
+            <!-- 附件内容 -->
+            <div v-if="selectedPlanInfo.annexFiles?.length > 0" style="margin-bottom: 10px;">
+              <strong>附件内容：</strong>
+              <AnnexFileView :fileList="selectedPlanInfo.annexFiles" />
+            </div>
+
+            <!-- 操作按钮 -->
+            <!-- <div class="icon-row" v-if="selectedPlanInfo.status == 1">
+              <el-tooltip effect="dark" content="完成计划" placement="top">
+                <span class="icon-wrapper" style="margin-right: 10px;"
+                  @click="selectPlanAction(selectedPlanInfo.id, 1)">
+                  <svg t="1753254753676" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                    xmlns="http://www.w3.org/2000/svg" p-id="880" width="25" height="25">
+                    <path
+                      d="M460.8 694.044444L312.888889 546.133333c-2.844444-2.844444-2.844444-11.377778 0-14.222222l28.444444-28.444444c2.844444-2.844444 8.533333-2.844444 11.377778 0l108.088889 108.088889 247.466667-219.022223c5.688889-5.688889 11.377778-2.844444 17.066666 0l22.755556 25.6c5.688889 5.688889 5.688889 14.222222 0 19.911111l-287.288889 256z"
+                      fill="#5C5C5C"></path>
+                    <path
+                      d="M512 56.888889c250.311111 0 455.111111 204.8 455.111111 455.111111s-204.8 455.111111-455.111111 455.111111S56.888889 762.311111 56.888889 512 261.688889 56.888889 512 56.888889m0-56.888889C230.4 0 0 230.4 0 512s230.4 512 512 512 512-230.4 512-512S793.6 0 512 0z"
+                      fill="#5C5C5C"></path>
+                  </svg>
+                </span>
+              </el-tooltip>
+              <el-tooltip effect="dark" content="取消计划" placement="top">
+                <span class="icon-wrapper" style="margin-right: 10px;"
+                  @click="selectPlanAction(selectedPlanInfo.id, 2)">
+                  <svg t="1753328803437" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                    xmlns="http://www.w3.org/2000/svg" p-id="6930" width="25" height="25">
+                    <path
+                      d="M509.44 935.424c-233.984 0-424.448-190.464-424.448-424.448s190.464-424.448 424.448-424.448 424.448 190.464 424.448 424.448-190.464 424.448-424.448 424.448z m0-797.696c-205.824 0-373.248 167.424-373.248 373.248s167.424 373.248 373.248 373.248 373.248-167.424 373.248-373.248-167.424-373.248-373.248-373.248z"
+                      fill="#000000" p-id="6931"></path>
+                    <path
+                      d="M338.944 681.472c-10.24-10.24-10.24-26.112 0-36.352l304.128-304.128c10.24-10.24 26.112-10.24 36.352 0s10.24 26.112 0 36.352l-304.128 304.128c-9.728 9.728-26.112 9.728-36.352 0z"
+                      fill="#000000" p-id="6932"></path>
+                    <path
+                      d="M679.424 681.472c-10.24 10.24-26.112 10.24-36.352 0L338.944 376.832c-10.24-10.24-10.24-26.112 0-36.352s26.112-10.24 36.352 0l304.128 304.128c10.24 10.24 10.24 26.624 0 36.864z"
+                      fill="#000000" p-id="6933"></path>
+                  </svg>
+                </span>
+              </el-tooltip>
+              <el-tooltip effect="dark" content="删除计划" placement="top">
+                <span class="icon-wrapper" @click="selectPlanAction(selectedPlanInfo.id, 3)">
+                  <svg t="1753254801877" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                    xmlns="http://www.w3.org/2000/svg" p-id="1043" width="25" height="25">
+                    <path
+                      d="M745.6 928H294.4c-51.2 0-96-44.8-96-102.4V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c0 19.2 12.8 35.2 28.8 35.2h451.2c16 0 28.8-16 28.8-35.2V390.4c0-19.2 16-32 32-32s32 16 32 32v438.4c6.4 54.4-35.2 99.2-89.6 99.2zM905.6 291.2h-768c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h768c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2zM649.6 163.2h-256c-19.2 0-35.2-16-35.2-35.2s16-35.2 35.2-35.2h256c19.2 0 35.2 16 35.2 35.2s-16 35.2-35.2 35.2z"
+                      fill="#333333"></path>
+                    <path
+                      d="M409.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2zM633.6 739.2c-19.2 0-35.2-16-35.2-35.2v-288c0-19.2 16-35.2 35.2-35.2s35.2 16 35.2 35.2v288c0 19.2-16 35.2-35.2 35.2z"
+                      fill="#333333"></path>
+                  </svg>
+                </span>
+              </el-tooltip>
+            </div> -->
           </div>
 
           <!-- 无选中项 -->
@@ -108,9 +191,14 @@
 import { getPlanList, getPlanInfo } from '@/api/plan';
 import { formatDate } from '@/utils/navigator'
 import ProgressBar from '@/components/ProgressBar.vue';
+import AnnexFileView from '@/components/AnnexFileView.vue';
 
 export default {
   name: "planPage",
+  components: {
+    AnnexFileView,
+    ProgressBar
+  },
   data() {
     return {
       showStatus: 1,
@@ -124,9 +212,6 @@ export default {
       completProgress: 1,
       towardProgress: 2,
     };
-  },
-  components: {
-    ProgressBar
   },
   methods: {
     formatDate,

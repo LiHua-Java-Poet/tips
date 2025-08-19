@@ -1,4 +1,4 @@
-import {get} from '@/api/index'
+import {get,post} from '@/api/index'
 
 export function getPlanList(params) {
     return get('/app/plan/list',params)
@@ -6,4 +6,8 @@ export function getPlanList(params) {
 
 export function getPlanInfo(params){
     return get('/app/plan/info',params)
+}
+
+export function savePlan(data) {
+    return post('/app/plan/save', data)
 }

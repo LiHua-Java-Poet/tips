@@ -128,7 +128,8 @@
                   </li>
                 </ul>
               </div>
-              <div v-if="selectedTaskInfo.annexFiles != null && selectedTaskInfo.annexFiles.length > 0"><strong>附件内容:</strong>
+              <div v-if="selectedTaskInfo.annexFiles != null && selectedTaskInfo.annexFiles.length > 0">
+                <strong>附件内容:</strong>
                 <AnnexFileView :fileList="selectedTaskInfo.annexFiles" />
               </div>
               <!-- 操作按钮 -->
