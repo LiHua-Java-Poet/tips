@@ -57,6 +57,7 @@
           <span v-if="currentDocName">{{ currentDocName }}</span>
         </div>
         <div>
+          <el-button type="primary" @click="toRead()">跳转到阅读</el-button>
           <el-button type="primary" @click="saveDoc">保存</el-button>
         </div>
       </div>
@@ -330,6 +331,10 @@ export default {
       })
       this.cancelRename();
     },
+    toRead(){
+      //跳转到阅读
+      window.open(window.location.origin + "/#/readPage?documentId="+this.currentDocId, "_blank");
+    }
   },
   beforeDestroy() {
     if (this.editor) {

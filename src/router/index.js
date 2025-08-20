@@ -13,55 +13,60 @@ import Plan from '@/pages/subpage/Plan.vue'
 import Document from '@/pages/subpage/Document.vue'
 import Other from '@/pages/subpage/Other.vue'
 import Collect from '@/pages/subpage/Collect.vue'
+import ReadPage from '@/pages/external/ReadPage.vue'
 Vue.use(VueRouter)
 
 
-const router =new VueRouter({
+const router = new VueRouter({
   routes: [
     {
-        path:'/login',
-        component:LoginPage
+      path: '/login',
+      component: LoginPage
     },
     {
-        path:'/personage',
-        component:Personage,
-        meta: { requiresAuth: true }
+      path: '/personage',
+      component: Personage,
+      meta: { requiresAuth: true }
     },
     {
-        path:'/index',
-        component:Index,
-        children:[
-          {
-            path:'/index/all',
-            component:All,
-            meta: { requiresAuth: true }
-          },
-          {
-            path:'/index/task',
-            component:Task,
-            meta: { requiresAuth: true }
-          },
-          {
-            path:'/index/plan',
-            component:Plan,
-            meta: { requiresAuth: true }
-          },
-          {
-            path:'/index/document',
-            component:Document,
-            meta: { requiresAuth: true }
-          },
-          {
-            path:'/index/collect',
-            component:Collect,
-            meta: { requiresAuth: true }
-          },
-          {
-            path:'/index/other',
-            component:Other,
-            meta: { requiresAuth: true }
-          }
-        ]
+      path: '/readPage',
+      component: ReadPage,
+    },
+    {
+      path: '/index',
+      component: Index,
+      children: [
+        {
+          path: '/index/all',
+          component: All,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/task',
+          component: Task,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/plan',
+          component: Plan,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/document',
+          component: Document,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/collect',
+          component: Collect,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/other',
+          component: Other,
+          meta: { requiresAuth: true }
+        }
+      ]
     },
     {
       path: '*',
