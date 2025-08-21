@@ -89,7 +89,7 @@ export default {
           content: content,
           messageType: this.radio
         })
-        this.messages.push({ text: content });
+        this.messages.push({ content: content });
         this.newMessage = '';
         this.$nextTick(() => {
           const container = this.$el.querySelector('.chat-message-area');
@@ -144,7 +144,7 @@ export default {
     async selectSeeion(id) {
       this.selectedSeeionId = id
       await getMessageList({ sessionId: id }).then(res => {
-        this.messages = res.data.data
+        this.messages = res.data.data.reverse()
       })
     },
     deleteMessage(msg) {

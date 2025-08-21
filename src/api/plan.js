@@ -11,3 +11,7 @@ export function getPlanInfo(params){
 export function savePlan(data) {
     return post('/app/plan/save', data)
 }
+
+export function deliver(data) {
+    return post('/app/plan/deliver', data)
+}

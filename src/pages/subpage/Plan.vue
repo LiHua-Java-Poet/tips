@@ -127,10 +127,16 @@
               <strong>附件内容：</strong>
               <AnnexFileView :fileList="selectedPlanInfo.annexFiles" />
             </div>
+
+            <div>
+              <el-tooltip effect="dark" content="下发任务" placement="top">
+                <img class="img-button" src="@/assets/ioc/plan/issue.png" @click="deliver()"/>
+              </el-tooltip>
+            </div>
           </div>
 
           <!-- 无选中项 -->
-          <div  v-if="!selectedPlanInfo">
+          <div v-if="!selectedPlanInfo">
             <el-empty description="无计划信息" />
           </div>
         </el-main>
@@ -140,7 +146,7 @@
 </template>
 
 <script>
-import { getPlanList, getPlanInfo } from '@/api/plan';
+import { getPlanList, getPlanInfo,deliver } from '@/api/plan';
 import { formatDate } from '@/utils/navigator'
 import ProgressBar from '@/components/ProgressBar.vue';
 import AnnexFileView from '@/components/AnnexFileView.vue';
@@ -209,6 +215,13 @@ export default {
       };
       return map[planType] || '未知';
     },
+    deliver(){
+      deliver([this.selectedPlanId]).then(res=>{
+        if(res.data.code==200){
+          this.$message.success("下发成功")
+        }
+      })
+    }
   },
   async created() {
     await this.getPlanList({ page: 1, limit: 10, status: 1 })
@@ -509,5 +522,17 @@ export default {
   background: #eee;
   border-radius: 4px;
   margin-bottom: 12px;
+}
+
+.img-button {
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+}
+
+.img-button:hover {
+  background-color: rgb(234, 234, 234);
 }
 </style>
