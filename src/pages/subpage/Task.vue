@@ -20,14 +20,7 @@
       </el-row>
     </el-header>
     <el-container style="height: calc(100vh - 120px);">
-      <el-aside width="330px" style="background-color: rgb(255, 255, 255);
-          padding: 20px;
-          border-radius: 10px;
-          margin-right: 20px;
-          border-right: 1px solid #eee;
-          display: flex;
-          flex-direction: column;
-        ">
+      <el-aside width="330px" class="aside-custom">
         <div class="popover-wrapper" style="flex-shrink: 0;">
           <el-input style="width: 90%;" placeholder="请输入搜索内容" prefix-icon="el-icon-search" v-model="searchText">
           </el-input>
@@ -496,6 +489,19 @@ export default {
   background-color: #f56c6c;
   color: white;
   border: none;
+}
+
+/* 设置 el-aside 外观 */
+.aside-custom {
+  background-color: #ffffff;
+  border-radius: 10px;
+  margin-right: 20px;
+  padding-top: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* 填满容器高度 */
 }
 
 /* 输入+筛选图标整体布局优化 */

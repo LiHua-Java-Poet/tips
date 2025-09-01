@@ -19,7 +19,7 @@
         </el-col>
       </el-row>
     </el-header>
-    <el-container>
+    <el-container style="height: calc(100vh - 130px);">
       <el-aside width="350px" class="aside-custom">
         <div class="popover-wrapper">
           <el-input style="width: 90%;" placeholder="请输入搜索内容" prefix-icon="el-icon-search" v-model="searchText">
@@ -40,7 +40,7 @@
             </el-form>
           </el-popover>
         </div>
-        <div class="plan-scroll-wrapper">
+        <div class="card-scroll-area">
           <el-card class="plan-card" v-for="(item, index) in planList" :key="index"
             :class="{ selected: selectedPlanId === item.id }" @click.native="selectedPlan(item.id)">
             <div class="card-body">
@@ -55,6 +55,11 @@
               </div>
             </div>
           </el-card>
+          <div class="load-label">
+            <i v-if="listLoadStatus" class="el-icon-loading"></i>
+            <span v-if="!listLoadStatus && loadLabelStatus" @click="loadMove()">加载更多</span>
+            <span v-if="!loadLabelStatus">已经到底了</span>
+          </div>
         </div>
       </el-aside>
       <el-container>
@@ -130,7 +135,7 @@
 
             <div>
               <el-tooltip effect="dark" content="下发任务" placement="top">
-                <img class="img-button" src="@/assets/ioc/plan/issue.png" @click="deliver()"/>
+                <img class="img-button" src="@/assets/ioc/plan/issue.png" @click="deliver()" />
               </el-tooltip>
             </div>
           </div>
@@ -146,7 +151,7 @@
 </template>
 
 <script>
-import { getPlanList, getPlanInfo,deliver } from '@/api/plan';
+import { getPlanList, getPlanInfo, deliver } from '@/api/plan';
 import { formatDate } from '@/utils/navigator'
 import ProgressBar from '@/components/ProgressBar.vue';
 import AnnexFileView from '@/components/AnnexFileView.vue';
@@ -159,6 +164,9 @@ export default {
   },
   data() {
     return {
+      page: 1,
+      limit: 10,
+      pageCount: 0,
       showStatus: 1,
       dateRange: [], // 存储起止日期，[startDate, endDate]
       searchText: '',
@@ -169,7 +177,13 @@ export default {
       totalProgress: 100,
       completProgress: 1,
       towardProgress: 2,
+      listLoadStatus: false,
     };
+  },
+  computed: {
+    loadLabelStatus() {
+      return this.page < this.pageCount
+    }
   },
   methods: {
     formatDate,
@@ -179,7 +193,9 @@ export default {
     getPlanList(params) {
       return getPlanList(params).then(res => {
         const data = res.data
-        this.planList = data.data.list
+        this.planList.push(...data.data.list)
+        this.pageCount = data.data.pageCount
+        this.page = data.data.page
       }).catch(error => {
         console.info(error)
       })
@@ -215,13 +231,21 @@ export default {
       };
       return map[planType] || '未知';
     },
-    deliver(){
-      deliver([this.selectedPlanId]).then(res=>{
-        if(res.data.code==200){
+    deliver() {
+      deliver([this.selectedPlanId]).then(res => {
+        if (res.data.code == 200) {
           this.$message.success("下发成功")
         }
       })
-    }
+    },
+    async loadMove() {
+      this.listLoadStatus = true
+      if (this.page < this.pageCount) {
+        //只有当前页数小于总页数才需要更新页
+        await this.getPlanList({ page: this.page + 1, limit: this.limit, status: this.showStatus })
+      }
+      this.listLoadStatus = false
+    },
   },
   async created() {
     await this.getPlanList({ page: 1, limit: 10, status: 1 })
@@ -281,14 +305,15 @@ export default {
   border: none;
 }
 
-/* 输入+筛选图标整体布局优化 */
+/* 搜索和筛选区域固定在顶部 */
 .popover-wrapper {
   display: flex;
   align-items: center;
-  /* height: 40px; */
-  height: 3%;
+  height: 40px;
   margin-bottom: 10px;
   padding: 0 5px;
+  flex-shrink: 0;
+  /* 避免被压缩 */
 }
 
 /* 图标手型 + hover 提示 */
@@ -409,37 +434,47 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* 填满容器高度 */
+  /* 高度由外层 el-container 控制 */
+  box-sizing: border-box;
 }
 
 .plan-scroll-wrapper {
   flex: 1;
+  /* 占据剩余空间 */
   overflow-y: auto;
-  max-height: 500px;
+  /* 独立滚动 */
   padding-right: 6px;
-  /* 预留空间防止遮挡 */
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE */
+  scrollbar-width: thin;
+  /* Firefox 显示细滚动条 */
+  -ms-overflow-style: auto;
+  /* IE/Edge */
 }
 
-/* Chrome */
 .plan-scroll-wrapper::-webkit-scrollbar {
   width: 6px;
-  /* 始终保留宽度，防止跳动 */
   background: transparent;
 }
 
-/* 默认不显示滑块 */
 .plan-scroll-wrapper::-webkit-scrollbar-thumb {
   background-color: transparent;
 }
 
-/* hover 时显示滑块，不改变整体宽度 */
 .plan-scroll-wrapper:hover::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
+}
+
+/* 卡片滚动区域 */
+.card-scroll-area {
+  flex: 1;
+  /* 占据剩余空间 */
+  overflow-y: auto;
+  /* 独立滚动 */
+  padding-right: 4px;
+  scrollbar-width: thin;
+  /* Firefox */
+  -ms-overflow-style: auto;
+  /* IE */
 }
 
 
@@ -534,5 +569,14 @@ export default {
 
 .img-button:hover {
   background-color: rgb(234, 234, 234);
+}
+
+.load-label {
+  width: 85%;
+  font-size: 15px;
+  color: #999;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
 }
 </style>
