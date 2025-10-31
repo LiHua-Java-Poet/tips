@@ -73,7 +73,7 @@ export default {
       dialogVisible: false,
       newSessionTitle: '',
       sessionCode: '',
-      selectedSeeionId: null,
+      selectedSeeionId: null
     };
   },
   methods: {
@@ -98,8 +98,23 @@ export default {
       }
     },
     handleKeydown(e) {
+      // Ctrl + Enter 换行
+      if (e.key === 'Enter' && e.ctrlKey) {
+        const textarea = e.target;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+
+        // 在光标位置插入换行符
+        textarea.value = value.substring(0, start) + '\n' + value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+        e.preventDefault(); // 阻止默认行为
+        this.newMessage = textarea.value;
+        return;
+      }
       if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault(); // 阻止默认换行行为
+        // 阻止默认换行行为
+        e.preventDefault();
         this.sendMessage();
       }
     },
