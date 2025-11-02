@@ -1,9 +1,8 @@
 // api.js  
 import axios from 'axios';  
 import store from '@/store';
-import router from '@/router';
 import { Message } from 'element-ui';
-
+import { navigator } from '@/utils/navigator';
 
 const baseURL= 'http://localhost:8901'
 // const baseURL= 'http://192.168.89.249:8901'
@@ -40,7 +39,8 @@ instance.interceptors.response.use(
     if (res.code === 200 || res.success === true) {
       return  response; // 优先返回 data 字段
     } else if(res.code === -406){
-      router.push('/login')
+      //退出
+      navigator(this, "/login")
       store.dispatch('logout')
     }else{
       Message({
