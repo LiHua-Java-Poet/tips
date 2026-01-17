@@ -8,7 +8,17 @@
       <div class="collect-scroll-wrapper">
         <el-card class="collect-card" v-for="(item, index) in sessionList" :key="index"
           :class="{ selected: selectedSeeionId === item.id }" @click.native="selectSeeion(item.id)">
-          {{ item.title }}
+          <div class="card-content">
+            {{ item.title }}
+          </div>
+          <!-- 右上角固定的按钮 -->
+          <el-popover placement="bottom-end" width="150" trigger="click">
+            <div class="menu-item" @click="openUpdateName(item)">重命名</div>
+            <div class="menu-item" @click="deleteSessions(item)">删除</div>
+            <template #reference>
+              <button class="more-btn" @click.stop>⋮</button>
+            </template>
+          </el-popover>
         </el-card>
         <el-empty description="没有会话" image-size="100" v-if="sessionList.length == 0"></el-empty>
       </div>
@@ -24,6 +34,9 @@
             </div>
             <span class="delete-btn" @click="deleteMessage(msg)">
               <img style="width: 20px;height: 20px;" src="@/assets/ioc/collect/delete.png" />
+            </span>
+            <span class="delete-btn" @click="copyMessage(msg)">
+              <img style="width: 20px;height: 20px;" src="@/assets/ioc/collect/copy.png" />
             </span>
           </div>
         </div>
@@ -45,11 +58,11 @@
         </div>
       </el-main>
     </el-container>
-    <el-dialog title="新增会话" :visible.sync="dialogVisible" width="400px" @close="newSessionTitle = ''">
+    <el-dialog :title="title" :visible.sync="dialogVisible" width="400px" @close="newSessionTitle = ''">
       <el-input v-model="newSessionTitle" placeholder="请输入会话标题" maxlength="100" show-word-limit />
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="addSession">新增</el-button>
+        <el-button type="primary" @click="navigatorFuntion">确定</el-button>
       </template>
     </el-dialog>
 
@@ -57,7 +70,7 @@
 </template>
 
 <script>
-import { getSessionList, saveSession, getMessageList, saveMessage, deleteMessage } from '@/api/collect';
+import { getSessionList, saveSession, getMessageList, saveMessage, deleteMessage, updateSession,deleteSession } from '@/api/collect';
 import { getUniqueCode } from '@/api/public';
 export default {
   name: "collectPage",
@@ -73,7 +86,10 @@ export default {
       dialogVisible: false,
       newSessionTitle: '',
       sessionCode: '',
-      selectedSeeionId: null
+      selectedSeeionId: null,
+      title: '',
+      seesionType: 1,
+      updateSession: null
     };
   },
   methods: {
@@ -126,6 +142,13 @@ export default {
         this.selectSeeion(this.sessionList[0].id)
       }
     },
+    navigatorFuntion() {
+      if (this.seesionType == 1) {
+        this.addSession()
+      } else {
+        this.updateSessionAction()
+      }
+    },
     async addSession() {
       if (!this.newSessionTitle.trim()) {
         this.$message.warning('请输入会话标题');
@@ -142,6 +165,8 @@ export default {
       }
     },
     async openAddDialog() {
+      this.title = '新增会话'
+      this.seesionType = 1
       try {
         const res = await getUniqueCode();
         const code = res?.data?.data;
@@ -156,11 +181,39 @@ export default {
         console.error(e);
       }
     },
+    openUpdateName(item) {
+      this.title = '重命名会话'
+      this.seesionType = 2
+      this.dialogVisible = true;
+      this.updateSession = item
+    },
+    updateSessionAction() {
+      updateSession({ id: this.updateSession.id, title: this.newSessionTitle }).then(res => {
+        if (res.data.code == 200) {
+          this.$message.success('修改成功')
+        }
+        this.updateSession.title = this.newSessionTitle
+        this.dialogVisible = false;
+      })
+    },
     async selectSeeion(id) {
       this.selectedSeeionId = id
       await getMessageList({ sessionId: id }).then(res => {
         this.messages = res.data.data.reverse()
       })
+    },
+    deleteSessions(item){
+      this.$confirm('确认删除？')
+        .then(() => {
+          deleteSession([item.id]).then(() => {
+            let index = this.sessionList.indexOf(item);
+            if (index !== -1) {
+              this.sessionList.splice(index, 1);
+            }
+            this.$message.success('删除成功')
+          })
+        })
+        .catch(() => { });
     },
     deleteMessage(msg) {
       this.$confirm('确认删除？')
@@ -174,6 +227,10 @@ export default {
           })
         })
         .catch(() => { });
+    },
+    copyMessage(msg){
+      navigator.clipboard.writeText(msg.content);
+      this.$message.success("已复制到剪贴板");
     }
   },
   mounted() {
@@ -263,7 +320,7 @@ export default {
 .collect-card {
   cursor: pointer;
   border-radius: 8px;
-  padding: 12px;
+  padding: 8px;
   font-weight: 500;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: 0.2s;
@@ -384,5 +441,59 @@ export default {
 .selected {
   background-color: rgb(234, 234, 234);
   /* 深色 */
+}
+
+.collect-card {
+  position: relative;
+  /* 用于定位右上角按钮 */
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 12px 40px 12px 12px;
+  /* 右侧预留空间放按钮 */
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: 0.2s;
+  min-height: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/* 只放标题 */
+.card-content {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* 固定在卡片右侧的按钮 */
+.more-btn {
+  position: absolute;
+  right: 10px;
+  /* 固定右边距 */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: #666;
+}
+
+.more-btn:hover {
+  color: #333;
+}
+
+/* popover 菜单 */
+.menu-item {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: #f5f5f5;
 }
 </style>

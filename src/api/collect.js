@@ -8,6 +8,10 @@ export function saveSession(data) {
     return post('/app/session/save', data)
 }
 
+export function updateSession(data) {
+    return post('/app/session/update', data)
+}
+
 export function getMessageList(params) {
     return get('/app/message/list',params)
 }
@@ -18,4 +22,8 @@ export function saveMessage(data) {
 
 export function deleteMessage(data) {
     return post('/app/message/delete', data)
+}
+
+export function deleteSession(data){
+return post('/app/session/delete', data)
 }

@@ -1,17 +1,18 @@
 // api.js  
 import axios from 'axios';  
 import store from '@/store';
+import router from '@/router'
 import { Message } from 'element-ui';
 import { navigator } from '@/utils/navigator';
 
 const baseURL= 'http://localhost:8901'
 // const baseURL= 'http://192.168.89.249:8901'
-// const baseURL= 'http://112.74.191.203/api'
+// const baseURL= 'http://36.150.237.20/api'
 
 // 创建axios实例  
 const instance = axios.create({  
   baseURL:baseURL,
-  timeout: 5000, // 请求超时时间  
+  timeout: 10000, // 请求超时时间  
   // 你可以在这里设置更多的请求配置选项，如headers等  
 });
 
@@ -30,34 +31,40 @@ instance.interceptors.request.use(
   }
 );
 
-
 // 响应拦截器：统一处理响应
 instance.interceptors.response.use(
   response => {
-    const res = response.data;
-    // 你可以自定义成功判断逻辑，比如 code === 200
-    if (res.code === 200 || res.success === true) {
-      return  response; // 优先返回 data 字段
-    } else if(res.code === -406){
-      //退出
-      navigator(this, "/login")
-      store.dispatch('logout')
-    }else{
-      Message({
-        message: res.msg,
-        type: 'warning'
-      });
+    // ✅ 1️⃣ blob / 文件流：直接放行，什么都别碰
+    if (response.headers.contenttype === 'image') {
       return response
     }
+
+    const res = response.data
+
+    if (res.code === 200 || res.success === true) {
+      return response
+    }
+
+    if (res.code === -406) {
+      navigator(router, "/login")
+      store.dispatch('logout')
+      return Promise.reject(new Error('未登录'))
+    }
+
+    Message({
+      message: res.msg || '请求失败',
+      type: 'warning'
+    })
+    return Promise.reject(new Error(res.msg || '请求失败'))
   },
   error => {
     Message({
       message: '系统错误，请联系管理员',
       type: 'warning'
-    });
-    console.info(error)
+    })
+    return Promise.reject(error) // ⭐ 必须 return
   }
-);
+)
   
 // 封装get请求  
 export function get(url, params = {}) {  
@@ -69,4 +76,4 @@ export function post(url, data = {}) {
   return instance.post(url, data);  
 }
 
-export {baseURL}
+export {baseURL,instance}

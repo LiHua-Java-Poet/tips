@@ -7,12 +7,18 @@
       <el-form-item label="密码" prop="checkPass">
         <el-input type="password" placeholder="请输入密码" v-model="password" show-password></el-input>
       </el-form-item>
-      <el-form-item label="验证码" prop="age">
-        <div style="display: flex;">
-          <el-input v-model="inputIdentifyCode"></el-input>
-          <div @click="refreshCode">
-            <identify-code :identifyCode="identifyCode" :contentWidth="150" :contentHeight="40" :fontSizeMin="50" />
-          </div>
+      <el-form-item label="验证码">
+        <div style="display:flex;align-items:center;">
+          <el-input
+            v-model="inputIdentifyCode"
+            placeholder="请输入验证码"
+            style="width: 150px"
+          />
+          <img
+            :src="captchaImg"
+            class="captcha-img"
+            @click="refreshCode"
+          />
         </div>
       </el-form-item>
       <span class="tip" @click="callParentMethod(false)">没有账号?</span>
@@ -28,8 +34,8 @@
 
 <script>
 import { navigator } from '@/utils/navigator';
-import IdentifyCode from './IdentifyCode.vue';
-import { loginUser } from '@/api/user'
+import router from '@/router';
+import { loginUser, getImageVerifica } from '@/api/user'
 
 export default {
   props: ['callback'],
@@ -37,10 +43,9 @@ export default {
     return {
       userName: '',
       password: '',
-      identifyCodes: "abcdefhijkmnprstwxyz0123456789",
-      //生成的验证码
-      identifyCode: "",
-      inputIdentifyCode: ''
+      inputIdentifyCode: '',
+      captchaImg: '',    // 图片地址
+      timeToken: ''    // 本次验证码唯一标识
     };
   },
   mounted() {
@@ -49,11 +54,8 @@ export default {
       this.$router.push("/index")
       return
     }
-    this.identifyCode = ""
-    this.makeCode(this.identifyCodes, 4)
-  },
-  components: {
-    'identify-code': IdentifyCode,
+    //获取到对应的验证码
+    this.refreshCode()
   },
 
   methods: {
@@ -74,7 +76,10 @@ export default {
       }
       await loginUser({
         "userName": this.userName,
-        "password": this.password
+        "password": this.password,
+        "captchaCode": this.inputIdentifyCode,
+        "timeToken": this.timeToken
+
       })
         .then(res => {
           if (res.data.code == 200) {
@@ -83,7 +88,7 @@ export default {
               type: 'success'
             });
             this.$store.dispatch('login', res.data.data);
-            navigator(this, "/index/all")
+            navigator(router, "/index/all")
           } else {
             this.$notify.error({
               title: '失败',
@@ -96,26 +101,31 @@ export default {
         })
       this.$store.commit('updateLoad', false)
     },
-    callParentMethod(flag) {
-      // 在子组件中调用父组件传递的方法
-      this.callback(flag);
-    },
-    randomNum(min, max) {
-      return Math.floor(Math.random() * (max - min) + min);
+    randomNum() {
+      const timestamp = Date.now(); // 毫秒级时间戳
+      const random8 = Math.floor(10000000 + Math.random() * 90000000); // 8位随机数
+      return `${timestamp}${random8}`;
     },
     //刷新验证码
-    refreshCode() {
-      this.identifyCode = "";
-      this.makeCode(this.identifyCodes, 4);
-    },
-    //生成验证码，l为生成验证码的长度
-    makeCode(o, l) {
-      for (let i = 0; i < l; i++) {
-        this.identifyCode += this.identifyCodes[
-          this.randomNum(0, this.identifyCodes.length)
-        ];
+    async refreshCode() {
+      try {
+        this.timeToken = this.randomNum()
+
+        const res = await getImageVerifica({
+          timeToken: this.timeToken
+        })
+
+        const buffer = res.data
+
+        const blob = new Blob([buffer], { type: 'image/png' })
+
+        this.captchaImg = URL.createObjectURL(blob)
+      } catch (e) {
+        console.error('验证码加载失败', e)
       }
     }
+
+
   }
 }
 </script>
@@ -198,27 +208,12 @@ export default {
   }
 }
 
-/* 验证码部分特殊样式 */
-.identify-code-container {
+.captcha-img {
   margin-left: 10px;
+  width: 120px;
+  height: 40px;
   cursor: pointer;
   border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  overflow: hidden;
-  transition: border-color 0.3s;
-
-  &:hover {
-    border-color: #c0c4cc;
-  }
 }
 
-/* 响应式调整 */
-@media screen and (max-width: 768px) {
-  .login-from {
-    width: 90%;
-    min-width: unset;
-    margin-right: 0;
-    padding: 30px;
-  }
-}
 </style>

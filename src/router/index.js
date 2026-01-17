@@ -20,6 +20,10 @@ Vue.use(VueRouter)
 const router = new VueRouter({
   routes: [
     {
+      path: '/',
+      component: LoginPage
+    },
+    {
       path: '/login',
       component: LoginPage
     },

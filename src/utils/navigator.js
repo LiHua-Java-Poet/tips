@@ -1,9 +1,16 @@
 // src/utils/navigator.js
-export function navigator(context, path) {
-  if (context.$route.path !== path) {
-    context.$router.push(path)
+// export function navigator(context, path) {
+//   if (context.$route.path !== path) {
+//     context.$router.push(path)
+//   }
+// }
+
+export function navigator(routerInstance, path) {
+  if (routerInstance.currentRoute.path !== path) {
+    routerInstance.push(path)
   }
 }
+
 
 export  function formatDate(timestamp) {
   const date = new Date(timestamp * 1000); // 转为毫秒

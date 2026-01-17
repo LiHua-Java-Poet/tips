@@ -14,11 +14,12 @@
 
 <script>
 import {navigator} from '@/utils/navigator';
+import router from '@/router'
 export default {
   name: 'NotFoundPage',
   methods: {
     goHome() {
-      navigator(this,'/index/all')
+      navigator(router,'/index/all')
     }
   }
 }
