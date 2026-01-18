@@ -4,7 +4,8 @@
 
       <!-- 查询区域（保留白卡片样式） -->
       <el-card shadow="never" class="search-card">
-        <div class="search-top-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div class="search-top-bar"
+          style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
           <!-- 查询表单 -->
           <el-form :inline="true" :model="query" size="small">
             <el-form-item label="用户名">
@@ -41,31 +42,49 @@
 
       <!-- 表格滚动区域 -->
       <div class="table-scroll-area">
-        <el-table
-          :data="list"
-          border
-          stripe
-          size="small"
-          v-loading="loading"
-          :height="tableHeight"
-        >
-          <el-table-column type="index" width="50" label="序号" />
-          <el-table-column prop="userName" width="150" label="用户名" />
-          <el-table-column prop="account" label="账号" />
-          <el-table-column prop="phone" label="手机号" />
-          <el-table-column prop="type" label="用户类型" width="100">
+        <el-table :data="list" border stripe size="small" v-loading="loading" :height="tableHeight">
+          <el-table-column type="index" width="50" label="序号" align="center" />
+          <el-table-column prop="type" label="用户类型" width="100" align="center">
             <template #default="scope">
-              <el-tag v-if="scope.row.type === 2" type="danger">管理员</el-tag>
-              <el-tag v-else>普通用户</el-tag>
+              <img :src="scope.row.headImage" alt="头像" class="user-avatar" />
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="80">
+          <el-table-column prop="name" width="150" label="名称" align="center" />
+          <el-table-column prop="userName" width="150" label="用户名" align="center" />
+          <el-table-column prop="account" label="账号" width="100" align="center" />
+          <el-table-column prop="phone" label="手机号" width="100" align="center" />
+          <el-table-column prop="type" label="角色" align="center">
+            <template #default="scope">
+              <el-tag v-for="(item, index) in scope.row.roleList" :key="item.id || index" style="margin-right: 10px;"
+                size="small">
+                {{ item.roleName }}
+              </el-tag>
+            </template>
+          </el-table-column>
+
+
+          <el-table-column prop="type" label="用户类型" width="100" align="center">
+            <template #default="scope">
+              <el-tag v-if="scope.row.type === 2" type="danger">管理员</el-tag>
+              <el-tag v-else>用户</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" label="状态" width="80" align="center">
             <template #default="scope">
               <el-tag v-if="scope.row.status === 1" type="success">正常</el-tag>
               <el-tag v-else type="info">停用</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" label="创建时间" width="160" />
+          <el-table-column prop="createTime" label="创建时间" width="200" align="center">
+            <template #default="scope">
+              {{ formatTime(scope.row.createTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="updateTime" label="更新时间" width="200" align="center">
+            <template #default="scope">
+              {{ formatTime(scope.row.updateTime) }}
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="160" fixed="right">
             <template #default="scope">
               <el-button type="text" size="mini" @click="openEditDialog(scope.row)">编辑</el-button>
@@ -77,15 +96,8 @@
 
       <!-- 分页 -->
       <div class="pagination">
-        <el-pagination
-          background
-          layout="total, sizes, prev, pager, next"
-          :total="total"
-          :page-size="query.limit"
-          :current-page="query.page"
-          @size-change="handleSizeChange"
-          @current-change="handlePageChange"
-        />
+        <el-pagination background layout="total, sizes, prev, pager, next" :total="total" :page-size="query.limit"
+          :current-page="query.page" @size-change="handleSizeChange" @current-change="handlePageChange" />
       </div>
 
       <!-- 新增/编辑弹窗 -->
@@ -236,7 +248,12 @@ export default {
             this.fetchList();
           });
         })
-        .catch(() => {});
+        .catch(() => { });
+    },
+    formatTime(timestamp) {
+      if (!timestamp) return '';
+      const date = new Date(timestamp * 1000);
+      return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
     }
   }
 };
@@ -268,5 +285,12 @@ export default {
   flex-shrink: 0;
   margin-top: 12px;
   text-align: right;
+}
+
+.user-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 </style>

@@ -34,7 +34,7 @@
       <!-- 表格滚动区域 -->
       <div class="table-scroll-area">
         <el-table :data="list" border stripe size="small" v-loading="loading" :height="tableHeight">
-          <el-table-column type="index" width="50" label="序号" />
+          <el-table-column type="index" width="50" label="序号" align="center"/>
           <el-table-column prop="menuName" label="菜单名称" width="180" />
           <el-table-column prop="navigatorPath" label="菜单路径" />
           <el-table-column prop="componetPath" label="组件路径" />

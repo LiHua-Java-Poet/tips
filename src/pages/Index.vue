@@ -1,110 +1,131 @@
 <template>
-    <el-container style="height: 100vh;">
-        <el-header class="custom-header" :style="{ height: '50px' }">
-            <div class="header-content">
-            <!-- 左侧 logo -->
-            <div class="block">
-                <el-image :src="require('@/assets/logo.png')" style="height: 30px;"></el-image>
-                <span style="margin-left: 10px;font-size: 20px;font-weight: 650;color: rgb(48, 49, 51);">Tips</span>
+  <el-container style="height: 100vh;">
+    <el-header class="custom-header" :style="{ height: '50px' }">
+      <div class="header-content">
+        <!-- 左侧 logo -->
+        <div class="block">
+          <el-image :src="require('@/assets/logo.png')" style="height: 30px;"></el-image>
+          <span style="margin-left: 10px;font-size: 20px;font-weight: 650;color: rgb(48, 49, 51);">Tips</span>
+        </div>
+        <!-- 右侧头像 + 下拉菜单 -->
+        <el-dropdown trigger="hover">
+          <span class="avatar-wrapper">
+            <el-avatar icon="el-icon-user-solid" :src="user.headImage" class="avatar" />
+            <span class="username">{{ user.name }}</span>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="jumpPersonage()">个人主页</el-dropdown-item>
+            <el-dropdown-item @click.native="logout()">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
+    </el-header>
+    <el-container>
+      <el-aside :width="isCollapse ? '60px' : '175px'" class="aside"
+        style="transition: width 0.5s; display: flex; flex-direction: column; justify-content: space-between; border-right: solid 1px #e6e6e6;">
+        <el-menu :default-active="activeMenuIndex" router>
+          <el-menu-item index="/index/all">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/index.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">我的首页</div>
             </div>
-            <!-- 右侧头像 + 下拉菜单 -->
-            <el-dropdown trigger="hover">
-                <span class="avatar-wrapper">
-                    <el-avatar
-                        icon="el-icon-user-solid"
-                        :src="user.headImage"
-                        class="avatar"
-                    />
-                    <span class="username">{{user.name}}</span>
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item @click.native="jumpPersonage()">个人主页</el-dropdown-item>
-                    <el-dropdown-item @click.native="logout()">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-            </el-dropdown>
+          </el-menu-item>
+          <el-menu-item index="/index/task">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/task.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">任务管理</div>
             </div>
-        </el-header>
-        <el-container>
-            <el-aside :width="isCollapse ? '60px' : '175px'" class="aside" style="transition: width 0.5s; display: flex; flex-direction: column; justify-content: space-between; border-right: solid 1px #e6e6e6;">
-                <el-menu :default-active="activeMenuIndex" router>
-                    <el-menu-item index="/index/all" @click="navigator('/index/all')">
-                        <div class="menu-item-content" >
-                            <div><svg t="1712771757606" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11131" width="18" height="18"><path d="M192 160a32 32 0 0 0-32 32v192a32 32 0 0 0 32 32h192a32 32 0 0 0 32-32V192a32 32 0 0 0-32-32H192z m0-64h192a96 96 0 0 1 96 96v192a96 96 0 0 1-96 96H192a96 96 0 0 1-96-96V192a96 96 0 0 1 96-96zM192 608a32 32 0 0 0-32 32v192a32 32 0 0 0 32 32h192a32 32 0 0 0 32-32v-192a32 32 0 0 0-32-32H192z m0-64h192a96 96 0 0 1 96 96v192a96 96 0 0 1-96 96H192a96 96 0 0 1-96-96v-192a96 96 0 0 1 96-96zM640 608a32 32 0 0 0-32 32v192a32 32 0 0 0 32 32h192a32 32 0 0 0 32-32v-192a32 32 0 0 0-32-32h-192z m0-64h192a96 96 0 0 1 96 96v192a96 96 0 0 1-96 96h-192a96 96 0 0 1-96-96v-192a96 96 0 0 1 96-96zM602.272 266.272a32 32 0 0 0 0 45.28l112 112a32 32 0 0 0 45.28 0l112-112a32 32 0 0 0 0-45.28l-112-112a32 32 0 0 0-45.28 0l-112 112z m-45.248-45.248l112-112a96 96 0 0 1 135.776 0l112 112a96 96 0 0 1 0 135.776l-112 112a96 96 0 0 1-135.776 0l-112-112a96 96 0 0 1 0-135.776z" fill="#000000" p-id="11132"></path></svg></div>
-                            <div class="menu-text" :class="{ 'collapsed': isCollapse }">首页</div>
-                        </div>
-                    </el-menu-item>
-                    <el-menu-item index="/index/task" @click="navigator('/index/task')">
-                        <div class="menu-item-content">
-                            <div>
-                                <svg t="1750150249098" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1533" width="18" height="18"><path d="M109.714286 73.142857c-21.942857 0-36.571429 14.628571-36.571429 36.571429v804.571428c0 21.942857 14.628571 36.571429 36.571429 36.571429h804.571428c21.942857 0 36.571429-14.628571 36.571429-36.571429v-804.571428c0-21.942857-14.628571-36.571429-36.571429-36.571429h-804.571428z m0-73.142857h804.571428c58.514286 0 109.714286 51.2 109.714286 109.714286v804.571428c0 58.514286-51.2 109.714286-109.714286 109.714286h-804.571428C51.2 1024 0 972.8 0 914.285714v-804.571428C0 51.2 51.2 0 109.714286 0z m438.857143 292.571429h219.428571c21.942857 0 36.571429 14.628571 36.571429 36.571428s-14.628571 36.571429-36.571429 36.571429h-219.428571c-21.942857 0-36.571429-14.628571-36.571429-36.571429s14.628571-36.571429 36.571429-36.571428z m-219.428572 438.857142c21.942857 0 36.571429-14.628571 36.571429-36.571428S351.085714 658.285714 329.142857 658.285714s-36.571429 14.628571-36.571428 36.571429 14.628571 36.571429 36.571428 36.571428z m0 73.142858C270.628571 804.571429 219.428571 753.371429 219.428571 694.857143S270.628571 585.142857 329.142857 585.142857 438.857143 636.342857 438.857143 694.857143 387.657143 804.571429 329.142857 804.571429z m-7.314286-446.171429L241.371429 277.942857c-14.628571-14.628571-36.571429-14.628571-51.2 0-14.628571 14.628571-14.628571 36.571429 0 51.2L292.571429 431.542857c7.314286 7.314286 21.942857 14.628571 29.257142 14.628572s21.942857 0 29.257143-7.314286l153.6-153.6c14.628571-14.628571 14.628571-36.571429 0-51.2-14.628571-14.628571-36.571429-14.628571-51.2 0L321.828571 358.4zM548.571429 658.285714h219.428571c21.942857 0 36.571429 14.628571 36.571429 36.571429s-14.628571 36.571429-36.571429 36.571428h-219.428571c-21.942857 0-36.571429-14.628571-36.571429-36.571428s14.628571-36.571429 36.571429-36.571429z" p-id="1534" fill="#515151"></path></svg>
-                            </div>
-                            <div class="menu-text" :class="{ 'collapsed': isCollapse }">任务</div>
-                        </div>
-                    </el-menu-item>
-                    <el-menu-item index="/index/plan" @click="navigator('/index/plan')">
-                        <div class="menu-item-content">
-                            <div>
-                                <svg t="1750150365744" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2923" width="18" height="18"><path d="M861.433649 0H142.889371c-39.65996 0-71.853928 31.581968-71.853927 70.508929v881.346114c0 59.85794 68.913931 93.519906 116.169883 56.549943L457.608055 810.959184c25.949974-20.31998 62.429937-20.31998 88.500911 0l271.136727 197.690801c47.250952 36.848963 116.044883 3.184997 116.044883-56.674943V70.508929C933.287576 31.581968 901.093609 0 861.433649 0z m8.815991 951.974042c0 2.762997-0.724999 4.629995-2.423998 6.236994-1.791998 1.696998-4.346996 2.749997-6.670993 2.749997h-0.001c-1.187999 0-2.847997-0.23-5.143995-2.022998l-0.804999-0.624999-271.272727-197.791801c-23.469976-17.963982-52.584947-27.841972-82.121918-27.841972-29.56697 0-58.669941 9.89699-82.095917 27.890972L149.186365 958.112036l-0.821999 0.643c-2.309998 1.807998-3.977996 2.038998-5.174995 2.038998-0.09 0-9.114991-0.385-9.114991-8.938991V70.509929c0-4.047996 4.036996-7.469992 8.814991-7.469992h718.544278c4.779995 0 8.815991 3.421997 8.815991 7.470992v881.464113z" p-id="2924" fill="#515151"></path><path d="M694.832816 367.96363l-65.854934 65.854934a28.504971 28.504971 0 0 0-7.959992 25.093974l15.548985 93.029907c3.912996 23.133977-19.83198 40.881959-40.15396 29.86497l-81.399918-43.819956c-8.079992-4.284996-17.749982-4.284996-25.708974 0l-81.402918 43.941956c-20.31998 10.895989-44.067956-6.731993-40.14696-29.86497l15.540984-93.032907c1.596998-9.179991-1.465999-18.482981-7.953992-25.096974l-65.854933-65.854934c-16.404983-16.399984-7.346993-45.043955 15.302984-48.469951l90.947909-13.587987c9.056991-1.348999 16.892983-7.222993 20.806979-15.547984l40.641959-84.584915a27.399972 27.399972 0 0 1 24.849975-15.789984 27.399972 27.399972 0 0 1 24.849975 15.789984l40.634959 84.584915c4.043996 8.324992 11.873988 14.198986 20.812979 15.547984l90.948909 13.588987c22.893977 3.304997 31.949968 31.947968 15.549984 48.352951z" p-id="2925" fill="#515151"></path></svg>
-                            </div>
-                            <div class="menu-text" :class="{ 'collapsed': isCollapse }">计划</div>
-                        </div>
-                    </el-menu-item>
-                    <el-menu-item index="/index/document" @click="navigator('/index/document')">
-                        <div class="menu-item-content">
-                            <div><svg t="1712771795776" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11278" width="18" height="18"><path d="M288 320a32 32 0 1 1 0-64h448a32 32 0 0 1 0 64H288zM288 544a32 32 0 0 1 0-64h448a32 32 0 0 1 0 64H288zM288 768a32 32 0 0 1 0-64h128a32 32 0 0 1 0 64H288z" fill="#000000" p-id="11279"></path><path d="M807.968 802.24a32 32 0 0 1 41.984 48.32l-153.856 133.6a32 32 0 0 1-20.992 7.84H195.04C140.16 992 96 946.624 96 891.072V132.928C96 77.376 140.16 32 195.04 32h633.92C883.84 32 928 77.376 928 132.928v564.32a32 32 0 1 1-64 0V132.928C864 112.32 848.096 96 828.96 96H195.04C175.904 96 160 112.32 160 132.928v758.144C160 911.68 175.904 928 195.04 928h468.096l144.832-125.76z" fill="#000000" p-id="11280"></path><path d="M704 959.136a32 32 0 1 1-64 0v-186.24C640 717.408 684.16 672 739.04 672h157.632a32 32 0 0 1 0 64h-157.632c-19.136 0-35.04 16.32-35.04 36.928v186.24z" fill="#000000" p-id="11281"></path></svg></div>
-                            <div class="menu-text" :class="{ 'collapsed': isCollapse }">文档</div>
-                        </div>
-                    </el-menu-item>
-                    <el-menu-item index="/index/collect" @click="navigator('/index/collect')">
-                        <div class="menu-item-content">
-                            <div>
-                              <svg t="1755071937978" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6096" width="22" height="22"><path d="M266.664 773.808l-90.144 7.576 12.424-88.84z" fill="#515151" p-id="6097"></path><path d="M869.34 263.576l-43.676 43.672a30.868 30.868 0 0 1-43.652 0 30.86 30.86 0 0 1 0 43.652l-392.992 392.976a30.636 30.636 0 0 1-5.412 4.256 38.04 38.04 0 0 1-29.864 26.736l-177.4 37.932a30.864 30.864 0 0 1-30.868-30.868l37.94-177.392a38.04 38.04 0 0 1 26.736-29.864 30.872 30.872 0 0 1 4.256-5.412l392.992-392.968a30.868 30.868 0 0 1 43.652 0 30.868 30.868 0 0 1 0-43.652l43.676-43.676a30.872 30.872 0 0 1 43.656 0l130.956 130.952a30.86 30.86 0 0 1 0 43.656zM187.924 772.052l152.144-34.852-118.028-117.136zM626.664 212.336l-377.248 377.232 119.304 119.304 377.252-377.236z" fill="#515151" p-id="6098"></path><path d="M96 882.24h824.16a20 20 0 1 1 0 40H96a20 20 0 0 1 0-40z m435.88-100.28h392.08a20 20 0 0 1 0 40h-392.08a20 20 0 0 1 0-40z" fill="#515151" p-id="6099"></path></svg>
-                            </div>
-                            <div class="menu-text" :class="{ 'collapsed': isCollapse }">记录</div>
-                        </div>
-                    </el-menu-item>
-                    <el-menu-item index="/index/other">
-                        <div style="display: flex;">
-                            <div><svg t="1712772330917" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11379" width="20" height="20"><path d="M897.088 298.794667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 298.794667 897.088 298.794667z" fill="#5D646F" p-id="11380"></path><path d="M897.088 533.418667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 533.418667 897.088 533.418667z" fill="#5D646F" p-id="11381"></path><path d="M897.088 768.042667l-512 0c-11.776 0-21.333333-9.536-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.536 21.333333 21.333333S908.885333 768.042667 897.088 768.042667z" fill="#5D646F" p-id="11382"></path><path d="M193.066667 277.461333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11383"></path><path d="M193.066667 512.085333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11384"></path><path d="M193.066667 746.709333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11385"></path></svg></div>
-                            <div class="menu-text" :class="{ 'collapsed': isCollapse }">关于</div>
-                        </div>
-                    </el-menu-item>
-                        <el-menu-item index="/index/userManager">
-                          <div style="display: flex;">
-                              <div><svg t="1712772330917" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11379" width="20" height="20"><path d="M897.088 298.794667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 298.794667 897.088 298.794667z" fill="#5D646F" p-id="11380"></path><path d="M897.088 533.418667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 533.418667 897.088 533.418667z" fill="#5D646F" p-id="11381"></path><path d="M897.088 768.042667l-512 0c-11.776 0-21.333333-9.536-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.536 21.333333 21.333333S908.885333 768.042667 897.088 768.042667z" fill="#5D646F" p-id="11382"></path><path d="M193.066667 277.461333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11383"></path><path d="M193.066667 512.085333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11384"></path><path d="M193.066667 746.709333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11385"></path></svg></div>
-                              <div class="menu-text" :class="{ 'collapsed': isCollapse }">用户管理</div>
-                          </div>
-                        </el-menu-item>
-                        <el-menu-item index="/index/menuManager">
-                          <div style="display: flex;">
-                              <div><svg t="1712772330917" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11379" width="20" height="20"><path d="M897.088 298.794667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 298.794667 897.088 298.794667z" fill="#5D646F" p-id="11380"></path><path d="M897.088 533.418667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 533.418667 897.088 533.418667z" fill="#5D646F" p-id="11381"></path><path d="M897.088 768.042667l-512 0c-11.776 0-21.333333-9.536-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.536 21.333333 21.333333S908.885333 768.042667 897.088 768.042667z" fill="#5D646F" p-id="11382"></path><path d="M193.066667 277.461333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11383"></path><path d="M193.066667 512.085333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11384"></path><path d="M193.066667 746.709333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11385"></path></svg></div>
-                              <div class="menu-text" :class="{ 'collapsed': isCollapse }">菜单管理</div>
-                          </div>
-                        </el-menu-item>
-                        <el-menu-item index="/index/roleManager">
-                          <div style="display: flex;">
-                              <div><svg t="1712772330917" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11379" width="20" height="20"><path d="M897.088 298.794667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 298.794667 897.088 298.794667z" fill="#5D646F" p-id="11380"></path><path d="M897.088 533.418667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 533.418667 897.088 533.418667z" fill="#5D646F" p-id="11381"></path><path d="M897.088 768.042667l-512 0c-11.776 0-21.333333-9.536-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.536 21.333333 21.333333S908.885333 768.042667 897.088 768.042667z" fill="#5D646F" p-id="11382"></path><path d="M193.066667 277.461333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11383"></path><path d="M193.066667 512.085333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11384"></path><path d="M193.066667 746.709333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11385"></path></svg></div>
-                              <div class="menu-text" :class="{ 'collapsed': isCollapse }">角色管理</div>
-                          </div>
-                        </el-menu-item>
-                        <el-menu-item index="/index/dictManager">
-                          <div style="display: flex;">
-                              <div><svg t="1712772330917" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11379" width="20" height="20"><path d="M897.088 298.794667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 298.794667 897.088 298.794667z" fill="#5D646F" p-id="11380"></path><path d="M897.088 533.418667l-512 0c-11.776 0-21.333333-9.557333-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.557333 21.333333 21.333333S908.885333 533.418667 897.088 533.418667z" fill="#5D646F" p-id="11381"></path><path d="M897.088 768.042667l-512 0c-11.776 0-21.333333-9.536-21.333333-21.333333s9.557333-21.333333 21.333333-21.333333l512 0c11.797333 0 21.333333 9.536 21.333333 21.333333S908.885333 768.042667 897.088 768.042667z" fill="#5D646F" p-id="11382"></path><path d="M193.066667 277.461333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11383"></path><path d="M193.066667 512.085333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11384"></path><path d="M193.066667 746.709333m-42.666667 0a2 2 0 1 0 85.333333 0 2 2 0 1 0-85.333333 0Z" fill="#5D646F" p-id="11385"></path></svg></div>
-                              <div class="menu-text" :class="{ 'collapsed': isCollapse }">字典管理</div>
-                          </div>
-                        </el-menu-item>
+          </el-menu-item>
+          <el-menu-item index="/index/plan">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/plan.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">计划排期</div>
+            </div>
+          </el-menu-item>
+          <el-menu-item index="/index/document">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/domcument.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">记录文档</div>
+            </div>
+          </el-menu-item>
+          <el-menu-item index="/index/collect">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/record.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">日常记录</div>
+            </div>
+          </el-menu-item>
+          <el-menu-item index="/index/other">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/about.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">关于其他</div>
+            </div>
+          </el-menu-item>
+          <el-menu-item index="/index/userManager">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/user.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">用户管理</div>
+            </div>
+          </el-menu-item>
+          <el-menu-item index="/index/menuManager">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/menu.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">菜单管理</div>
+            </div>
+          </el-menu-item>
+          <el-menu-item index="/index/roleManager">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/role.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">角色管理</div>
+            </div>
+          </el-menu-item>
+          <el-menu-item index="/index/dictManager">
+            <div class="menu-item-content">
+              <div>
+                <img src="@/assets/ioc/navator/dict.png" class="nav-icon" />
+              </div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">字典管理</div>
+            </div>
+          </el-menu-item>
 
-                </el-menu>
-                <div class="collapse-toggle" @click="toggleCollapse">
-                    <svg v-if="!isCollapse" t="1753091902505" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7334" width="20" height="20"><path d="M42.666667 149.333333a21.333333 21.333333 0 0 1 21.333333-21.333333h896a21.333333 21.333333 0 0 1 0 42.666667H64a21.333333 21.333333 0 0 1-21.333333-21.333334z m917.333333 234.666667H362.666667a21.333333 21.333333 0 0 0 0 42.666667h597.333333a21.333333 21.333333 0 0 0 0-42.666667z m0 256H64a21.333333 21.333333 0 0 0 0 42.666667h896a21.333333 21.333333 0 0 0 0-42.666667z m0 256H64a21.333333 21.333333 0 0 0 0 42.666667h896a21.333333 21.333333 0 0 0 0-42.666667zM157.5 300.293333A21.333333 21.333333 0 0 1 170.666667 320v170.666667a21.333333 21.333333 0 0 1-36.42 15.086666l-85.333334-85.333333a21.333333 21.333333 0 0 1 0-30.173333l85.333334-85.333334a21.333333 21.333333 0 0 1 23.253333-4.62zM128 371.5L94.166667 405.333333 128 439.166667z" fill="#5C5C66" p-id="7335"></path></svg>
-                    <svg  v-else t="1753091928746" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7544" width="20" height="20"><path d="M42.666667 149.333333a21.333333 21.333333 0 0 1 21.333333-21.333333h896a21.333333 21.333333 0 0 1 0 42.666667H64a21.333333 21.333333 0 0 1-21.333333-21.333334z m917.333333 234.666667H362.666667a21.333333 21.333333 0 0 0 0 42.666667h597.333333a21.333333 21.333333 0 0 0 0-42.666667z m0 256H64a21.333333 21.333333 0 0 0 0 42.666667h896a21.333333 21.333333 0 0 0 0-42.666667z m0 256H64a21.333333 21.333333 0 0 0 0 42.666667h896a21.333333 21.333333 0 0 0 0-42.666667zM42.666667 490.666667V320a21.333333 21.333333 0 0 1 36.42-15.086667l85.333333 85.333334a21.333333 21.333333 0 0 1 0 30.173333l-85.333333 85.333333A21.333333 21.333333 0 0 1 42.666667 490.666667z m42.666666-51.5L119.166667 405.333333 85.333333 371.5z" fill="#5C5C66" p-id="7545"></path></svg>
-                </div>
-            </el-aside>
-            <el-main style="padding: 10px ;background-color: rgb(245, 245, 245);">
-                <router-view></router-view>                    
-            </el-main>
-        </el-container>
+        </el-menu>
+        <div class="collapse-toggle" @click="toggleCollapse">
+          <svg v-if="!isCollapse" t="1753091902505" class="icon" viewBox="0 0 1024 1024" version="1.1"
+            xmlns="http://www.w3.org/2000/svg" p-id="7334" width="20" height="20">
+            <path
+              d="M42.666667 149.333333a21.333333 21.333333 0 0 1 21.333333-21.333333h896a21.333333 21.333333 0 0 1 0 42.666667H64a21.333333 21.333333 0 0 1-21.333333-21.333334z m917.333333 234.666667H362.666667a21.333333 21.333333 0 0 0 0 42.666667h597.333333a21.333333 21.333333 0 0 0 0-42.666667z m0 256H64a21.333333 21.333333 0 0 0 0 42.666667h896a21.333333 21.333333 0 0 0 0-42.666667z m0 256H64a21.333333 21.333333 0 0 0 0 42.666667h896a21.333333 21.333333 0 0 0 0-42.666667zM157.5 300.293333A21.333333 21.333333 0 0 1 170.666667 320v170.666667a21.333333 21.333333 0 0 1-36.42 15.086666l-85.333334-85.333333a21.333333 21.333333 0 0 1 0-30.173333l85.333334-85.333334a21.333333 21.333333 0 0 1 23.253333-4.62zM128 371.5L94.166667 405.333333 128 439.166667z"
+              fill="#5C5C66" p-id="7335"></path>
+          </svg>
+          <svg v-else t="1753091928746" class="icon" viewBox="0 0 1024 1024" version="1.1"
+            xmlns="http://www.w3.org/2000/svg" p-id="7544" width="20" height="20">
+            <path
+              d="M42.666667 149.333333a21.333333 21.333333 0 0 1 21.333333-21.333333h896a21.333333 21.333333 0 0 1 0 42.666667H64a21.333333 21.333333 0 0 1-21.333333-21.333334z m917.333333 234.666667H362.666667a21.333333 21.333333 0 0 0 0 42.666667h597.333333a21.333333 21.333333 0 0 0 0-42.666667z m0 256H64a21.333333 21.333333 0 0 0 0 42.666667h896a21.333333 21.333333 0 0 0 0-42.666667z m0 256H64a21.333333 21.333333 0 0 0 0 42.666667h896a21.333333 21.333333 0 0 0 0-42.666667zM42.666667 490.666667V320a21.333333 21.333333 0 0 1 36.42-15.086667l85.333333 85.333334a21.333333 21.333333 0 0 1 0 30.173333l-85.333333 85.333333A21.333333 21.333333 0 0 1 42.666667 490.666667z m42.666666-51.5L119.166667 405.333333 85.333333 371.5z"
+              fill="#5C5C66" p-id="7545"></path>
+          </svg>
+        </div>
+      </el-aside>
+      <el-main style="padding: 10px ;background-color: rgb(245, 245, 245);">
+        <router-view></router-view>
+      </el-main>
     </el-container>
+  </el-container>
 </template>
 
 
@@ -123,7 +144,7 @@ export default {
       const path = this.$route.path;
       return path;
     },
-    isCollapse(){
+    isCollapse() {
       return this.$store.getters.collapse;
     },
   },
@@ -140,23 +161,25 @@ export default {
       this.$router.push('/login');
       this.$store.dispatch('logout');
     },
-    jumpPersonage(){
+    jumpPersonage() {
       window.open('/#/personage')
       // this.navigator('/personage')
     }
 
   },
-  created(){
+  created() {
     console.info('刷新了页面')
   },
 };
 </script>
 
 <style scoped>
-.block{
-    display: flex;
-    align-items: center;      /* 垂直居中 */
+.block {
+  display: flex;
+  align-items: center;
+  /* 垂直居中 */
 }
+
 .el-header.custom-header {
   background-color: #ffffff;
   padding: 0 50px;
@@ -193,7 +216,7 @@ export default {
   color: #333;
 }
 
-.el-container > .el-container {
+.el-container>.el-container {
   height: calc(100vh - 60px);
 }
 
@@ -251,5 +274,11 @@ export default {
 
 .close-icon {
   transform: rotate(180deg);
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 </style>
