@@ -5,12 +5,14 @@ Vue.use(Vuex)
 
 const USER_KEY = 'user'
 const COLLAPSE_KEY = 'collapse'
+const MENU_LIST = 'menu_list'
 
 
 export default new Vuex.Store({
   state: {
     user: JSON.parse(localStorage.getItem(USER_KEY)) || null,
-    isCollapse:localStorage.getItem(COLLAPSE_KEY) === 'true'
+    isCollapse:localStorage.getItem(COLLAPSE_KEY) === 'true',
+    menuList:JSON.parse(localStorage.getItem(MENU_LIST)) || null,
   },
   mutations: {
     setUser(state, user) {
@@ -25,6 +27,10 @@ export default new Vuex.Store({
       state.isCollapse = collapse
       localStorage.setItem(COLLAPSE_KEY, collapse)
     },
+    setMenuList(state,menuList){
+      state.menuList = menuList
+      localStorage.setItem(MENU_LIST, JSON.stringify(menuList))
+    }
   },
   actions: {
     login({ commit }, user) {
@@ -36,10 +42,14 @@ export default new Vuex.Store({
     setCollapse({ commit }, collapse) {
       commit('setCollapse', collapse)
     },
+    setMenu({ commit }, menuList) {
+      commit('setMenuList', menuList)
+    }
   },
   getters: {
     isLoggedIn: state => !!state.user,
     userInfo: state => state.user,
     collapse: state => state.isCollapse,
+    menuList: state => state.menuList,
   }
 })

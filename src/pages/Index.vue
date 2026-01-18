@@ -24,87 +24,14 @@
       <el-aside :width="isCollapse ? '60px' : '175px'" class="aside"
         style="transition: width 0.5s; display: flex; flex-direction: column; justify-content: space-between; border-right: solid 1px #e6e6e6;">
         <el-menu :default-active="activeMenuIndex" router>
-          <el-menu-item index="/index/all">
+          <el-menu-item :index=item.navigatorPath v-for="(item, index) in menuList" :key="item.id || index">
             <div class="menu-item-content">
               <div>
-                <img src="@/assets/ioc/navator/index.png" class="nav-icon" />
+                <img :src="require(`@/assets/ioc/navator/${item.icon}.png`)" class="nav-icon" />
               </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">我的首页</div>
+              <div class="menu-text" :class="{ 'collapsed': isCollapse }">{{ item.menuName }}</div>
             </div>
           </el-menu-item>
-          <el-menu-item index="/index/task">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/task.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">任务管理</div>
-            </div>
-          </el-menu-item>
-          <el-menu-item index="/index/plan">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/plan.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">计划排期</div>
-            </div>
-          </el-menu-item>
-          <el-menu-item index="/index/document">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/domcument.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">记录文档</div>
-            </div>
-          </el-menu-item>
-          <el-menu-item index="/index/collect">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/record.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">日常记录</div>
-            </div>
-          </el-menu-item>
-          <el-menu-item index="/index/other">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/about.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">关于其他</div>
-            </div>
-          </el-menu-item>
-          <el-menu-item index="/index/userManager">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/user.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">用户管理</div>
-            </div>
-          </el-menu-item>
-          <el-menu-item index="/index/menuManager">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/menu.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">菜单管理</div>
-            </div>
-          </el-menu-item>
-          <el-menu-item index="/index/roleManager">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/role.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">角色管理</div>
-            </div>
-          </el-menu-item>
-          <el-menu-item index="/index/dictManager">
-            <div class="menu-item-content">
-              <div>
-                <img src="@/assets/ioc/navator/dict.png" class="nav-icon" />
-              </div>
-              <div class="menu-text" :class="{ 'collapsed': isCollapse }">字典管理</div>
-            </div>
-          </el-menu-item>
-
         </el-menu>
         <div class="collapse-toggle" @click="toggleCollapse">
           <svg v-if="!isCollapse" t="1753091902505" class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -134,6 +61,7 @@ export default {
   name: 'indexPage',
   data() {
     return {
+
     };
   },
   computed: {
@@ -146,6 +74,9 @@ export default {
     },
     isCollapse() {
       return this.$store.getters.collapse;
+    },
+    menuList() {
+      return this.$store.getters.menuList;
     },
   },
   methods: {

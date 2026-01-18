@@ -9,16 +9,8 @@
       </el-form-item>
       <el-form-item label="验证码">
         <div style="display:flex;align-items:center;">
-          <el-input
-            v-model="inputIdentifyCode"
-            placeholder="请输入验证码"
-            style="width: 150px"
-          />
-          <img
-            :src="captchaImg"
-            class="captcha-img"
-            @click="refreshCode"
-          />
+          <el-input v-model="inputIdentifyCode" placeholder="请输入验证码" style="width: 150px" />
+          <img :src="captchaImg" class="captcha-img" @click="refreshCode" />
         </div>
       </el-form-item>
       <span class="tip" @click="callParentMethod(false)">没有账号?</span>
@@ -35,7 +27,7 @@
 <script>
 import { navigator } from '@/utils/navigator';
 import router from '@/router';
-import { loginUser, getImageVerifica } from '@/api/user'
+import { loginUser, getImageVerifica, getUserMenu } from '@/api/user'
 
 export default {
   props: ['callback'],
@@ -67,6 +59,7 @@ export default {
         });
         return
       }
+
       if (this.inputIdentifyCode !== this.identifyCode && 1 == 2) {
         this.$notify.error({
           title: '错误',
@@ -74,32 +67,66 @@ export default {
         });
         return
       }
-      await loginUser({
-        "userName": this.userName,
-        "password": this.password,
-        "captchaCode": this.inputIdentifyCode,
-        "timeToken": this.timeToken
 
-      })
-        .then(res => {
-          if (res.data.code == 200) {
-            this.$message({
-              message: '登录成功！',
-              type: 'success'
-            });
-            this.$store.dispatch('login', res.data.data);
-            navigator(router, "/index/all")
-          } else {
+      await loginUser({
+        userName: this.userName,
+        password: this.password,
+        captchaCode: this.inputIdentifyCode,
+        timeToken: this.timeToken
+      }).then(loginRes => {
+
+        if (loginRes.data.code != 200) {
+          this.$notify.error({
+            title: '失败',
+            message: '账号或密码错误'
+          })
+          return
+        }
+        this.$store.dispatch('login', loginRes.data.data)
+
+        // ✅ 登录接口成功后，再拉菜单
+        getUserMenu().then(menuRes => {
+          const res = menuRes.data
+          console.info(res)
+
+          // ❌ 菜单接口失败
+          if (res.code != 200) {
             this.$notify.error({
               title: '失败',
-              message: '账号或密码错误'
-            });
+              message: '菜单获取失败'
+            })
+            return
           }
+
+          // ❌ 菜单为空，不允许登录
+          if (!Array.isArray(res.data) || res.data.length === 0) {
+            this.$store.dispatch('logout')
+            this.$notify.error({
+              title: '无权限',
+              message: '当前账号未配置菜单权限'
+            })
+            return
+          }
+
+          // ✅ 菜单正常，才真正登录
+          this.$store.dispatch('setMenu', res.data)
+          this.$store.dispatch('login', loginRes.data.data)
+
+          this.$message({message: '登录成功！',type: 'success'})
+
+          navigator(router, "/index/all")
+
+        }).catch(err => {
+          console.error(err)
+          this.$notify.error({
+            title: '异常',
+            message: '菜单加载异常'
+          })
         })
-        .catch(error => {
-          console.info(error)
-        })
-      this.$store.commit('updateLoad', false)
+
+      }).catch(error => {
+        console.info(error)
+      })
     },
     randomNum() {
       const timestamp = Date.now(); // 毫秒级时间戳
@@ -215,5 +242,4 @@ export default {
   cursor: pointer;
   border: 1px solid #dcdfe6;
 }
-
 </style>

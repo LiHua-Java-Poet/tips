@@ -21,6 +21,10 @@ export function userList(data) {
     return get('/app/user/list', data)
 }
 
+export function getUserMenu(data) {
+    return get('/app/user/getUserMenu', data)
+}
+
 export function getImageVerifica(params) {
   return instance.get('/app/user/image', {
     params,
