@@ -14,6 +14,10 @@ import Document from '@/pages/subpage/Document.vue'
 import Other from '@/pages/subpage/Other.vue'
 import Collect from '@/pages/subpage/Collect.vue'
 import ReadPage from '@/pages/external/ReadPage.vue'
+import UserManager from '@/pages/subpage/UserManager.vue'
+import RoleManager from '@/pages/subpage/RoleManager.vue'
+import MenuManager from '@/pages/subpage/MenuManager.vue'
+import DictManager from '@/pages/subpage/DictManager.vue'
 Vue.use(VueRouter)
 
 
@@ -68,6 +72,26 @@ const router = new VueRouter({
         {
           path: '/index/other',
           component: Other,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/userManager',
+          component: UserManager,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/roleManager',
+          component: RoleManager,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/MenuManager',
+          component: MenuManager,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/DictManager',
+          component: DictManager,
           meta: { requiresAuth: true }
         }
       ]
