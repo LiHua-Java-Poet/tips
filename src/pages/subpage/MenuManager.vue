@@ -145,9 +145,8 @@ export default {
       this.loading = true;
       getMenuList(this.query)
         .then(res => {
-          res = res.data.data;
-          this.list = res.list;
-          this.total = res.count;
+          this.list = res.data.list;
+          this.total = res.data.count;
         })
         .finally(() => {
           this.loading = false;

@@ -294,10 +294,9 @@ export default {
     },
     getTaskList(params) {
       return getTaskList(params).then(res => {
-        const data = res.data
-        this.taskList.push(...data.data.list)
-        this.pageCount = data.data.pageCount
-        this.page = data.data.page
+        this.taskList.push(...res.data.list)
+        this.pageCount = res.data.pageCount
+        this.page = res.data.page
       }).catch(error => {
         console.info(error)
       })
@@ -307,8 +306,7 @@ export default {
       this.selectedTaskId = id
       //当选中了任务id之后需要查询对应的数据
       getTaskInfo({ id: id }).then(res => {
-        const data = res.data;
-        this.selectedTaskInfo = data.data; // 设置详情数据
+        this.selectedTaskInfo = res.data; // 设置详情数据
         this.loadingTaskDetail = false
       })
     },
@@ -332,7 +330,7 @@ export default {
         const response = await api(array); // 调用对应接口
         // 如果是删除接口需要额外获取 .data，也可以单独处理：
         // const result = actionType === 3 ? response.data : response;
-        if (response.data.code == 200) {
+        if (response.code == 200) {
           this.$message({
             type: 'success',
             message: finish
@@ -380,7 +378,7 @@ export default {
     async editTaskOpen() {
       //获取到唯一码作为上传使用的
       await getUniqueCode().then(res => {
-        this.uniqueCode = res.data.data
+        this.uniqueCode = res.data
       })
       //将当前选择的任务样式给到选中任务表单
       this.taskForm.taskName = this.selectedTaskInfo.taskName
@@ -399,7 +397,7 @@ export default {
       payload.taskTime = Math.floor(payload.taskTime.getTime() / 1000);
       console.info(payload)
       updateTask(payload).then(res => {
-        if (res.data.code == 200) {
+        if (res.code == 200) {
           this.$message.success('修改成功')
           Object.assign(this.taskForm, {
             taskName: "",

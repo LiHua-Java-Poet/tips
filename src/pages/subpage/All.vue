@@ -324,7 +324,7 @@ export default {
     },
     created() {
         getUserDataTo().then(res => {
-            this.userDataTo = res.data.data
+            this.userDataTo = res.data
         }).catch(err => {
             console.info(err)
         })
@@ -332,7 +332,7 @@ export default {
             page: 1,
             limit: 5
         }).then(res => {
-            this.messageList = res.data.data.list
+            this.messageList = res.data.list
         }).catch(err => {
             console.info(err)
         })
@@ -377,7 +377,7 @@ export default {
         async addTask(name) {
             //获取到唯一码作为上传使用的
             await getUniqueCode().then(res => {
-                this.uniqueCode = res.data.data
+                this.uniqueCode = res.data
             })
             this.taskForm.taskTime = new Date();
             this.title = name
@@ -387,7 +387,7 @@ export default {
         async addPlan(name) {
             //获取到唯一码作为上传使用的
             await getUniqueCode().then(res => {
-                this.uniqueCode = res.data.data
+                this.uniqueCode = res.data
             })
             this.planForm.taskTime = new Date();
             this.title = name
@@ -401,7 +401,7 @@ export default {
             }
             payload.taskTime = Math.floor(payload.taskTime.getTime() / 1000);
             saveTask(payload).then(res => {
-                if (res.data.code == 200) {
+                if (res.code == 200) {
                     this.$message.success('新增成功')
                     Object.assign(this.taskForm, {
                         taskName: "",
@@ -423,7 +423,7 @@ export default {
                 uniqueCode: this.uniqueCode  // 这里加新属性
             }
             savePlan(payload).then(res => {
-                if (res.data.code == 200) {
+                if (res.code == 200) {
                     this.$message.success('新增成功')
                     Object.assign(this.planForm, {
                         drawer: false,
@@ -468,7 +468,6 @@ export default {
         async openAddMessage() {
             //打开新增一条信息
             await getSessionList().then(res => {
-                res = res.data
                 this.sessionList = res.data
             })
             //默认选中第一个
@@ -480,7 +479,6 @@ export default {
         async addMessage() {
             //新增消息
             await saveMessage(this.collectForm).then(res => {
-                res = res.data
                 if (res.code == 200) {
                     this.$message.success('创建成功')
                 }
@@ -491,7 +489,7 @@ export default {
                 page: 1,
                 limit: 5
             }).then(res => {
-                this.messageList = res.data.data.list
+                this.messageList = res.data.list
             }).catch(err => {
                 console.info(err)
             })

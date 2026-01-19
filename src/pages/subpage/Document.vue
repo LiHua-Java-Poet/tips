@@ -64,12 +64,18 @@
 
       <!-- 富文本编辑器区域 -->
       <div class="editor-container">
+
+        <!-- ✅ 新增：未选中任何文件 / 左侧为空 -->
+        <el-empty v-if="!hasSelectedFile" description="请选择或新建一个文档" style="margin-top: 150px;">
+        </el-empty>
+
         <!-- 文件夹状态 -->
-        <el-empty v-if="currentFile && currentFile.fileType === 2" style="margin-top: 150px;" description=" ">
+        <el-empty v-else-if="currentFile.fileType === 2" style="margin-top: 150px;" description=" ">
           <template #image>
             <img src="@/assets/ioc/document/folder-1.png" style="width: 100px" />
           </template>
         </el-empty>
+
         <!-- 文件加载状态 -->
         <div v-else-if="loadingContent" class="loading-overlay">
           <div class="loading-content">
@@ -77,6 +83,7 @@
             <p>加载中...</p>
           </div>
         </div>
+
         <!-- 编辑器正常状态 -->
         <template v-else>
           <Toolbar :editor="editor" :defaultConfig="toolbarConfig" :mode="mode" style="border-bottom: 1px solid #ccc" />
@@ -84,6 +91,7 @@
             style="height: 100%; overflow-y: hidden" />
         </template>
       </div>
+
     </el-main>
 
     <!-- 新增文件对话框 -->
@@ -137,6 +145,12 @@ export default {
       editingName: "",       // 新增：编辑中的名称
     };
   },
+  computed: {
+    // 是否有选中的文件或文件夹
+    hasSelectedFile() {
+      return this.currentFile !== null;
+    }
+  },
   methods: {
     onCreated(editorInstance) {
       this.editor = editorInstance;
@@ -150,7 +164,7 @@ export default {
           uniqueCode: this.uniqueCode
         });
 
-        if (res.data.code === 200) {
+        if (res.code === 200) {
           this.$message.success("新增成功");
           this.loadCatalogue();
         } else {
@@ -164,7 +178,7 @@ export default {
     async openAddFile() {
       try {
         const res = await getUniqueCode();
-        const code = res?.data?.data;
+        const code = res?.data;
         if (!code) throw new Error();
         this.uniqueCode = code;
         this.dialogVisible = true;
@@ -191,8 +205,8 @@ export default {
 
         try {
           const res = await getFileInfo({ id: item.id });
-          if (res.data.code === 200) {
-            this.currentFile = res.data.data;
+          if (res.code === 200) {
+            this.currentFile = res.data;
             this.html = this.currentFile.content || "";
           } else {
             this.$message.error("获取文件内容失败");
@@ -232,16 +246,32 @@ export default {
       }
     },
     async loadCatalogue() {
-      this.catalogueLoadStatus = true
-      this.catalogueList = []
+      this.catalogueLoadStatus = true;
+      this.catalogueList = [];
+
       const res = await getFileList({ pid: this.currentFilePid });
-      this.catalogueLoadStatus = false
-      this.catalogueList = res.data.data;
+
+      this.catalogueLoadStatus = false;
+      this.catalogueList = res.data || [];
+
+      // ✅ 如果没有任何文件，清空右侧选中状态
+      if (this.catalogueList.length === 0) {
+        this.currentFile = null;
+        this.currentDocId = null;
+        this.currentDocName = "";
+        this.html = "";
+      }
     },
     selectFirstFile() {
-      if (this.catalogueList.length > 0) {
-        const firstFileTypeOne = this.catalogueList.find(item => item.fileType === 1);
-        this.handleClickFile(firstFileTypeOne)
+      const firstFile = this.catalogueList.find(item => item.fileType === 1);
+      if (firstFile) {
+        this.handleClickFile(firstFile);
+      } else {
+        // 没有文件，清空选中
+        this.currentFile = null;
+        this.currentDocId = null;
+        this.currentDocName = "";
+        this.html = "";
       }
     },
     async saveDoc() {
@@ -259,7 +289,7 @@ export default {
           id: this.currentFile.id,
           content: htmlContent
         });
-        if (res.data.code === 200) {
+        if (res.code === 200) {
           this.$message.success("保存成功");
         } else {
           this.$message.error("保存失败");
@@ -273,10 +303,8 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      })
-        .then(() => {
+      }).then(() => {
           deleteDocument([item.id]).then(res => {
-            res = res.data
             if (res.code == 200) {
               this.$message.success("删除成功")
               this.loadCatalogue()
@@ -324,16 +352,15 @@ export default {
       }
       //在这里发生一次消息更新一次消息的记录
       await updateDocument({ id: item.id, name: newName }).then(res => {
-        res = res.data
         if (res.code == 200) {
           item.name = newName
         }
       })
       this.cancelRename();
     },
-    toRead(){
+    toRead() {
       //跳转到阅读
-      window.open(window.location.origin + "/#/readPage?documentId="+this.currentDocId, "_blank");
+      window.open(window.location.origin + "/#/readPage?documentId=" + this.currentDocId, "_blank");
     }
   },
   beforeDestroy() {

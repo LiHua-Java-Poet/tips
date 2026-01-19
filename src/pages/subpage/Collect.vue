@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { getSessionList, saveSession, getMessageList, saveMessage, deleteMessage, updateSession,deleteSession } from '@/api/collect';
+import { getSessionList, saveSession, getMessageList, saveMessage, deleteMessage, updateSession, deleteSession } from '@/api/collect';
 import { getUniqueCode } from '@/api/public';
 export default {
   name: "collectPage",
@@ -136,7 +136,7 @@ export default {
     },
     async fetchSessions() {
       const res = await getSessionList();
-      this.sessionList = res.data.data || [];
+      this.sessionList = res.data || [];
       //刷新一次会话列表的话，先选中第一个
       if (this.sessionList.length > 0) {
         this.selectSeeion(this.sessionList[0].id)
@@ -155,7 +155,7 @@ export default {
         return;
       }
       const res = await saveSession({ title: this.newSessionTitle, uniqueCode: this.sessionCode });
-      if (res.data.code === 200) {
+      if (res.code === 200) {
         this.$message.success('新增成功');
         this.dialogVisible = false;
         this.newSessionTitle = '';
@@ -169,7 +169,7 @@ export default {
       this.seesionType = 1
       try {
         const res = await getUniqueCode();
-        const code = res?.data?.data;
+        const code = res?.data;
         if (!code) {
           this.$message.error('获取会话编号失败');
           return;
@@ -199,10 +199,10 @@ export default {
     async selectSeeion(id) {
       this.selectedSeeionId = id
       await getMessageList({ sessionId: id }).then(res => {
-        this.messages = res.data.data.reverse()
+        this.messages = res.data.reverse()
       })
     },
-    deleteSessions(item){
+    deleteSessions(item) {
       this.$confirm('确认删除？')
         .then(() => {
           deleteSession([item.id]).then(() => {
@@ -228,9 +228,25 @@ export default {
         })
         .catch(() => { });
     },
-    copyMessage(msg){
-      navigator.clipboard.writeText(msg.content);
-      this.$message.success("已复制到剪贴板");
+    copyMessage(msg) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(msg.content)
+          .then(() => this.$message.success('复制成功'))
+          .catch(() => this.fallbackCopy(msg.content))
+      } else {
+        this.fallbackCopy(msg.content)
+      }
+    },
+    fallbackCopy(text) {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.top = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      this.$message.success('复制成功')
     }
   },
   mounted() {

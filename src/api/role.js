@@ -19,3 +19,7 @@ export function deleteRole(params) {
 export function deleteRoleMenu(params) {
     return post('/app/sysRoleMenu/deletePermission',params)
 }
+
+export function userRelateRole(data){
+    return post('/app/sysUserRole/userRelateRole',data)
+}

@@ -79,7 +79,7 @@
                         <el-input v-model="dictForm.dictName" />
                     </el-form-item>
 
-                    <el-form-item label="字典CODE" prop="dictCode">
+                    <el-form-item label="字典编码" prop="dictCode">
                         <el-input v-model="dictForm.dictCode" />
                     </el-form-item>
 
@@ -178,8 +178,7 @@ export default {
         // ================= 左侧分类 =================
         loadClassifyTree() {
             getDictClassifyList().then(res => {
-                console.info(res)
-                this.classifyTree = res.data.data || []
+                this.classifyTree = res.data || []
             })
         },
         handleClassifySelect(node) {
@@ -219,7 +218,7 @@ export default {
             if (!this.currentClassify) return
             this.dictLoading = true
             getDictList({ classifyId: this.currentClassify.id }).then(res => {
-                this.dictList = res.data.data || []
+                this.dictList = res.data || []
             }).finally(() => {
                 this.dictLoading = false
             })
@@ -230,7 +229,10 @@ export default {
                 return
             }
             this.dictDialogTitle = '新增字典内容'
-            this.dictForm = { id: null, dict_name: '', dict_code: '', sort: 0, remark: '' }
+
+            //这里判断一次长度自动给sort排序
+
+            this.dictForm = { id: null, dict_name: '', dict_code: '', sort: (this.dictList.length + 1) * 10, remark: '' }
             this.dictDialogVisible = true
         },
         handleEditDict(row) {

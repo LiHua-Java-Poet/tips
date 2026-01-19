@@ -192,10 +192,9 @@ export default {
     },
     getPlanList(params) {
       return getPlanList(params).then(res => {
-        const data = res.data
-        this.planList.push(...data.data.list)
-        this.pageCount = data.data.pageCount
-        this.page = data.data.page
+        this.planList.push(...res.data.list)
+        this.pageCount = res.data.pageCount
+        this.page = res.data.page
       }).catch(error => {
         console.info(error)
       })
@@ -205,8 +204,7 @@ export default {
       this.selectedPlanId = id
       //当选中了任务id之后需要查询对应的数据
       getPlanInfo({ id: id }).then(res => {
-        const data = res.data;
-        this.selectedPlanInfo = data.data; // 设置详情数据
+        this.selectedPlanInfo = res.data; // 设置详情数据
         this.loadingPlanDetail = false
       })
     },
@@ -233,7 +231,7 @@ export default {
     },
     deliver() {
       deliver([this.selectedPlanId]).then(res => {
-        if (res.data.code == 200) {
+        if (res.code == 200) {
           this.$message.success("下发成功")
         }
       })

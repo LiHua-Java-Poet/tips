@@ -8,14 +8,17 @@
           style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
           <!-- 查询表单 -->
           <el-form :inline="true" :model="query" size="small">
+            <el-form-item label="名称">
+              <el-input v-model="query.name" clearable style="width: 150px"/>
+            </el-form-item>
             <el-form-item label="用户名">
-              <el-input v-model="query.userName" clearable />
+              <el-input v-model="query.userName" clearable style="width: 150px"/>
             </el-form-item>
             <el-form-item label="账号">
-              <el-input v-model="query.account" clearable />
+              <el-input v-model="query.account" clearable style="width: 150px"/>
             </el-form-item>
             <el-form-item label="手机号">
-              <el-input v-model="query.phone" clearable />
+              <el-input v-model="query.phone" clearable style="width: 150px"/>
             </el-form-item>
             <el-form-item label="用户类型">
               <el-select v-model="query.type" clearable style="width: 120px">
@@ -55,14 +58,21 @@
           <el-table-column prop="phone" label="手机号" width="100" align="center" />
           <el-table-column prop="type" label="角色" align="center">
             <template #default="scope">
-              <el-tag v-for="(item, index) in scope.row.roleList" :key="item.id || index" style="margin-right: 10px;"
-                size="small">
-                {{ item.roleName }}
+              <!-- 有角色 -->
+              <template v-if="scope.row.roleList && scope.row.roleList.length">
+                <el-tag v-for="(item, index) in scope.row.roleList" :key="item.id || index" size="small"
+                  style="margin-right: 8px; cursor: pointer" @click="openRoleDialog(scope.row)">
+                  {{ item.roleName }}
+                </el-tag>
+              </template>
+
+              <!-- 无角色（占位） -->
+              <el-tag v-else size="small" type="info" effect="plain" style="cursor: pointer"
+                @click="openRoleDialog(scope.row)">
+                未分配
               </el-tag>
             </template>
           </el-table-column>
-
-
           <el-table-column prop="type" label="用户类型" width="100" align="center">
             <template #default="scope">
               <el-tag v-if="scope.row.type === 2" type="danger">管理员</el-tag>
@@ -134,13 +144,23 @@
         </span>
       </el-dialog>
 
+      <!-- 角色关联弹窗 -->
+      <el-dialog title="关联角色" :visible.sync="roleDialogVisible" width="400px">
+        <el-tree ref="roleTree" :data="roleTree" show-checkbox node-key="id" default-expand-all
+          :props="{ label: 'roleName', children: 'children' }" />
+        <span slot="footer">
+          <el-button @click="roleDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveUserRoles">保存</el-button>
+        </span>
+      </el-dialog>
+
     </el-main>
   </el-container>
 </template>
 
 <script>
 import { userList, addUser, updateUser, deleteUser } from '@/api/user';
-
+import { userRelateRole, getRoleList } from '@/api/role'
 export default {
   name: 'UserList',
   data() {
@@ -151,6 +171,7 @@ export default {
       tableHeight: 620,
       query: {
         account: '',
+        name: '',
         userName: '',
         phone: '',
         type: null,
@@ -168,7 +189,12 @@ export default {
         type: 1,
         status: 1,
         password: ''
-      }
+      },
+
+      // 角色弹窗
+      roleDialogVisible: false,
+      roleTree: [],
+      currentUserId: null
     };
   },
   created() {
@@ -179,7 +205,7 @@ export default {
       this.loading = true;
       userList(this.query)
         .then(res => {
-          const data = res.data.data;
+          const data = res.data;
           this.list = data.list;
           this.total = data.count;
         })
@@ -249,6 +275,35 @@ export default {
           });
         })
         .catch(() => { });
+    },
+    openRoleDialog(row) {
+      this.currentUserId = row.id;
+      this.roleDialogVisible = true;
+
+      // 加载角色树
+      getRoleList().then(res => {
+        this.roleTree = res.data || [];
+
+        this.$nextTick(() => {
+          // 默认选中用户已有角色
+          const roleIds = (row.roleList || []).map(r => r.id);
+          this.$refs.roleTree.setCheckedKeys(roleIds);
+        });
+      });
+    },
+    saveUserRoles() {
+      const checkedKeys = this.$refs.roleTree.getCheckedKeys();
+
+      const params = checkedKeys.map(roleId => ({
+        userId: this.currentUserId,
+        roleId
+      }));
+
+      userRelateRole(params).then(() => {
+        this.$message.success('角色关联成功');
+        this.roleDialogVisible = false;
+        this.fetchList(); // 刷新用户列表
+      });
     },
     formatTime(timestamp) {
       if (!timestamp) return '';

@@ -34,37 +34,57 @@ instance.interceptors.request.use(
 // 响应拦截器：统一处理响应
 instance.interceptors.response.use(
   response => {
-    // ✅ 1️⃣ blob / 文件流：直接放行，什么都别碰
-    if (response.headers.contenttype === 'image') {
+    // ✅ 文件流 / blob 放行
+    if (
+      response.config.responseType === 'blob' ||
+      response.config.responseType === 'arraybuffer'
+    ) {
       return response
     }
 
-    const res = response.data
+    const res = response.data || {}
 
+    // ✅ 成功
     if (res.code === 200 || res.success === true) {
-      return response
+      return res
     }
 
+    // ✅ 未登录
     if (res.code === -406) {
-      navigator(router, "/login")
+      Message.warning('登录已过期，请重新登录')
       store.dispatch('logout')
-      return Promise.reject(new Error('未登录'))
+      navigator(router, '/login')
+      return Promise.resolve(null) // ⭐ 不 reject
     }
 
-    Message({
-      message: res.msg || '请求失败',
-      type: 'warning'
-    })
-    return Promise.reject(new Error(res.msg || '请求失败'))
+    // ✅ 业务错误
+    Message.warning(res.msg || '请求失败')
+    return Promise.resolve(null) // ⭐ 核心：吞掉异常
   },
+
   error => {
-    Message({
-      message: '系统错误，请联系管理员',
-      type: 'warning'
-    })
-    return Promise.reject(error) // ⭐ 必须 return
+    // ✅ 网络 / 服务器错误统一兜底
+    let msg = '系统错误，请联系管理员'
+
+    if (error.response) {
+      const status = error.response.status
+      if (status === 401) msg = '未授权，请重新登录'
+      else if (status === 403) msg = '没有访问权限'
+      else if (status === 404) msg = '接口不存在'
+      else if (status >= 500) msg = '服务器异常'
+    } else if (error.message.includes('timeout')) {
+      msg = '请求超时，请稍后再试'
+    } else if (error.message.includes('Network')) {
+      msg = '网络异常，请检查网络'
+    }
+
+    Message.warning(msg)
+
+    // ⭐⭐ 关键：不 reject
+    return Promise.resolve(null)
   }
 )
+
   
 // 封装get请求  
 export function get(url, params = {}) {  

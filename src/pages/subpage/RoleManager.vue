@@ -206,7 +206,7 @@ export default {
   methods: {
     async loadRoleList() {
       return getRoleList().then(res => {
-        const data = res.data.data
+        const data = res.data
         this.roleTree = data || []
       })
     },
@@ -224,7 +224,7 @@ export default {
 
       getRoleInfo({ id: role.id })
         .then(res => {
-          const data = res.data.data
+          const data = res.data
           const menus = data.sysMenuListTos || []
 
           this.permissionList = menus
@@ -258,7 +258,6 @@ export default {
           type: 'warning'
         }).then(() => {
           deleteRole([this.currentRole.id]).then(res => {
-            res = res.data
             if (res.code == 200) {
               this.$message({ type: 'success', message: '删除成功!' });
               this.handleRefreshRole()
@@ -309,7 +308,7 @@ export default {
         page: this.menuCurrentPage,
         limit: this.menuPageSize
       }).then(res => {
-        const data = res.data.data || {}
+        const data = res.data || {}
 
         this.menuList = data.list || []
         this.menuTotal = data.count || 0
@@ -331,7 +330,6 @@ export default {
         menuId
       }))
       addMenu(roleMenuList).then(res=>{
-        res=res.data
         if(res.code==200){
           this.cleanAddMenu()
           this.handleRoleSelect(this.currentRole)
