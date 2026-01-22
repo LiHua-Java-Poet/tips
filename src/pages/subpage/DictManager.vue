@@ -52,6 +52,13 @@
                             <el-table-column prop="dictName" label="字典名称" />
                             <el-table-column prop="dictCode" label="字典CODE" />
                             <el-table-column prop="sort" label="排序" width="80" />
+                            <el-table-column label="颜色" width="120" align="center">
+                                <template #default="{ row }">
+                                    <div class="color-block" :style="{ backgroundColor: row.color }" :title="row.color">
+                                    </div>
+
+                                </template>
+                            </el-table-column>
                             <el-table-column prop="remark" label="备注" />
                             <el-table-column label="操作" width="120" align="center">
                                 <template #default="scope">
@@ -82,7 +89,9 @@
                     <el-form-item label="字典编码" prop="dictCode">
                         <el-input v-model="dictForm.dictCode" />
                     </el-form-item>
-
+                    <el-form-item label="颜色" prop="dictCode">
+                        <el-color-picker v-model="dictForm.color"></el-color-picker>
+                    </el-form-item>
                     <el-form-item label="排序" prop="sort">
                         <el-input-number v-model="dictForm.sort" :min="0" />
                     </el-form-item>
@@ -132,6 +141,7 @@ import {
     getDictClassifyList, deleteDictClassify, addDictClassify,
     getDictList, addDict, updateDict, deleteDict
 } from '@/api/dict'
+//import { Divider } from 'element-ui';
 
 export default {
     name: 'DictManage',
@@ -152,7 +162,8 @@ export default {
                 dictName: '',
                 dictCode: '',
                 sort: 0,
-                remark: ''
+                remark: '',
+                color: '#FFFFFF'
             },
 
             /** 新增分类 **/
@@ -355,5 +366,13 @@ export default {
     flex: 1;
     overflow-y: auto;
     padding: 10px;
+}
+
+.color-block {
+    width: 48px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid #dcdfe6;
+    margin: 0 auto;
 }
 </style>

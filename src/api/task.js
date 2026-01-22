@@ -27,3 +27,7 @@ export function saveTask(data) {
 export function updateTask(data) {
     return post('/app/task/update', data)
 }
+
+export function updateRemark(data) {
+    return post('/app/task/updateRemark', data)
+}

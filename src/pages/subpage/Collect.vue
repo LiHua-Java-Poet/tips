@@ -27,10 +27,10 @@
       <el-main class="chat-container">
         <!-- 聊天区域 -->
         <!-- 消息显示区域 -->
-        <div class="chat-message-area">
+        <div class="chat-message-area" :style="{ fontFamily: messageFontFamily }">
           <div class="message" v-for="(msg, index) in messages" :key="index">
             <div class="message-bubble">
-              {{ msg.content }}
+              {{msg.content}}
             </div>
             <span class="delete-btn" @click="deleteMessage(msg)">
               <img style="width: 20px;height: 20px;" src="@/assets/ioc/collect/delete.png" />
@@ -41,12 +41,23 @@
           </div>
         </div>
         <!-- 控件区域 -->
-        <div>
+        <div class="chat-toolbar">
+          <!-- 左侧：模式选择 -->
           <el-radio-group v-model="radio">
             <el-radio :label="1">仅记录</el-radio>
             <el-radio :label="2">知识库</el-radio>
             <el-radio :label="3">Ai回复</el-radio>
           </el-radio-group>
+
+          <!-- 右侧：字体选择 -->
+          <el-select v-model="fontFamily" size="small" style="width: 160px">
+            <el-option label="默认（系统字体）" value="ui" />
+            <el-option label="微软雅黑" value="yahei" />
+            <el-option label="宋体（传统）" value="simsun" />
+            <el-option label="黑体" value="simhei" />
+            <el-option label="楷体" value="kaiti" />
+          </el-select>
+
         </div>
         <!-- 信息输入区域 -->
         <div class="chat-input-area">
@@ -89,7 +100,8 @@ export default {
       selectedSeeionId: null,
       title: '',
       seesionType: 1,
-      updateSession: null
+      updateSession: null,
+      fontFamily: 'simsun', // 默认宋体
     };
   },
   methods: {
@@ -259,8 +271,22 @@ export default {
     this.fetchSessions();
   },
   computed: {
-
+    messageFontFamily() {
+      switch (this.fontFamily) {
+        case 'yahei':
+          return '"Microsoft YaHei", Arial, sans-serif'
+        case 'simsun':
+          return 'SimSun, serif'
+        case 'simhei':
+          return 'SimHei, sans-serif'
+        case 'kaiti':
+          return 'KaiTi, serif'
+        default:
+          return 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif'
+      }
+    }
   }
+
 };
 </script>
 
@@ -511,5 +537,13 @@ export default {
 
 .menu-item:hover {
   background: #f5f5f5;
+}
+
+.chat-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 0 4px;
 }
 </style>

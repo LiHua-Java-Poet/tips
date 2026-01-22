@@ -101,23 +101,45 @@
                 </el-tooltip>
               </div>
               <div style="margin-bottom: 10px;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
+              <div style="margin-bottom: 10px;"><strong>任务描述：</strong>{{ selectedTaskInfo.description }}</div>
               <div style="margin-bottom: 10px;"><strong>任务时间：</strong>{{ formatDate(selectedTaskInfo.taskTime) }}</div>
-
               <div style="margin-bottom: 10px;"><strong>任务类型：</strong>
-                <span v-if="selectedTaskInfo.taskType == 1">学习</span>
-                <span v-if="selectedTaskInfo.taskType == 2">锻炼</span>
-                <span v-if="selectedTaskInfo.taskType == 3">写作</span>
-                <span v-if="selectedTaskInfo.taskType == 4">阅读</span>
-                <span v-if="selectedTaskInfo.taskType == 5">影视</span>
+                <span>
+                  {{(dictMap.taskType || []).find(item => item.dictCode === selectedTaskInfo.taskType)?.dictName || ''}}
+                </span>
               </div>
-
               <!-- itemToLists 渲染为列表 -->
-              <div v-if="selectedTaskInfo.itemToList?.length > 0" style="margin-bottom: 10px;">
-                <strong>备注内容：</strong>
-                <ul style="padding-left: 20px; margin-top: 10px;">
-                  <li v-for="(item, index) in selectedTaskInfo.itemToList" :key="index" style="margin-bottom: 6px;">
-                    <span style="font-weight: 500; color: #408af4;">{{ item.no }}.</span>
-                    <span style="margin-left: 6px;">{{ item.itemContext }}</span>
+              <div v-if="selectedTaskInfo.itemToList?.length > 0" class="remark-content-container">
+                <strong class="remark-title">任务项：</strong>
+                <ul class="remark-list">
+                  <li v-for="(item, index) in selectedTaskInfo.itemToList" :key="index" class="remark-item">
+                    <!-- 标签 Popover -->
+                    <el-popover placement="right" trigger="click" width="180" v-model="item._popoverVisible"
+                      popper-class="remark-tag-popover">
+                      <div class="tag-options">
+                        <div v-for="dict in dictMap.taskItemLable" :key="dict.dictCode" class="tag-option-item"
+                          @click="handleChangeItemLabel(item, dict)">
+                          <span class="tag-color-dot" :style="{ backgroundColor: dict.color }"></span>
+                          <span class="tag-name">{{ dict.dictName }}</span>
+                        </div>
+                      </div>
+
+                      <template slot="reference">
+                        <!-- 关键修改：添加固定宽度的外层容器 -->
+                        <div class="tag-badge-container">
+                          <span class="tag-badge" :style="{
+                            backgroundColor: dictMap.taskItemLable.find(d => d.dictCode === item.label)?.color || '#909399'
+                          }">
+                            {{dictMap.taskItemLable.find(d => d.dictCode === item.label)?.dictName || '未分类'}}
+                          </span>
+                        </div>
+                      </template>
+                    </el-popover>
+
+                    <!-- 编号 -->
+                    <span class="item-number">{{ item.no }}.</span>
+                    <!-- 内容 -->
+                    <span class="item-content"> {{ item.itemContext }}</span>
                   </li>
                 </ul>
               </div>
@@ -180,12 +202,16 @@
     </el-container>
 
     <!-- 侧边栏 -->
-    <el-drawer title="编辑任务" :visible.sync="drawer" :direction="direction" :before-close="handleClose" size="600px">
+    <el-drawer title="编辑任务" :visible.sync="drawer" :before-close="handleClose" size="600px">
       <!-- 表单 -->
-      <el-form ref="taskForm" :model="taskForm" :rules="rules" label-width="100px" style="padding-right: 30px;">
+      <el-form ref="taskForm" :model="taskForm" label-width="100px" style="padding-right: 30px;">
 
         <el-form-item label="任务名" prop="taskName">
           <el-input maxlength="20" v-model="taskForm.taskName" placeholder="请输入任务名" />
+        </el-form-item>
+
+        <el-form-item label="任务名" prop="taskName">
+          <el-input maxlength="20" v-model="taskForm.description" placeholder="请输入任务名" />
         </el-form-item>
 
         <el-form-item label="任务时间" prop="taskTime">
@@ -222,14 +248,10 @@
           <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="addItem"></el-button>
         </el-form-item>
 
-
         <el-form-item label="任务类型" prop="taskType">
           <el-select v-model="taskForm.taskType" placeholder="请选择类型">
-            <el-option label="学习" :value="1" />
-            <el-option label="锻炼" :value="2" />
-            <el-option label="写作" :value="3" />
-            <el-option label="阅读" :value="4" />
-            <el-option label="影视" :value="5" />
+            <el-option v-for="(value, index) in dictMap.taskType" :key="index" :label=value.dictName
+              :value=value.dictCode />
           </el-select>
         </el-form-item>
 
@@ -239,7 +261,7 @@
       </el-form>
 
       <!-- 底部按钮 -->
-      <div style="text-align:right; margin-top:20px;padding-right: 30px;">
+      <div style="text-align:right; margin-top:20px; padding-right: 30px; margin-bottom: 20px;">
         <el-button @click="handleClose()">取消</el-button>
         <el-button type="primary" @click="submitFormTask">保存</el-button>
       </div>
@@ -248,7 +270,8 @@
 </template>
 
 <script>
-import { getTaskList, getTaskInfo, cancelTask, completeTask, deleteTask, updateTask } from '@/api/task';
+import { getTaskList, getTaskInfo, cancelTask, completeTask, deleteTask, updateTask, updateRemark } from '@/api/task';
+import { getDictList } from '@/api/dict'
 import AnnexFileView from '@/components/AnnexFileView.vue';
 import { formatDate } from '@/utils/navigator'
 import { getUniqueCode } from '@/api/public';
@@ -279,11 +302,29 @@ export default {
       taskForm: {
         taskName: "",
         taskTime: null,
+        description: "",
         itemToList: [],
-        taskType: 1,
+        taskType: 'work',
         annexFiles: []
       },
+      dictMap: {
+        taskType: [],
+        taskItemLable: []
+      }
     };
+  },
+  mounted() {
+    getDictList({ "classifyCode": "taskType" }).then(res => {
+      this.dictMap.taskType = res.data
+    })
+    getDictList({ "classifyCode": "taskItemLable" }).then(res => {
+      this.dictMap.taskItemLable = res.data
+    })
+    this.selectedTaskInfo.itemToList = this.selectedTaskInfo.itemToList.map(item => ({
+      ...item,
+      _popoverVisible: false
+    }))
+
   },
   methods: {
     formatDate,
@@ -304,9 +345,18 @@ export default {
     selectedTask(id) {
       this.loadingTaskDetail = true
       this.selectedTaskId = id
-      //当选中了任务id之后需要查询对应的数据
-      getTaskInfo({ id: id }).then(res => {
-        this.selectedTaskInfo = res.data; // 设置详情数据
+
+      getTaskInfo({ id }).then(res => {
+        const data = res.data
+
+        if (Array.isArray(data.itemToList)) {
+          data.itemToList = data.itemToList.map(item => ({
+            ...item,
+            _popoverVisible: false
+          }))
+        }
+
+        this.selectedTaskInfo = data
         this.loadingTaskDetail = false
       })
     },
@@ -386,6 +436,7 @@ export default {
       this.taskForm.itemToList = this.selectedTaskInfo.itemToList
       this.taskForm.taskType = this.selectedTaskInfo.taskType
       this.taskForm.annexFiles = this.selectedTaskInfo.annexFiles
+      this.taskForm.description = this.selectedTaskInfo.description
       this.drawer = true
     },
     submitFormTask() {
@@ -395,7 +446,6 @@ export default {
         id: this.selectedTaskId
       }
       payload.taskTime = Math.floor(payload.taskTime.getTime() / 1000);
-      console.info(payload)
       updateTask(payload).then(res => {
         if (res.code == 200) {
           this.$message.success('修改成功')
@@ -427,6 +477,18 @@ export default {
         item.no = i + 1;
       });
     },
+    handleChangeItemLabel(item, dict) {
+      // 直接修改当前 item，Vue 是响应式的
+      item.label = dict.dictCode
+      item.color = dict.color   // 如果 item 本身需要存颜色
+
+      // 如果你后面要提交保存，这里不需要额外处理
+      // selectedTaskInfo.itemToList 已经被同步修改
+      item._popoverVisible = false
+      console.info(this.selectedTaskInfo.itemToList)
+      console.info(this.selectedTaskInfo.id)
+      updateRemark({ "id": this.selectedTaskInfo.id, "itemToList": this.selectedTaskInfo.itemToList })
+    }
   },
   async created() {
     await this.getTaskList({ page: 1, limit: 10, status: 1 })
@@ -732,5 +794,131 @@ li::before {
   overflow-y: auto;
   flex: 1;
   padding-right: 4px;
+}
+
+/* 标题样式 */
+.remark-title {
+  font-size: 15px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* 列表样式 */
+.remark-list {
+  padding-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+/* 列表项样式 */
+.remark-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.remark-item:hover {
+  background-color: #fff;
+}
+
+/* 关键修改：标签徽章固定宽度容器 */
+.tag-badge-container {
+  display: inline-block;
+  width: 80px;
+  /* 固定宽度，可根据最长标签文字调整 */
+  margin-right: 10px;
+}
+
+/* 标签徽章样式 */
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  width: 100%;
+  /* 占满父容器宽度 */
+  font-size: 12px;
+  line-height: 18px;
+  color: #fff;
+  border-radius: 12px;
+  /* 胶囊形状 */
+  cursor: pointer;
+  box-sizing: border-box;
+  /* 确保padding不影响宽度 */
+}
+
+/* 编号样式 */
+.item-number {
+  font-weight: 600;
+  color: #408af4;
+  display: inline-block;
+}
+
+/* 内容样式 */
+.item-content {
+  margin-left: 4px;
+  color: #495057;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 弹出层选项容器 */
+.tag-options {
+  padding: 8px 0;
+}
+
+/* 弹出层选项项 */
+.tag-option-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 13px;
+}
+
+.tag-option-item:hover {
+  background-color: #f5f7fa;
+}
+
+/* 颜色圆点 */
+.tag-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+/* 标签名称 */
+.tag-name {
+  color: #333;
+}
+
+/* 最后一个列表项取消下边距 */
+.remark-list .remark-item:last-child {
+  margin-bottom: 0;
+}
+</style>
+
+<!-- 非scoped样式，用于修改Element UI弹出层样式 -->
+<style>
+/* 关键修改：仅保留hover阴影效果 */
+.remark-tag-popover {
+  border-radius: 8px !important;
+  border: 1px solid #e9ecef !important;
+  transition: box-shadow 0.2s ease !important;
+}
+
+/* 冒泡框hover阴影 */
+.remark-tag-popover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 重置Element UI默认阴影，仅保留hover时显示 */
+.remark-tag-popover.el-popper[x-placement^=right] {
+  box-shadow: none !important;
 }
 </style>

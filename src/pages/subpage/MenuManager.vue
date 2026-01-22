@@ -4,8 +4,9 @@
 
       <!-- 搜索区域 + 新增按钮 -->
       <el-card shadow="never" class="search-card">
-        <div class="search-top-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          
+        <div class="search-top-bar"
+          style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+
           <!-- 搜索表单 -->
           <el-form :inline="true" :model="query" size="small">
             <el-form-item label="菜单名称">
@@ -13,6 +14,12 @@
             </el-form-item>
             <el-form-item label="菜单路径">
               <el-input v-model="query.navigatorPath" clearable />
+            </el-form-item>
+            <el-form-item label="菜单类型">
+              <el-select v-model="query.menuType" clearable style="width: 120px">
+                <el-option label="普通菜单" :value="1" />
+                <el-option label="系统菜单" :value="2" />
+              </el-select>
             </el-form-item>
             <el-form-item label="状态">
               <el-select v-model="query.status" clearable style="width: 120px">
@@ -34,12 +41,18 @@
       <!-- 表格滚动区域 -->
       <div class="table-scroll-area">
         <el-table :data="list" border stripe size="small" v-loading="loading" :height="tableHeight">
-          <el-table-column type="index" width="50" label="序号" align="center"/>
+          <el-table-column type="index" width="50" label="序号" align="center" />
           <el-table-column prop="menuName" label="菜单名称" width="180" />
           <el-table-column prop="navigatorPath" label="菜单路径" />
           <el-table-column prop="componetPath" label="组件路径" />
           <el-table-column prop="icon" label="图标" width="100" />
           <el-table-column prop="sort" label="排序" width="80" />
+          <el-table-column prop="status" label="状态" width="100">
+            <template #default="scope">
+              <el-tag v-if="scope.row.menuType === 1" type="primary">普通菜单</el-tag>
+              <el-tag v-else type="info">系统菜单</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="status" label="状态" width="100">
             <template #default="scope">
               <el-tag v-if="scope.row.status === 1" type="success">正常</el-tag>
@@ -89,6 +102,12 @@
           <el-form-item label="排序" prop="sort">
             <el-input-number v-model="form.sort" :min="0" />
           </el-form-item>
+          <el-form-item label="菜单类型" prop="status">
+            <el-radio-group v-model="form.menuType">
+              <el-radio :label="1">普通菜单</el-radio>
+              <el-radio :label="2">系统菜单</el-radio>
+            </el-radio-group>
+          </el-form-item>
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="form.status">
               <el-radio :label="1">正常</el-radio>
@@ -121,6 +140,7 @@ export default {
         menuName: '',
         navigatorPath: '',
         status: null,
+        menuType: null,
         page: 1,
         limit: 10
       },
@@ -133,7 +153,8 @@ export default {
         componetPath: '',
         icon: '',
         sort: 0,
-        status: 1
+        status: 1,
+        menuType: 1
       }
     };
   },

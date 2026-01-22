@@ -5,9 +5,9 @@ import router from '@/router'
 import { Message } from 'element-ui';
 import { navigator } from '@/utils/navigator';
 
-const baseURL= 'http://localhost:8901'
+// const baseURL= 'http://localhost:8901'
 // const baseURL= 'http://192.168.89.249:8901'
-// const baseURL= 'http://36.150.237.20/api'
+const baseURL= 'http://36.150.237.20/api'
 
 // 创建axios实例  
 const instance = axios.create({  
@@ -72,6 +72,7 @@ instance.interceptors.response.use(
       else if (status === 403) msg = '没有访问权限'
       else if (status === 404) msg = '接口不存在'
       else if (status >= 500) msg = '服务器异常'
+      else if (status >= 504) msg = '不要重复提交'
     } else if (error.message.includes('timeout')) {
       msg = '请求超时，请稍后再试'
     } else if (error.message.includes('Network')) {

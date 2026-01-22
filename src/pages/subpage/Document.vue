@@ -37,7 +37,7 @@
             <div class="popover-menu">
               <div class="popover-menu-item" @click="startRename(item)">重命名</div>
               <div class="popover-menu-item" @click="deleteDocument(item)">删除</div>
-              <div class="popover-menu-item">移动到</div>
+              <div class="popover-menu-item" @click="moveTo(item)">移动到</div>
               <div class="popover-menu-item" v-if="item.fileType == 1">跳转到阅读</div>
             </div>
             <img class="more-icon" slot="reference" src="@/assets/ioc/document/more.png" @click.stop />
@@ -106,6 +106,39 @@
         <el-button type="primary" @click="addFile">新增</el-button>
       </template>
     </el-dialog>
+    <!-- 移动文件/文件夹弹窗 -->
+    <el-dialog title="移动到" :visible.sync="moveDialogVisible" width="400px">
+      <div v-if="moveLoading" style="text-align: center; padding: 20px;">
+        <i class="el-icon-loading" style="font-size: 24px;"></i>
+      </div>
+
+      <div v-else>
+        <!-- 当前路径导航 -->
+        <div class="move-path">
+          <span v-for="(folder, index) in moveFolderStack" :key="folder.id" class="move-path-item"
+            @click="jumpToPath(index)">
+            {{ folder.name }} /
+          </span>
+          <span class="move-path-current">{{ moveCurrentFolderName }}</span>
+        </div>
+
+        <!-- 文件夹列表 -->
+        <el-scrollbar style="max-height: 300px; margin-top: 8px;">
+          <div v-for="folder in moveFolderList" :key="folder.id" class="move-folder-item" @click="enterFolder(folder)"
+            style="padding: 6px 10px; cursor: pointer; display: flex; align-items: center;">
+            <img src="@/assets/ioc/document/folder.png" style="width: 20px; height: 20px; margin-right: 8px;" />
+            <span>{{ folder.name }}</span>
+          </div>
+        </el-scrollbar>
+      </div>
+
+      <template #footer>
+        <el-button @click="cancelMove">取消</el-button>
+        <el-button type="primary" @click="confirmMove">确定</el-button>
+      </template>
+    </el-dialog>
+
+
   </el-container>
 </template>
 
@@ -113,7 +146,7 @@
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import "@wangeditor/editor/dist/css/style.css";
 import { toolbarConfig, editorConfig, editorMode } from "@/utils/editorConfig.js";
-import { getFileList, saveFile, getFileInfo, saveDocument, deleteDocument, updateDocument } from "@/api/file";
+import { getFileList, saveFile, getFileInfo, saveDocument, deleteDocument, updateDocument, folderList } from "@/api/file";
 import { getUniqueCode } from "@/api/public";
 
 export default {
@@ -143,6 +176,14 @@ export default {
       loadingContent: false,
       editingItemId: null,   // 新增：当前正在编辑的文件/文件夹ID
       editingName: "",       // 新增：编辑中的名称
+
+      moveDialogVisible: false,
+      moveFolderList: [],       // 当前层级文件夹列表
+      moveFolderStack: [],      // 路径栈 [{id, name, list}]
+      moveLoading: false,
+      moveCurrentFolderName: '根目录', // 当前所在文件夹名称
+      fileToMove: null,         // 要移动的文件/文件夹
+      moveCurrentFolderId: 0
     };
   },
   computed: {
@@ -150,6 +191,9 @@ export default {
     hasSelectedFile() {
       return this.currentFile !== null;
     }
+  },
+  mounted() {
+    window.addEventListener('keydown', this.handleKeydown);
   },
   methods: {
     onCreated(editorInstance) {
@@ -304,18 +348,18 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-          deleteDocument([item.id]).then(res => {
-            if (res.code == 200) {
-              this.$message.success("删除成功")
-              this.loadCatalogue()
-            }
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });
+        deleteDocument([item.id]).then(res => {
+          if (res.code == 200) {
+            this.$message.success("删除成功")
+            this.loadCatalogue()
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
         });
+      });
     },
     // 新增：开始重命名
     startRename(item) {
@@ -361,6 +405,94 @@ export default {
     toRead() {
       //跳转到阅读
       window.open(window.location.origin + "/#/readPage?documentId=" + this.currentDocId, "_blank");
+    },
+    // 点击“移动到”
+    moveTo(item) {
+      this.fileToMove = item;
+      this.moveFolderStack = [];
+      this.moveCurrentFolderName = '根目录';
+      this.moveCurrentFolderId = 0; // 根目录 pid=0
+      this.loadMoveFolderList(0, item.id); // pid=0首次加载
+      this.moveDialogVisible = true;
+    },
+
+    async loadMoveFolderList(pid, id) {
+      try {
+        this.moveLoading = true;
+        const res = await folderList({ "id": id, "pid": pid });
+        if (res.code === 200) {
+          this.moveFolderList = res.data || [];
+        } else {
+          this.$message.error('加载文件夹失败');
+        }
+      } catch (e) {
+        this.$message.error('加载文件夹失败');
+      } finally {
+        this.moveLoading = false;
+      }
+    },
+
+    // 进入子文件夹
+    enterFolder(folder) {
+      // 保存当前层级
+      this.moveFolderStack.push({
+        id: this.moveCurrentFolderId,
+        name: this.moveCurrentFolderName,
+        list: this.moveFolderList
+      });
+
+      // 更新当前层级
+      this.moveCurrentFolderName = folder.name;
+      this.moveCurrentFolderId = folder.id; // ✅ 当前层级id就是文件夹id
+      this.loadMoveFolderList(folder.id, this.fileToMove.id);
+    },
+
+    // 点击路径导航跳到指定层级
+    jumpToPath(index) {
+      const target = this.moveFolderStack[index];
+      if (!target) return;
+
+      this.moveFolderStack = this.moveFolderStack.slice(0, index + 1);
+      this.moveCurrentFolderName = target.name;
+      this.moveFolderList = target.list;
+      this.moveCurrentFolderId = target.id; // ✅ 更新当前层级id
+    },
+
+    // 取消移动
+    cancelMove() {
+      this.moveDialogVisible = false;
+      this.moveFolderList = [];
+      this.moveFolderStack = [];
+      this.moveCurrentFolderName = '根目录';
+      this.fileToMove = null;
+    },
+
+    // 确认移动
+    async confirmMove() {
+      if (!this.fileToMove) return;
+
+      try {
+        const res = await updateDocument({
+          id: this.fileToMove.id,
+          pid: this.moveCurrentFolderId // ✅ 直接使用当前浏览文件夹id
+        });
+        if (res.code === 200) {
+          this.$message.success('移动成功');
+          this.cancelMove();
+          this.loadCatalogue(); // 刷新左侧文件列表
+        } else {
+          this.$message.error('移动失败');
+        }
+      } catch (e) {
+        this.$message.error('移动失败');
+      }
+    },
+    handleKeydown(e) {
+      // Ctrl + S 或 Command + S（Mac）
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        this.saveDoc();
+      }
     }
   },
   beforeDestroy() {
@@ -647,5 +779,24 @@ export default {
   padding: 0 5px;
   font-size: small;
   color: rgb(115, 115, 115);
+}
+
+.move-folder-item:hover {
+  background-color: #f5f7fa;
+  border-radius: 4px;
+}
+
+.move-path {
+  font-size: 12px;
+  color: #409EFF;
+  margin-bottom: 8px;
+}
+
+.move-path-item {
+  cursor: pointer;
+}
+
+.move-path-current {
+  color: #333;
 }
 </style>

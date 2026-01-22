@@ -1,7 +1,7 @@
 // router/index.js
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '../store/index' // 👉 导入 Vuex store 实例
+import store from '../store/index'
 
 import LoginPage from '../pages/LoginPage.vue'
 import Personage from '@/pages/Personage.vue'
@@ -43,6 +43,7 @@ const router = new VueRouter({
     {
       path: '/index',
       component: Index,
+      redirect: '/index/all',
       children: [
         {
           path: '/index/all',
@@ -103,7 +104,6 @@ const router = new VueRouter({
   ]
 })
 
-// 👉 添加全局路由守卫
 router.beforeEach((to, from, next) => {
   const userInfo = store.getters.userInfo;
 

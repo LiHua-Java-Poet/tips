@@ -93,6 +93,10 @@
                     <el-input maxlength="20" v-model="taskForm.taskName" placeholder="请输入任务名" />
                 </el-form-item>
 
+                <el-form-item label="任务名" prop="taskName">
+                    <el-input maxlength="20" v-model="taskForm.description" placeholder="请输入任务名" />
+                </el-form-item>
+
                 <el-form-item label="任务时间" prop="taskTime">
                     <el-date-picker v-model="taskForm.taskTime" type="date" placeholder="选择日期">
                     </el-date-picker>
@@ -130,15 +134,10 @@
                         @click="addItem('task')"></el-button>
                 </el-form-item>
 
-
                 <el-form-item label="任务类型" prop="taskType">
                     <el-select v-model="taskForm.taskType" placeholder="请选择类型">
-                        <el-option label="学习" :value="1" />
-                        <el-option label="锻炼" :value="2" />
-                        <el-option label="写作" :value="3" />
-                        <el-option label="阅读" :value="4" />
-                        <el-option label="影视" :value="5" />
-                        <el-option label="其他" :value="6" />
+                        <el-option v-for="(value, index) in dictMap.taskType" :key="index" :label=value.dictName
+                            :value=value.dictCode />
                     </el-select>
                 </el-form-item>
 
@@ -149,7 +148,7 @@
             </el-form>
 
             <!-- 底部按钮 -->
-            <div style="text-align:right; margin-top:20px;padding-right: 30px;">
+            <div style="text-align:right; margin-top:20px; padding-right: 30px; margin-bottom: 20px;">
                 <el-button @click="handleTaskClose()">取消</el-button>
                 <el-button type="primary" @click="submitFormTask">保存</el-button>
             </div>
@@ -262,6 +261,7 @@
 
 <script>
 import { getUserDataTo } from '@/api/public';
+import { getDictList } from '@/api/dict'
 import { getMessageList } from '@/api/collect'
 import AnnexFileUpload from '@/components/AnnexFileUpload.vue';
 import { getUniqueCode } from '@/api/public';
@@ -295,9 +295,10 @@ export default {
             taskForm: {
                 drawer: false,
                 taskName: "",
+                description: "",
                 taskTime: null,
                 itemToList: [],
-                taskType: 1,
+                taskType: 'study',
                 annexFiles: []
             },
             planForm: {
@@ -320,7 +321,13 @@ export default {
                 sessionId: null,
                 content: null
             },
+            dictMap: {}
         }
+    },
+    mounted() {
+        getDictList({ "classifyCode": "taskType" }).then(res => {
+            this.dictMap.taskType = res.data
+        })
     },
     created() {
         getUserDataTo().then(res => {

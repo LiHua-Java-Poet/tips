@@ -75,22 +75,21 @@ export default {
         timeToken: this.timeToken
       }).then(loginRes => {
 
-        if (loginRes.data.code != 200) {
+        if (loginRes.code != 200) {
           this.$notify.error({
             title: '失败',
             message: '账号或密码错误'
           })
           return
         }
-        this.$store.dispatch('login', loginRes.data.data)
+        this.$store.dispatch('login', loginRes.data)
 
         // ✅ 登录接口成功后，再拉菜单
         getUserMenu().then(menuRes => {
-          const res = menuRes.data
-          console.info(res)
+          // const res = menuRes
 
           // ❌ 菜单接口失败
-          if (res.code != 200) {
+          if (menuRes.code != 200) {
             this.$notify.error({
               title: '失败',
               message: '菜单获取失败'
@@ -99,7 +98,7 @@ export default {
           }
 
           // ❌ 菜单为空，不允许登录
-          if (!Array.isArray(res.data) || res.data.length === 0) {
+          if (!Array.isArray(menuRes.data) || menuRes.data.length === 0) {
             this.$store.dispatch('logout')
             this.$notify.error({
               title: '无权限',
@@ -109,8 +108,8 @@ export default {
           }
 
           // ✅ 菜单正常，才真正登录
-          this.$store.dispatch('setMenu', res.data)
-          this.$store.dispatch('login', loginRes.data.data)
+          this.$store.dispatch('setMenu', menuRes.data)
+          this.$store.dispatch('login', loginRes.data)
 
           this.$message({message: '登录成功！',type: 'success'})
 

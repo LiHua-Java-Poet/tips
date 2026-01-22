@@ -12,6 +12,10 @@ export function getFileInfo(params) {
     return get('/app/file/info',params)
 }
 
+export function folderList(params) {
+    return get('/app/file/folderList',params)
+}
+
 export function saveDocument(data) {
     return post('/app/file/saveDocument', data)
 }
@@ -23,3 +27,4 @@ export function deleteDocument(data) {
 export function updateDocument(data) {
     return post('/app/file/update', data)
 }
+
