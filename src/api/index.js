@@ -5,9 +5,9 @@ import router from '@/router'
 import { Message } from 'element-ui';
 import { navigator } from '@/utils/navigator';
 
-// const baseURL= 'http://localhost:8901'
+const baseURL= 'http://localhost:8901'
 // const baseURL= 'http://192.168.89.249:8901'
-const baseURL= 'http://36.150.237.20/api'
+// const baseURL= 'http://36.150.237.20/api'
 
 // 创建axios实例  
 const instance = axios.create({  
@@ -34,7 +34,7 @@ instance.interceptors.request.use(
 // 响应拦截器：统一处理响应
 instance.interceptors.response.use(
   response => {
-    // ✅ 文件流 / blob 放行
+    // 文件流 / blob 放行
     if (
       response.config.responseType === 'blob' ||
       response.config.responseType === 'arraybuffer'

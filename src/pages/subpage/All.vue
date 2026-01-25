@@ -93,8 +93,8 @@
                     <el-input maxlength="20" v-model="taskForm.taskName" placeholder="请输入任务名" />
                 </el-form-item>
 
-                <el-form-item label="任务名" prop="taskName">
-                    <el-input maxlength="20" v-model="taskForm.description" placeholder="请输入任务名" />
+                <el-form-item label="任务描述" prop="taskName">
+                    <el-input maxlength="20" v-model="taskForm.description" placeholder="请输入任务描述" />
                 </el-form-item>
 
                 <el-form-item label="任务时间" prop="taskTime">

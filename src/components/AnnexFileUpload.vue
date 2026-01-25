@@ -19,7 +19,7 @@
 
         <!-- 非图片文件：显示对应类型封面 -->
         <div v-else class="file-icon">
-          <img :src="fileTypeIcons[file.fileSuffix] || fileTypeIcons.default" alt="file icon" class="file-type-img" />
+          <img :src="getFileIcon(file.fileSuffix)" alt="file icon" class="file-type-img" />
         </div>
 
         <!-- 悬停删除图标 -->
@@ -43,6 +43,14 @@
 </template>
 
 <script>
+import pdfIcon from '@/assets/ioc/annexFile/pdf.png'
+import wordIcon from '@/assets/ioc/annexFile/word.png'
+import xlsIcon from '@/assets/ioc/annexFile/xlsl.png'
+import txtIcon from '@/assets/ioc/annexFile/txt.png'
+import zipIcon from '@/assets/ioc/annexFile/zip.png'
+import mp3Icon from '@/assets/ioc/annexFile/mp3.png'
+import mp4Icon from '@/assets/ioc/annexFile/mp4.png'
+import otherIcon from '@/assets/ioc/annexFile/other.png'
 import { post } from '@/api/index';
 
 export default {
@@ -52,21 +60,24 @@ export default {
       fileList: [], // 已上传完成的文件列表
       loadingFileList: [], // 上传中的文件列表（用于显示加载状态）
       fileTypeIcons: {
-        pdf: '/ioc/index/pdf.png',
-        doc: '/ioc/index/doc.png',
-        docx: '/ioc/index/doc.png',
-        xls: '/ioc/index/xls.png',
-        xlsx: '/ioc/index/xls.png',
-        txt: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755183395395.png',
-        zip: '/ioc/index/zip.png',
-        mp3: '/ioc/index/mp3.png',
-        mp4: '/ioc/index/mp4.png',
-        default: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755183460029.png'
+        pdf: pdfIcon,
+        doc: wordIcon,
+        docx: wordIcon,
+        xls: xlsIcon,
+        xlsx: xlsIcon,
+        txt: txtIcon,
+        zip: zipIcon,
+        mp3: mp3Icon,
+        mp4: mp4Icon,
+        default: otherIcon
       }
     };
   },
   props: ['value'],
   methods: {
+    getFileIcon(suffix) {
+      return this.fileTypeIcons[suffix?.toLowerCase()] || this.fileTypeIcons.default;
+    },
     triggerFileSelect() {
       this.$refs.fileInput.click();
     },
@@ -226,7 +237,7 @@ export default {
   align-items: center;
   cursor: pointer;
   background-color: #f0f5ff;
-  line-height:20px
+  line-height: 20px
 }
 
 .upload-cell i {
@@ -345,6 +356,7 @@ export default {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

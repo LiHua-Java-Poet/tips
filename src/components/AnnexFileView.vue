@@ -23,22 +23,30 @@
 </template>
 
 <script>
+import pdfIcon from '@/assets/ioc/annexFile/pdf.png'
+import wordIcon from '@/assets/ioc/annexFile/word.png'
+import xlsIcon from '@/assets/ioc/annexFile/xlsl.png'
+import txtIcon from '@/assets/ioc/annexFile/txt.png'
+import zipIcon from '@/assets/ioc/annexFile/zip.png'
+import mp3Icon from '@/assets/ioc/annexFile/mp3.png'
+import mp4Icon from '@/assets/ioc/annexFile/mp4.png'
+import otherIcon from '@/assets/ioc/annexFile/other.png'
 export default {
   name: "AnnexFileView",
   props: ['fileList'],
   data() {
     return {
       fileTypeIcons: {
-        pdf: '/ioc/index/pdf.png',
-        doc: '/ioc/index/doc.png',
-        docx: '/ioc/index/doc.png',
-        xls: '/ioc/index/xls.png',
-        xlsx: '/ioc/index/xls.png',
-        txt: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755183395395.png',
-        zip: '/ioc/index/zip.png',
-        mp3: '/ioc/index/mp3.png',
-        mp4: '/ioc/index/mp4.png',
-        default: 'https://guliwangpan.oss-cn-guangzhou.aliyuncs.com/2025-08-14/1755183460029.png'
+        pdf: pdfIcon,
+        doc: wordIcon,
+        docx: wordIcon,
+        xls: xlsIcon,
+        xlsx: xlsIcon,
+        txt: txtIcon,
+        zip: zipIcon,
+        mp3: mp3Icon,
+        mp4: mp4Icon,
+        default: otherIcon
       }
     };
   },
@@ -67,20 +75,26 @@ export default {
     },
     /** 下载文件（跨域 & 本地都支持） */
     downloadFile(url, name) {
-      fetch(url, { mode: 'cors' })
+      if (/\.(png|jpg|jpeg|gif|webp)(\?|$)/i.test(url)) {
+        // 图片走原生下载
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name || '';
+        a.target = '_blank';
+        a.click();
+        return;
+      }
+
+      // 其他文件用 fetch
+      fetch(url)
         .then(res => res.blob())
         .then(blob => {
-          const blobUrl = window.URL.createObjectURL(blob);
+          const blobUrl = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = blobUrl;
           link.download = name || 'download';
-          document.body.appendChild(link);
           link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(blobUrl); // 释放内存
-        })
-        .catch(err => {
-          console.error('下载失败:', err);
+          URL.revokeObjectURL(blobUrl);
         });
     }
 
