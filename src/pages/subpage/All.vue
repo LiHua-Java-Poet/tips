@@ -85,7 +85,7 @@
         </div>
         <!-- 侧边栏 -->
         <el-drawer :title="title" :visible.sync="taskForm.drawer" :direction="direction" :before-close="handleTaskClose"
-            size="600px">
+            size="800px">
             <!-- 表单 -->
             <el-form ref="taskForm" :model="taskForm" :rules="rules" label-width="100px" style="padding-right: 30px;">
 
@@ -94,7 +94,7 @@
                 </el-form-item>
 
                 <el-form-item label="任务描述" prop="taskName">
-                    <el-input maxlength="20" v-model="taskForm.description" placeholder="请输入任务描述" />
+                    <el-input type="textarea" autosize v-model="taskForm.description" placeholder="请输入任务描述" />
                 </el-form-item>
 
                 <el-form-item label="任务时间" prop="taskTime">

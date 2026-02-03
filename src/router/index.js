@@ -18,6 +18,7 @@ import UserManager from '@/pages/subpage/UserManager.vue'
 import RoleManager from '@/pages/subpage/RoleManager.vue'
 import MenuManager from '@/pages/subpage/MenuManager.vue'
 import DictManager from '@/pages/subpage/DictManager.vue'
+import TaskShare from '@/pages/TaskShare.vue'
 Vue.use(VueRouter)
 
 
@@ -39,6 +40,10 @@ const router = new VueRouter({
     {
       path: '/readPage',
       component: ReadPage,
+    },
+    {
+      path: '/shareTask',
+      component: TaskShare,
     },
     {
       path: '/index',

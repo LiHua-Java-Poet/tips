@@ -6,7 +6,7 @@ import { Message } from 'element-ui';
 import { navigator } from '@/utils/navigator';
 
 const baseURL= 'http://localhost:8901'
-// const baseURL= 'http://192.168.89.249:8901'
+// const baseURL= 'https://www.hchhhxx.cn/api'
 // const baseURL= 'http://36.150.237.20/api'
 
 // 创建axios实例  

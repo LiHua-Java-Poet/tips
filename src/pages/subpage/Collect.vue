@@ -9,7 +9,7 @@
         <el-card class="collect-card" v-for="(item, index) in sessionList" :key="index"
           :class="{ selected: selectedSeeionId === item.id }" @click.native="selectSeeion(item.id)">
           <div class="card-content">
-            {{item.title}}
+            {{ item.title }}
           </div>
           <!-- 右上角固定的按钮 -->
           <el-popover placement="bottom-end" width="150" trigger="click">
@@ -29,7 +29,7 @@
         <!-- 消息显示区域 -->
         <div class="chat-message-area" :style="{ fontFamily: messageFontFamily }">
           <div class="message" v-for="(msg, index) in messages" :key="index">
-            <div class="message-bubble">{{msg.content}}</div>
+            <div class="message-bubble">{{ msg.content }}</div>
             <span class="delete-btn" @click="deleteMessage(msg)">
               <img style="width: 20px;height: 20px;" src="@/assets/ioc/collect/delete.png" />
             </span>
@@ -108,20 +108,30 @@ export default {
     },
     async sendMessage() {
       const content = this.newMessage.trim();
-      if (content) {
-        await saveMessage({
-          sessionId: this.selectedSeeionId,
-          collectType: 1,
-          content: content,
-          messageType: this.radio
-        })
-        this.messages.push({ content: content });
-        this.newMessage = '';
-        this.$nextTick(() => {
-          const container = this.$el.querySelector('.chat-message-area');
-          container.scrollTop = container.scrollHeight;
-        });
-      }
+      if (!content || !this.selectedSeeionId) return;
+      await saveMessage({
+        sessionId: this.selectedSeeionId,
+        collectType: 1,
+        content: content,
+        messageType: this.radio
+      })
+      this.messages.push({ content });
+      this.moveSessionToTop(this.selectedSeeionId);
+      this.newMessage = '';
+      this.$nextTick(() => {
+        const container = this.$el.querySelector('.chat-message-area');
+        container.scrollTop = container.scrollHeight;
+      });
+
+    },
+    moveSessionToTop(sessionId) {
+      const index = this.sessionList.findIndex(
+        item => item.id === sessionId
+      );
+      if (index === -1) return;
+
+      const session = this.sessionList.splice(index, 1)[0];
+      this.sessionList.unshift(session);
     },
     handleKeydown(e) {
       // Ctrl + Enter 换行

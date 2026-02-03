@@ -8,6 +8,14 @@ export function getTaskInfo(params){
     return get('/app/task/info',params)
 }
 
+export function shareTaskInfo(params){
+    return get('/app/task/shareTaskInfo',params)
+}
+
+export function getShareCode(params){
+    return get('/app/task/getShareCode',params)
+}
+
 export function cancelTask(data) {
     return post('/app/task/cancelTask', data)
 }
@@ -26,6 +34,10 @@ export function saveTask(data) {
 
 export function updateTask(data) {
     return post('/app/task/update', data)
+}
+
+export function shareUpdate(data) {
+    return post('/app/task/shareUpdate', data)
 }
 
 export function updateRemark(data) {

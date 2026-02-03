@@ -496,6 +496,7 @@ export default {
     }
   },
   beforeDestroy() {
+    window.removeEventListener('keydown', this.handleKeydown);
     if (this.editor) {
       this.editor.destroy();
       this.editor = null;

@@ -107,7 +107,6 @@ export default {
 .batch-upload {
   width: 100%;
   padding: 10px;
-  min-height: 140px;
   position: relative;
 }
 

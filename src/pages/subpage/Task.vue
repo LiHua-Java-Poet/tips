@@ -37,6 +37,12 @@
                 <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
                   end-placeholder="结束日期" style="width: 100%;"></el-date-picker>
               </el-form-item>
+              <el-form-item label="状态">
+                <el-select v-model="searchTaskType" placeholder="请选择">
+                  <el-option v-for="item in dictMap.taskType" :key="item.dictCode" :label="item.dictName" :value="item.dictCode">
+                  </el-option>
+                </el-select>
+              </el-form-item>
             </el-form>
           </el-popover>
         </div>
@@ -95,13 +101,21 @@
               <div
                 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;display: flex;justify-content: space-between;align-items: center;">
                 <span>任务信息</span>
-                <el-tooltip content="编辑任务信息" placement="top">
-                  <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;"
-                    src="@/assets/ioc/task/edit.png" @click="editTaskOpen()">
-                </el-tooltip>
+                <div>
+                  <el-tooltip content="分享任务" placement="top">
+                    <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;"
+                      src="@/assets/ioc/task/share.png" @click="shareTaskOpen()">
+                  </el-tooltip>
+                  <el-tooltip content="编辑任务信息" placement="top">
+                    <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;"
+                      src="@/assets/ioc/task/edit.png" @click="editTaskOpen()">
+                  </el-tooltip>
+                </div>
+
               </div>
               <div style="margin-bottom: 10px;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
-              <div style="margin-bottom: 10px;"><strong>任务描述：</strong>{{ selectedTaskInfo.description }}</div>
+              <div style="margin-bottom: 10px;"><strong>任务描述：</strong></div>
+              <div class="task-desc">{{ selectedTaskInfo.description }}</div>
               <div style="margin-bottom: 10px;"><strong>任务时间：</strong>{{ formatDate(selectedTaskInfo.taskTime) }}</div>
               <div style="margin-bottom: 10px;"><strong>任务类型：</strong>
                 <span>
@@ -148,8 +162,8 @@
                 <AnnexFileView :fileList="selectedTaskInfo.annexFiles" />
               </div>
               <!-- 操作按钮 -->
-              <div class="icon-row" v-if="selectedTaskInfo.status == 1">
-                <el-tooltip effect="dark" content="完成任务" placement="top">
+              <div class="icon-row">
+                <el-tooltip effect="dark" content="完成任务" placement="top" v-if="selectedTaskInfo.status == 1">
                   <span class="icon-wrapper" style="margin-right: 10px;" @click="selectAction(selectedTaskInfo.id, 1)">
                     <svg t="1753254753676" class="icon" viewBox="0 0 1024 1024" version="1.1"
                       xmlns="http://www.w3.org/2000/svg" p-id="880" width="25" height="25">
@@ -162,7 +176,7 @@
                     </svg>
                   </span>
                 </el-tooltip>
-                <el-tooltip effect="dark" content="取消任务" placement="top">
+                <el-tooltip effect="dark" content="取消任务" placement="top" v-if="selectedTaskInfo.status == 1">
                   <span class="icon-wrapper" style="margin-right: 10px;" @click="selectAction(selectedTaskInfo.id, 2)">
                     <svg t="1753328803437" class="icon" viewBox="0 0 1024 1024" version="1.1"
                       xmlns="http://www.w3.org/2000/svg" p-id="6930" width="25" height="25">
@@ -202,7 +216,7 @@
     </el-container>
 
     <!-- 侧边栏 -->
-    <el-drawer title="编辑任务" :visible.sync="drawer" :before-close="handleClose" size="600px">
+    <el-drawer title="编辑任务" :visible.sync="drawer" :before-close="handleClose" size="800px">
       <!-- 表单 -->
       <el-form ref="taskForm" :model="taskForm" label-width="100px" style="padding-right: 30px;">
 
@@ -211,7 +225,7 @@
         </el-form-item>
 
         <el-form-item label="任务描述" prop="taskName">
-          <el-input maxlength="20" v-model="taskForm.description" placeholder="请输入任务描述" />
+          <el-input type="textarea" autosize v-model="taskForm.description" placeholder="请输入任务描述" />
         </el-form-item>
 
         <el-form-item label="任务时间" prop="taskTime">
@@ -266,11 +280,24 @@
         <el-button type="primary" @click="submitFormTask">保存</el-button>
       </div>
     </el-drawer>
+
+    <!-- 分享弹窗 -->
+    <el-dialog title="任务分享" :visible.sync="shareDialogVisible" width="500px" :close-on-click-modal="false"
+      :close-on-press-escape="true">
+      <div style="word-break: break-all; margin-bottom: 10px;">
+        {{ shareUrl }}
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="copyShareUrl">复制链接</el-button>
+        <el-button type="primary" @click="goToShareUrl">跳转</el-button>
+      </span>
+    </el-dialog>
+
   </el-container>
 </template>
 
 <script>
-import { getTaskList, getTaskInfo, cancelTask, completeTask, deleteTask, updateTask, updateRemark } from '@/api/task';
+import { getTaskList, getTaskInfo, cancelTask, completeTask, deleteTask, updateTask, updateRemark, getShareCode } from '@/api/task';
 import { getDictList } from '@/api/dict'
 import AnnexFileView from '@/components/AnnexFileView.vue';
 import { formatDate } from '@/utils/navigator'
@@ -288,6 +315,7 @@ export default {
       showStatus: 1,
       page: 1,
       limit: 10,
+      searchTaskType:null,
       pageCount: 0,
       dateRange: [], // 存储起止日期，[startDate, endDate]
       searchText: '',
@@ -299,6 +327,8 @@ export default {
       //编辑拉框
       drawer: false,
       uniqueCode: null,
+      shareDialogVisible: false,
+      shareUrl: '',
       taskForm: {
         taskName: "",
         taskTime: null,
@@ -438,6 +468,44 @@ export default {
       this.taskForm.annexFiles = this.selectedTaskInfo.annexFiles
       this.taskForm.description = this.selectedTaskInfo.description
       this.drawer = true
+    },
+    async shareTaskOpen() {
+      if (!this.selectedTaskId) {
+        this.$message.warning('请先选择任务')
+        return
+      }
+
+      try {
+        const res = await getShareCode({ id: this.selectedTaskId });
+
+        if (res.code === 200 && res.data) {
+          const shareCode = res.data;
+          const mode = 'edit';
+          // 构建完整分享链接
+          this.shareUrl = `${window.location.origin}/#/shareTask?code=${shareCode}&mode=${mode}`;
+          // 打开弹窗
+          this.shareDialogVisible = true;
+        } else {
+          this.$message.error('获取分享码失败');
+        }
+      } catch (err) {
+        console.error(err);
+        this.$message.error('获取分享码异常');
+      }
+    },
+    copyShareUrl() {
+      const textarea = document.createElement('textarea')
+      textarea.value = this.shareUrl
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      this.$message.success('已复制到剪贴板')
+    },
+
+    goToShareUrl() {
+      window.open(this.shareUrl, '_blank')
+      this.shareDialogVisible = false
     },
     submitFormTask() {
       const payload = {
@@ -756,6 +824,15 @@ li::before {
   width: 150px;
   background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
   animation: shimmer 1.5s infinite;
+}
+
+.task-desc {
+  padding-left: 50px;
+  color: #666;
+  margin: 8px 0;
+  white-space: pre-wrap;
+  /* 保留换行和空格 */
+  word-wrap: break-word;
 }
 
 @keyframes shimmer {

@@ -214,7 +214,6 @@ export default {
   padding: 10px;
   border: 2px dashed #d9d9d9;
   border-radius: 6px;
-  min-height: 140px;
   position: relative;
 }
 
