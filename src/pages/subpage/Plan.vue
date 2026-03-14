@@ -1,6 +1,6 @@
 <template>
   <el-container style="height: 100%;">
-    <el-header>
+    <el-header style="height: 50px;">
       <el-row>
         <el-col :span="4">
           <div class="status-button" :class="{ process: showStatus === 1 }" @click="setStatus(1)">
@@ -19,7 +19,7 @@
         </el-col>
       </el-row>
     </el-header>
-    <el-container style="height: calc(100vh - 130px);">
+    <el-container style="height: calc(100vh - 120px);">
       <el-aside width="350px" class="aside-custom">
         <div class="popover-wrapper">
           <el-input style="width: 90%;" placeholder="请输入搜索内容" prefix-icon="el-icon-search" v-model="searchText">

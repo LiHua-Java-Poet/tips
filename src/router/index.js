@@ -19,6 +19,7 @@ import RoleManager from '@/pages/subpage/RoleManager.vue'
 import MenuManager from '@/pages/subpage/MenuManager.vue'
 import DictManager from '@/pages/subpage/DictManager.vue'
 import TaskShare from '@/pages/TaskShare.vue'
+import sysConfigManager from '@/pages/subpage/sysConfigManager.vue'
 Vue.use(VueRouter)
 
 
@@ -98,6 +99,11 @@ const router = new VueRouter({
         {
           path: '/index/DictManager',
           component: DictManager,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/index/sysConfigManager',
+          component: sysConfigManager,
           meta: { requiresAuth: true }
         }
       ]

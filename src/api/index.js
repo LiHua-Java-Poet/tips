@@ -16,7 +16,11 @@ const instance = axios.create({
   // 你可以在这里设置更多的请求配置选项，如headers等  
 });
 
-// 添加请求拦截器：在发送请求之前统一处理 token
+instance.get('/oss/uploadFile', {
+  timeout: 0
+})
+
+// 添加请求拦截器：在发送请求之前统一处理 token 
 instance.interceptors.request.use(
   config => {
     // 从 Vuex 中获取 token
@@ -43,13 +47,12 @@ instance.interceptors.response.use(
     }
 
     const res = response.data || {}
-
-    // ✅ 成功
+    // 成功
     if (res.code === 200 || res.success === true) {
       return res
     }
 
-    // ✅ 未登录
+    // 未登录
     if (res.code === -406) {
       Message.warning('登录已过期，请重新登录')
       store.dispatch('logout')
@@ -57,13 +60,13 @@ instance.interceptors.response.use(
       return Promise.resolve(null) // ⭐ 不 reject
     }
 
-    // ✅ 业务错误
+    //业务错误
     Message.warning(res.msg || '请求失败')
-    return Promise.resolve(null) // ⭐ 核心：吞掉异常
+    return Promise.resolve({data:null}) // ⭐ 核心：吞掉异常
   },
 
   error => {
-    // ✅ 网络 / 服务器错误统一兜底
+    // 网络 / 服务器错误统一兜底
     let msg = '系统错误，请联系管理员'
 
     if (error.response) {
@@ -81,8 +84,8 @@ instance.interceptors.response.use(
 
     Message.warning(msg)
 
-    // ⭐⭐ 关键：不 reject
-    return Promise.resolve(null)
+    // 关键：不 reject
+    return Promise.resolve({data:null})
   }
 )
 

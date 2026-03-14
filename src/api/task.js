@@ -43,3 +43,7 @@ export function shareUpdate(data) {
 export function updateRemark(data) {
     return post('/app/task/updateRemark', data)
 }
+
+export function saveTaskLog(data) {
+    return post('/app/taskLog/save', data)
+}

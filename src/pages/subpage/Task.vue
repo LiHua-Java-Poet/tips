@@ -39,7 +39,8 @@
               </el-form-item>
               <el-form-item label="状态">
                 <el-select v-model="searchTaskType" placeholder="请选择">
-                  <el-option v-for="item in dictMap.taskType" :key="item.dictCode" :label="item.dictName" :value="item.dictCode">
+                  <el-option v-for="item in dictMap.taskType" :key="item.dictCode" :label="item.dictName"
+                    :value="item.dictCode">
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -102,11 +103,15 @@
                 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;display: flex;justify-content: space-between;align-items: center;">
                 <span>任务信息</span>
                 <div>
+                  <el-tooltip content="新增日志" placement="top">
+                    <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;"
+                      src="@/assets/ioc/task/log.png" @click="recordTaskLogOpen()">
+                  </el-tooltip>
                   <el-tooltip content="分享任务" placement="top">
                     <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;"
                       src="@/assets/ioc/task/share.png" @click="shareTaskOpen()">
                   </el-tooltip>
-                  <el-tooltip content="编辑任务信息" placement="top">
+                  <el-tooltip content="编辑任务" placement="top">
                     <img style="width: 30px;height: 30px; margin-right: 10px;cursor: pointer;"
                       src="@/assets/ioc/task/edit.png" @click="editTaskOpen()">
                   </el-tooltip>
@@ -121,6 +126,36 @@
                 <span>
                   {{(dictMap.taskType || []).find(item => item.dictCode === selectedTaskInfo.taskType)?.dictName || ''}}
                 </span>
+              </div>
+              <!-- 任务日志 -->
+              <div v-if="selectedTaskInfo.taskLogListTo && selectedTaskInfo.taskLogListTo.length > 0"
+                style="margin-top:30px">
+
+                <el-collapse>
+
+                  <el-collapse-item title="任务日志">
+
+                    <el-timeline>
+
+                      <el-timeline-item v-for="(log) in selectedTaskInfo.taskLogListTo" :key="log.id"
+                        :timestamp="formatDate(log.createTime)" placement="top">
+
+                        <div style="margin-bottom:6px">
+                          {{ log.logContent }}
+                        </div>
+
+                        <div v-if="log.annexFileList && log.annexFileList.length > 0">
+                          <AnnexFileView :fileList="log.annexFileList" />
+                        </div>
+
+                      </el-timeline-item>
+
+                    </el-timeline>
+
+                  </el-collapse-item>
+
+                </el-collapse>
+
               </div>
               <!-- itemToLists 渲染为列表 -->
               <div v-if="selectedTaskInfo.itemToList?.length > 0" class="remark-content-container">
@@ -292,12 +327,42 @@
         <el-button type="primary" @click="goToShareUrl">跳转</el-button>
       </span>
     </el-dialog>
+    <!-- 记录日志弹窗 -->
+    <el-dialog title="新增任务日志" :visible.sync="logDialogVisible" width="600px" :close-on-click-modal="false">
+
+      <el-form label-width="80px">
+
+        <el-form-item label="日志内容">
+          <el-input type="textarea" v-model="taskLogForm.logContent" :rows="6" placeholder="请输入日志内容" />
+        </el-form-item>
+
+        <el-form-item label="附件">
+
+          <AnnexFileUpload :value="taskLogForm.annexFileList" @update="taskLogForm.annexFileList = $event" />
+
+        </el-form-item>
+
+      </el-form>
+
+      <span slot="footer">
+
+        <el-button @click="logDialogVisible = false">
+          取消
+        </el-button>
+
+        <el-button type="primary" @click="saveTaskLogSubmit">
+          保存
+        </el-button>
+
+      </span>
+
+    </el-dialog>
 
   </el-container>
 </template>
 
 <script>
-import { getTaskList, getTaskInfo, cancelTask, completeTask, deleteTask, updateTask, updateRemark, getShareCode } from '@/api/task';
+import { getTaskList, getTaskInfo, cancelTask, completeTask, deleteTask, updateTask, updateRemark, getShareCode, saveTaskLog } from '@/api/task';
 import { getDictList } from '@/api/dict'
 import AnnexFileView from '@/components/AnnexFileView.vue';
 import { formatDate } from '@/utils/navigator'
@@ -315,7 +380,7 @@ export default {
       showStatus: 1,
       page: 1,
       limit: 10,
-      searchTaskType:null,
+      searchTaskType: null,
       pageCount: 0,
       dateRange: [], // 存储起止日期，[startDate, endDate]
       searchText: '',
@@ -337,6 +402,20 @@ export default {
         taskType: 'work',
         annexFiles: []
       },
+      // 日志弹窗
+      logDialogVisible: false,
+
+      // 日志表单
+      taskLogForm: {
+        logContent: '',
+        annexFileList: []
+      },
+
+      // 日志列表
+      taskLogList: [],
+
+      // 日志折叠
+      logCollapse: [],
       dictMap: {
         taskType: [],
         taskItemLable: []
@@ -385,7 +464,11 @@ export default {
             _popoverVisible: false
           }))
         }
-
+        // 日志按时间倒序
+        if (Array.isArray(data.taskLogListTo)) {
+          data.taskLogListTo.sort((a, b) => b.createTime - a.createTime)
+        }
+        //this.taskLogList=data.taskLogListTo
         this.selectedTaskInfo = data
         this.loadingTaskDetail = false
       })
@@ -556,6 +639,48 @@ export default {
       console.info(this.selectedTaskInfo.itemToList)
       console.info(this.selectedTaskInfo.id)
       updateRemark({ "id": this.selectedTaskInfo.id, "itemToList": this.selectedTaskInfo.itemToList })
+    },
+    recordTaskLogOpen() {
+
+      if (!this.selectedTaskId) {
+        this.$message.warning("请先选择任务")
+        return
+      }
+
+      this.taskLogForm = {
+        logContent: '',
+        annexFileList: []
+      }
+
+      this.logDialogVisible = true
+    },
+    saveTaskLogSubmit() {
+
+      if (!this.taskLogForm.logContent) {
+        this.$message.warning("请输入日志内容")
+        return
+      }
+
+      const payload = {
+        taskId: this.selectedTaskId,
+        logContent: this.taskLogForm.logContent,
+        annexFileList: this.taskLogForm.annexFileList
+      }
+
+      saveTaskLog(payload).then(res => {
+
+        if (res.code == 200) {
+
+          this.$message.success("日志保存成功")
+
+          this.logDialogVisible = false
+
+          // 刷新任务详情（重新加载日志）
+          this.selectedTask(this.selectedTaskId)
+
+        }
+
+      })
     }
   },
   async created() {
