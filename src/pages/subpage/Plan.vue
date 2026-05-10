@@ -95,7 +95,6 @@
                 </div>
               </div>
 
-
               <!-- 右侧：编辑按钮 -->
               <el-tooltip content="编辑计划信息" placement="top">
                 <img style="width: 30px;height: 30px; cursor: pointer;" src="@/assets/ioc/task/edit.png"
@@ -114,7 +113,6 @@
             <div style="margin-bottom: 10px;"><strong>计划类型：</strong>{{ getPlanTypeText(selectedPlanInfo.planType) }}
             </div>
             <div style="margin-bottom: 10px;"><strong>开始时间：</strong>{{ formatDate(selectedPlanInfo.startTime) }}</div>
-            <!-- <div style="margin-bottom: 10px;"><strong>预期完成时间：</strong>{{ formatDate(selectedPlanInfo.expectedTime) }}</div> -->
 
             <!-- 备注内容 -->
             <div v-if="selectedPlanInfo.planInfo?.length > 0" style="margin-bottom: 10px;">
@@ -147,20 +145,99 @@
         </el-main>
       </el-container>
     </el-container>
+
+    <!-- 编辑计划 Drawer -->
+    <el-drawer
+      :visible.sync="editDrawerVisible"
+      title="编辑计划"
+      direction="rtl"
+      size="600px"
+      :before-close="handleEditClose"
+    >
+      <el-form :model="editForm" label-width="100px" size="small" style="padding-right: 30px;">
+        <!-- 计划图标 -->
+        <el-form-item label="计划图标">
+          <AvatarUpload v-model="editForm.icon" />
+        </el-form-item>
+
+        <!-- 计划名称 -->
+        <el-form-item label="计划名称">
+          <el-input v-model="editForm.planName" placeholder="请输入计划名称"></el-input>
+        </el-form-item>
+
+        <!-- 任务数量 -->
+        <el-form-item label="任务数量">
+          <el-input-number v-model="editForm.taskTotal" :min="0" :max="999"></el-input-number>
+        </el-form-item>
+
+        <!-- 描述 -->
+        <el-form-item label="描述">
+          <el-input
+            v-model="editForm.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入计划描述"
+          ></el-input>
+        </el-form-item>
+
+        <!-- 任务规则 -->
+        <el-form-item label="任务规则">
+          <el-input v-model="editForm.taskRule" placeholder="如：任务 第一天" />
+        </el-form-item>
+
+        <!-- 计划类型 -->
+        <el-form-item label="计划类型">
+          <el-select v-model="editForm.planType" placeholder="请选择类型" style="width: 100%;">
+            <el-option v-for="(item, index) in dictMap.planType" :key="index" :label="item.dictName" :value="item.dictCode" />
+          </el-select>
+        </el-form-item>
+
+        <!-- 计划内容（带序号条目） -->
+        <el-form-item label="计划内容">
+          <div style="width: 100%;">
+            <div v-for="(ite, idx) in editForm.itemToList" :key="idx" style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background-color: #e0e0e0; border-radius: 50%; font-size: 12px; color: #333; margin-right: 10px;">
+                {{ idx + 1 }}
+              </span>
+              <el-input v-model="ite.itemContext" placeholder="请输入内容" style="flex: 1; margin-right: 10px;"></el-input>
+              <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeEditItem(idx)" circle></el-button>
+            </div>
+            <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="addEditItem"></el-button>
+          </div>
+        </el-form-item>
+
+        <!-- 附件 -->
+        <el-form-item label="附件内容">
+          <AnnexFileUpload :value="editForm.annexFiles" @update="editForm.annexFiles = $event" ref="AnnexFileUploadEdit" />
+        </el-form-item>
+
+        <!-- 提交按钮 -->
+        <div style="text-align:right; margin-top:20px; padding-right: 30px; margin-bottom: 20px;">
+          <el-button @click="handleEditClose()">取消</el-button>
+          <el-button type="primary" @click="submitEditPlan" :loading="editSubmitting">保存</el-button>
+        </div>
+      </el-form>
+    </el-drawer>
   </el-container>
 </template>
 
 <script>
-import { getPlanList, getPlanInfo, deliver } from '@/api/plan';
+import { getPlanList, getPlanInfo, deliver, updatePlan } from '@/api/plan';
+import { getDictList } from '@/api/dict'
+import { getUniqueCode } from '@/api/public';
 import { formatDate } from '@/utils/navigator'
 import ProgressBar from '@/components/ProgressBar.vue';
 import AnnexFileView from '@/components/AnnexFileView.vue';
+import AvatarUpload from '@/components/AvatarUpload.vue';
+import AnnexFileUpload from '@/components/AnnexFileUpload.vue';
 
 export default {
   name: "planPage",
   components: {
     AnnexFileView,
-    ProgressBar
+    ProgressBar,
+    AvatarUpload,
+    AnnexFileUpload
   },
   data() {
     return {
@@ -178,6 +255,24 @@ export default {
       completProgress: 1,
       towardProgress: 2,
       listLoadStatus: false,
+      // 编辑计划相关
+      editDrawerVisible: false,
+      editForm: {
+        id: null,
+        icon: '',
+        planName: '',
+        taskTotal: 0,
+        description: '',
+        taskRule: '',
+        planType: '',
+        itemToList: [],
+        annexFiles: []
+      },
+      editSubmitting: false,
+      uniqueCode: null,
+      dictMap: {
+        planType: []
+      }
     };
   },
   computed: {
@@ -244,8 +339,133 @@ export default {
       }
       this.listLoadStatus = false
     },
+    // 打开编辑弹窗 - 使用当前选中的计划信息填充表单
+    async editPlanOpen() {
+      try {
+        if (!this.selectedPlanInfo) {
+          console.warn('selectedPlanInfo is null')
+          return
+        }
+        // 获取唯一码防止重复提交
+        await getUniqueCode().then(res => {
+          this.uniqueCode = res.data
+        })
+        const info = this.selectedPlanInfo
+        this.editForm.id = info.id
+        this.editForm.icon = info.icon || ''
+        this.editForm.planName = info.planName || ''
+        this.editForm.taskTotal = info.taskTotal || 0
+        this.editForm.description = info.description || ''
+        this.editForm.taskRule = info.taskRule || ''
+        this.editForm.planType = info.planType ? String(info.planType) : ''
+        // 计划内容列表（保持 itemContext 字段名与后端一致）
+        if (info.planInfo && Array.isArray(info.planInfo)) {
+          this.editForm.itemToList = info.planInfo.map(p => ({ no: p.no, itemContext: p.itemContext || '' }))
+        } else {
+          this.editForm.itemToList = []
+        }
+        // 附件
+        if (info.annexFiles && Array.isArray(info.annexFiles)) {
+          this.editForm.annexFiles = info.annexFiles.map(f => ({ fileName: f.fileName || '', fileUrl: f.fileUrl || '' }))
+        } else {
+          this.editForm.annexFiles = []
+        }
+        console.log('editPlanOpen success, opening drawer')
+        this.editDrawerVisible = true
+      } catch (e) {
+        console.error('editPlanOpen error:', e)
+        this.$message.error('打开编辑弹窗失败: ' + e.message)
+      }
+    },
+    // 关闭编辑弹窗
+    handleEditClose(done) {
+      this.$confirm('确认关闭？')
+        .then(() => {
+          Object.assign(this.editForm, {
+            id: null,
+            icon: '',
+            planName: '',
+            taskTotal: 0,
+            description: '',
+            taskRule: '',
+            planType: '',
+            itemToList: [],
+            annexFiles: []
+          });
+          this.editDrawerVisible = false
+          //清空子组件的上传内容
+          if (this.$refs.AnnexFileUploadEdit) {
+            this.$refs.AnnexFileUploadEdit.cleanFileList()
+          }
+          if (done) done()
+        })
+        .catch(() => { return });
+    },
+    // 添加计划内容项
+    addEditItem() {
+      this.editForm.itemToList.push({
+        no: this.editForm.itemToList.length + 1,
+        itemContext: ''
+      })
+    },
+    // 删除计划内容项
+    removeEditItem(idx) {
+      this.editForm.itemToList.splice(idx, 1)
+    },
+    // 添加附件
+    addEditFile() {
+      this.editForm.annexFiles.push({ fileName: '', fileUrl: '' })
+    },
+    // 删除附件
+    removeEditFile(idx) {
+      this.editForm.annexFiles.splice(idx, 1)
+    },
+    // 提交编辑
+    async submitEditPlan() {
+      if (!this.editForm.planName) {
+        this.$message.warning('请输入计划名称')
+        return
+      }
+      this.editSubmitting = true
+      try {
+        const submitData = {
+          ...this.editForm,
+          planType: this.editForm.planType ? Number(this.editForm.planType) : null,
+          uniqueCode: this.uniqueCode
+        }
+        const res = await updatePlan(submitData)
+        if (res.code === 200) {
+          this.$message.success('更新成功')
+          Object.assign(this.editForm, {
+            id: null,
+            icon: '',
+            planName: '',
+            taskTotal: 0,
+            description: '',
+            taskRule: '',
+            planType: '',
+            itemToList: [],
+            annexFiles: []
+          });
+          this.editDrawerVisible = false
+          //清空子组件的上传内容
+          if (this.$refs.AnnexFileUploadEdit) {
+            this.$refs.AnnexFileUploadEdit.cleanFileList()
+          }
+          // 刷新当前选中的计划详情
+          this.selectedPlan(this.selectedPlanId)
+        }
+      } catch (e) {
+        console.error('更新计划失败', e)
+      } finally {
+        this.editSubmitting = false
+      }
+    }
   },
   async created() {
+    getDictList({ "classifyCode": "planType" }).then(res => {
+      this.dictMap.planType = res.data
+    })
     await this.getPlanList({ page: 1, limit: 10, status: 1 })
     //当加初次加载完成后，默认选中第一个任务
     if (this.planList.length == 0) return

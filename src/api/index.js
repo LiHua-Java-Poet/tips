@@ -20,7 +20,7 @@ instance.get('/oss/uploadFile', {
   timeout: 0
 })
 
-// 添加请求拦截器：在发送请求之前统一处理 token 
+// 添加请求拦截器：在发送请求之前统一处理 token  
 instance.interceptors.request.use(
   config => {
     // 从 Vuex 中获取 token

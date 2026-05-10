@@ -45,7 +45,12 @@
           <el-table-column prop="menuName" label="菜单名称" width="180" />
           <el-table-column prop="navigatorPath" label="菜单路径" />
           <el-table-column prop="componetPath" label="组件路径" />
-          <el-table-column prop="icon" label="图标" width="100" />
+          <!-- <el-table-column prop="icon" label="图标" width="100" /> -->
+          <el-table-column  prop="icon" label="图标" width="100">
+            <template #default="scope">
+              <img :src="require(`@/assets/ioc/navator/${scope.row.icon}.png`)" class="nav-icon" />
+            </template>
+          </el-table-column>
           <el-table-column prop="sort" label="排序" width="80" />
           <el-table-column prop="status" label="状态" width="100">
             <template #default="scope">
@@ -96,8 +101,12 @@
           <el-form-item label="组件路径" prop="componetPath">
             <el-input v-model="form.componetPath" />
           </el-form-item>
-          <el-form-item label="图标" prop="icon">
-            <el-input v-model="form.icon" placeholder="可输入icon类名或图标路径" />
+          <el-form-item label="图片名称">
+            <el-input v-model="form.icon">
+              <el-button slot="append" icon="el-icon-picture" @click="iconDialog = true">
+                选择
+              </el-button>
+            </el-input>
           </el-form-item>
           <el-form-item label="排序" prop="sort">
             <el-input-number v-model="form.sort" :min="0" />
@@ -120,7 +129,16 @@
           <el-button type="primary" @click="submitForm">确认</el-button>
         </span>
       </el-dialog>
-
+      <el-dialog title="选择图片" :visible.sync="iconDialog" width="600px">
+        <div class="icon-container">
+          <div v-for="item in iconList" :key="item.name" class="icon-item" @click="selectIcon(item)">
+            <img :src="item.url">
+            <div class="icon-name">
+              {{ item.name }}
+            </div>
+          </div>
+        </div>
+      </el-dialog>
     </el-main>
   </el-container>
 </template>
@@ -155,11 +173,25 @@ export default {
         sort: 0,
         status: 1,
         menuType: 1
-      }
+      },
+      iconDialog: false,
+      iconList: [],
     };
   },
   created() {
     this.fetchList();
+  },
+  mounted() {
+    const req = require.context('@/assets/ioc/navator', false, /\.(png|jpg|jpeg|svg)$/)
+
+    this.iconList = req.keys().map(path => {
+      const fileName = path.replace('./', '')
+      const iconName = fileName.replace(/\.(png|jpg|jpeg|svg)$/, '')
+      return {
+        name: iconName,
+        url: req(path)
+      }
+    })
   },
   methods: {
     fetchList() {
@@ -230,6 +262,10 @@ export default {
       if (!timestamp) return '';
       const date = new Date(timestamp * 1000);
       return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+    },
+    selectIcon(icon) {
+      this.form.icon = icon.name
+      this.iconDialog = false
     }
   }
 };
@@ -262,5 +298,39 @@ export default {
   flex-shrink: 0;
   margin-top: 12px;
   text-align: right;
+}
+
+.icon-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 15px;
+}
+
+.icon-item {
+  text-align: center;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 6px;
+  transition: all .2s;
+}
+
+.icon-item:hover {
+  background: #f5f7fa;
+}
+
+.icon-item img {
+  width: 40px;
+  height: 40px;
+}
+
+.icon-name {
+  font-size: 12px;
+  margin-top: 5px;
+  color: #666;
+}
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 </style>

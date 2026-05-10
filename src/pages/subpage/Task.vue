@@ -37,12 +37,15 @@
                 <el-date-picker v-model="dateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
                   end-placeholder="结束日期" style="width: 100%;"></el-date-picker>
               </el-form-item>
-              <el-form-item label="状态">
-                <el-select v-model="searchTaskType" placeholder="请选择">
+              <el-form-item label="任务类型">
+                <el-select v-model="searchTaskType" placeholder="请选择" clearable>
                   <el-option v-for="item in dictMap.taskType" :key="item.dictCode" :label="item.dictName"
                     :value="item.dictCode">
                   </el-option>
                 </el-select>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" size="small" @click="handleSearch" style="width: 100%;">搜索</el-button>
               </el-form-item>
             </el-form>
           </el-popover>
@@ -118,11 +121,11 @@
                 </div>
 
               </div>
-              <div style="margin-bottom: 10px;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
-              <div style="margin-bottom: 10px;"><strong>任务描述：</strong></div>
+              <div style="margin-bottom: 10px; font-weight: 500; color: #303133;"><strong>任务名称：</strong>{{ selectedTaskInfo.taskName }}</div>
+              <div style="margin-bottom: 10px; font-weight: 500; color: #303133;"><strong>任务描述：</strong></div>
               <div class="task-desc">{{ selectedTaskInfo.description }}</div>
-              <div style="margin-bottom: 10px;"><strong>任务时间：</strong>{{ formatDate(selectedTaskInfo.taskTime) }}</div>
-              <div style="margin-bottom: 10px;"><strong>任务类型：</strong>
+              <div style="margin-bottom: 10px; font-weight: 500; color: #303133;"><strong>任务时间：</strong>{{ formatDate(selectedTaskInfo.taskTime) }}</div>
+              <div style="margin-bottom: 10px; font-weight: 500; color: #303133;"><strong>任务类型：</strong>
                 <span>
                   {{(dictMap.taskType || []).find(item => item.dictCode === selectedTaskInfo.taskType)?.dictName || ''}}
                 </span>
@@ -130,32 +133,27 @@
               <!-- 任务日志 -->
               <div v-if="selectedTaskInfo.taskLogListTo && selectedTaskInfo.taskLogListTo.length > 0"
                 style="margin-top:30px">
-
-                <el-collapse>
-
-                  <el-collapse-item title="任务日志">
-
+                <el-collapse v-model="logCollapseActive">
+                  <el-collapse-item title="任务日志" name="taskLog" style="font-size: 17px;">
                     <el-timeline>
-
                       <el-timeline-item v-for="(log) in selectedTaskInfo.taskLogListTo" :key="log.id"
                         :timestamp="formatDate(log.createTime)" placement="top">
-
-                        <div style="margin-bottom:6px">
-                          {{ log.logContent }}
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                          <div class="task-log-content" style="white-space: pre-wrap; flex: 1;">
+                            {{ log.logContent }}
+                          </div>
+                          <div style="flex-shrink: 0; margin-left: 10px;">
+                            <el-button type="text" size="mini" icon="el-icon-edit" @click="editTaskLogOpen(log)"></el-button>
+                            <el-button type="text" size="mini" icon="el-icon-delete" style="color: #f56c6c;" @click="removeTaskLog(log)"></el-button>
+                          </div>
                         </div>
-
-                        <div v-if="log.annexFileList && log.annexFileList.length > 0">
+                        <div v-if="log.annexFileList && log.annexFileList.length > 0" style="margin-top: 10px;">
                           <AnnexFileView :fileList="log.annexFileList" />
                         </div>
-
                       </el-timeline-item>
-
                     </el-timeline>
-
                   </el-collapse-item>
-
                 </el-collapse>
-
               </div>
               <!-- itemToLists 渲染为列表 -->
               <div v-if="selectedTaskInfo.itemToList?.length > 0" class="remark-content-container">
@@ -358,11 +356,27 @@
 
     </el-dialog>
 
+    <!-- 编辑日志弹窗 -->
+    <el-dialog title="编辑任务日志" :visible.sync="logEditDialogVisible" width="600px" :close-on-click-modal="false">
+      <el-form label-width="80px">
+        <el-form-item label="日志内容">
+          <el-input type="textarea" v-model="taskLogEditForm.logContent" :rows="6" placeholder="请输入日志内容" />
+        </el-form-item>
+        <el-form-item label="附件">
+          <AnnexFileUpload :value="taskLogEditForm.annexFileList" @update="taskLogEditForm.annexFileList = $event" />
+        </el-form-item>
+      </el-form>
+      <span slot="footer">
+        <el-button @click="logEditDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="updateTaskLogSubmit">保存</el-button>
+      </span>
+    </el-dialog>
+
   </el-container>
 </template>
 
 <script>
-import { getTaskList, getTaskInfo, cancelTask, completeTask, deleteTask, updateTask, updateRemark, getShareCode, saveTaskLog } from '@/api/task';
+import { getTaskList, getTaskInfo, cancelTask, completeTask, deleteTask, updateTask, updateRemark, getShareCode, saveTaskLog, updateTaskLog, deleteTaskLog } from '@/api/task';
 import { getDictList } from '@/api/dict'
 import AnnexFileView from '@/components/AnnexFileView.vue';
 import { formatDate } from '@/utils/navigator'
@@ -411,11 +425,19 @@ export default {
         annexFileList: []
       },
 
+      // 编辑日志表单
+      taskLogEditForm: {
+        id: null,
+        logContent: '',
+        annexFileList: []
+      },
+      logEditDialogVisible: false,
+
       // 日志列表
       taskLogList: [],
 
-      // 日志折叠
-      logCollapse: [],
+      // 日志折叠，默认展开
+      logCollapseActive: ['taskLog'],
       dictMap: {
         taskType: [],
         taskItemLable: []
@@ -450,6 +472,31 @@ export default {
       }).catch(error => {
         console.info(error)
       })
+    },
+    getQueryParams(extra) {
+      const params = { ...extra }
+      if (this.searchText) {
+        params.key = this.searchText
+      }
+      if (this.searchTaskType) {
+        params.taskType = this.searchTaskType
+      }
+      if (this.dateRange && this.dateRange.length === 2) {
+        const start = Math.floor(this.dateRange[0].getTime() / 1000)
+        const end = Math.floor(this.dateRange[1].getTime() / 1000)
+        params.startTime = start
+        params.endTime = end
+      }
+      return params
+    },
+    async handleSearch() {
+      this.taskList = []
+      this.page = 1
+      await this.getTaskList(this.getQueryParams({ page: 1, limit: 10, status: this.showStatus }))
+      //重置加载更多状态
+      this.selectedTaskId = null
+      if (this.taskList.length == 0) return
+      this.selectedTask(this.taskList[0].id)
     },
     selectedTask(id) {
       this.loadingTaskDetail = true
@@ -681,10 +728,45 @@ export default {
         }
 
       })
+    },
+    editTaskLogOpen(log) {
+      this.taskLogEditForm = {
+        id: log.id,
+        logContent: log.logContent,
+        annexFileList: log.annexFileList ? JSON.parse(JSON.stringify(log.annexFileList)) : []
+      }
+      this.logEditDialogVisible = true
+    },
+    updateTaskLogSubmit() {
+      if (!this.taskLogEditForm.logContent) {
+        this.$message.warning("请输入日志内容")
+        return
+      }
+      updateTaskLog(this.taskLogEditForm).then(res => {
+        if (res.code == 200) {
+          this.$message.success("日志更新成功")
+          this.logEditDialogVisible = false
+          this.selectedTask(this.selectedTaskId)
+        }
+      })
+    },
+    removeTaskLog(log) {
+      this.$confirm('确定删除该日志吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteTaskLog([log.id]).then(res => {
+          if (res.code == 200) {
+            this.$message.success("日志已删除")
+            this.selectedTask(this.selectedTaskId)
+          }
+        })
+      }).catch(() => {})
     }
   },
   async created() {
-    await this.getTaskList({ page: 1, limit: 10, status: 1 })
+    await this.getTaskList(this.getQueryParams({ page: 1, limit: 10, status: 1 }))
     //当加初次加载完成后，默认选中第一个任务
     if (this.taskList.length == 0) return
     this.selectedTask(this.taskList[0].id)
@@ -692,11 +774,26 @@ export default {
   watch: {
     async showStatus(newValue) {
       this.taskList = []
-      await this.getTaskList({ page: 1, limit: 10, status: newValue })
+      await this.getTaskList(this.getQueryParams({ page: 1, limit: 10, status: newValue }))
       this.selectedTaskId = null
       if (this.taskList.length == 0) return
       this.selectedTask(this.taskList[0].id)
     },
+    searchText: {
+      handler() {
+        if (this._searchTimer) clearTimeout(this._searchTimer)
+        this._searchTimer = setTimeout(() => {
+          this.handleSearch()
+        }, 300)
+      },
+      immediate: false
+    },
+    searchTaskType() {
+      // 不自动搜索，通过弹窗中的搜索按钮触发
+    },
+    dateRange() {
+      // 不自动搜索，通过弹窗中的搜索按钮触发
+    }
   },
   computed: {
     loadLabelStatus() {
@@ -802,13 +899,21 @@ export default {
   transform: translateY(-2px);
 }
 
-/* 时间样式单独处理 */
+/* 任务卡片主文字（任务名） */
+.task-card > div:first-child {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+/* 任务卡片时间文字 */
 .task-card div:last-child {
-  font-size: 13px;
+  font-size: 12px;
   color: #999;
   margin-top: 4px;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  line-height: 1.4;
 }
-
 .load-label {
   width: 85%;
   font-size: 15px;
@@ -952,12 +1057,15 @@ li::before {
 }
 
 .task-desc {
-  padding-left: 50px;
-  color: #666;
-  margin: 8px 0;
+  padding-left: 24px; /* 减少缩进，更紧凑 */
+  color: #555; /* 比主内容浅一点，做层次区分 */
+  margin: 8px 0 16px 0;
   white-space: pre-wrap;
-  /* 保留换行和空格 */
   word-wrap: break-word;
+  font-size: 14px;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  line-height: 1.7; /* 更大行高，适配长文本 */
+  font-weight: 400;
 }
 
 @keyframes shimmer {
@@ -1061,10 +1169,12 @@ li::before {
 
 /* 内容样式 */
 .item-content {
-  margin-left: 4px;
-  color: #495057;
+  margin-left: 6px;
+  color: #444; /* 介于主内容和描述之间 */
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-weight: 400;
 }
 
 /* 弹出层选项容器 */
@@ -1095,8 +1205,23 @@ li::before {
 }
 
 /* 标签名称 */
+/* 标签名称（未分类/各类标签） */
 .tag-name {
   color: #333;
+  font-size: 13px;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-weight: 500; /* 轻微加粗，小字体更清晰 */
+}
+/* 弹出层选项文字（标签选择器） */
+.tag-option-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 13px;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  line-height: 1.5;
 }
 
 /* 最后一个列表项取消下边距 */
@@ -1123,4 +1248,26 @@ li::before {
 .remark-tag-popover.el-popper[x-placement^=right] {
   box-shadow: none !important;
 }
+/* 任务信息内容（名称/时间/类型/计划说明/附件）- 主内容样式 */
+.task-info-content {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #333; /* 加深主文本色，提升对比度 */
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; /* 增加苹方，适配Mac */
+  line-height: 1.6; /* 增大行高，提升可读性 */
+  font-weight: 400;
+}
+/* 任务日志内容 - 与任务描述样式统一 */
+.task-log-content {
+  padding-left: 8px;
+  color: #555;
+  margin: 8px 0 16px 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 14px;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
 </style>

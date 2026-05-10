@@ -15,3 +15,7 @@ export function savePlan(data) {
 export function deliver(data) {
     return post('/app/plan/deliver', data)
 }
+
+export function updatePlan(data) {
+    return post('/app/plan/update', data)
+}

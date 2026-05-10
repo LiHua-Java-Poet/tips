@@ -117,6 +117,10 @@
                     <el-input v-model="classifyForm.classifyName" />
                 </el-form-item>
 
+                <el-form-item label="分类CODE" prop="classifyCode">
+                    <el-input v-model="classifyForm.classifyCode" />
+                </el-form-item>
+                
                 <el-form-item label="排序">
                     <el-input-number v-model="classifyForm.sort" :min="0" />
                 </el-form-item>
@@ -172,6 +176,7 @@ export default {
                 parentId: null,
                 parentName: '',
                 classifyName: '',
+                classifyCode: '',
                 sort: 0,
                 remark: ''
             },

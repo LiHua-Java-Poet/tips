@@ -22,6 +22,8 @@ import TaskShare from '@/pages/TaskShare.vue'
 import sysConfigManager from '@/pages/subpage/sysConfigManager.vue'
 Vue.use(VueRouter)
 
+import { getMenuList } from '@/api/menu'
+
 
 const router = new VueRouter({
   routes: [
@@ -113,6 +115,11 @@ const router = new VueRouter({
       component: NotFoundPage
     }
   ]
+})
+
+getMenuList().then(res => {
+  const data = res.data
+  console.info(data)
 })
 
 router.beforeEach((to, from, next) => {

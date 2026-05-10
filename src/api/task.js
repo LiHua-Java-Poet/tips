@@ -47,3 +47,11 @@ export function updateRemark(data) {
 export function saveTaskLog(data) {
     return post('/app/taskLog/save', data)
 }
+
+export function updateTaskLog(data) {
+    return post('/app/taskLog/update', data)
+}
+
+export function deleteTaskLog(data) {
+    return post('/app/taskLog/delete', data)
+}
